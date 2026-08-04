@@ -26,6 +26,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState("");
   const disable = !email || !password ? true : false;
+  const [rememberMe, setRememberMe] = useState(false);
   // === states ===
   //handlers
   async function handleLogin() {
@@ -38,6 +39,7 @@ export default function Login() {
         body: JSON.stringify({
           email: email,
           password: password,
+          rememberMe: rememberMe,
         }),
       });
       const data = await response.json();
@@ -205,6 +207,10 @@ export default function Login() {
                     color: "#c9a227",
                   },
                 }}
+                onClick={() => {
+                  setRememberMe(!rememberMe);
+                }}
+                value={rememberMe}
               />
             }
             label="Remember me"
