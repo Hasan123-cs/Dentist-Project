@@ -12,7 +12,7 @@ export default function Header() {
           sx={{
             fontSize: 42,
             fontWeight: 700,
-            color: "#092c57",
+            color: "black",
           }}
         >
           Good afternoon, dev
@@ -31,8 +31,10 @@ export default function Header() {
           borderRadius: 3,
           px: 4,
           py: 1.5,
+          backgroundColor: "#C9A227",
           fontWeight: 700,
         }}
+        style={{ marginTop: "15px" }}
       >
         + QUICK ADD
       </Button>

@@ -26,58 +26,120 @@ const revenue = [
 ];
 
 const status = [
-  { name: "Completed", value: 35 },
-  { name: "Scheduled", value: 39 },
-  { name: "Confirmed", value: 23 },
-  { name: "Cancelled", value: 2 },
+  {
+    name: "Completed",
+    value: 35,
+  },
+  {
+    name: "Scheduled",
+    value: 39,
+  },
+  {
+    name: "Confirmed",
+    value: 23,
+  },
+  {
+    name: "Cancelled",
+    value: 2,
+  },
 ];
 
 const patients = [
-  { name: "Jan", value: 20 },
-  { name: "Feb", value: 15 },
-  { name: "Mar", value: 0 },
-  { name: "Apr", value: 20 },
-  { name: "May", value: 35 },
-  { name: "Jun", value: 25 },
+  {
+    name: "Jan",
+    value: 20,
+  },
+  {
+    name: "Feb",
+    value: 15,
+  },
+  {
+    name: "Mar",
+    value: 0,
+  },
+  {
+    name: "Apr",
+    value: 20,
+  },
+  {
+    name: "May",
+    value: 35,
+  },
+  {
+    name: "Jun",
+    value: 25,
+  },
 ];
 
 const treatments = [
-  { name: "Cleaning", value: 5 },
-  { name: "Crown", value: 4 },
-  { name: "Root Canal", value: 3 },
-  { name: "Filling", value: 2 },
+  {
+    name: "Cleaning",
+    value: 5,
+  },
+  {
+    name: "Crown",
+    value: 4,
+  },
+  {
+    name: "Root Canal",
+    value: 3,
+  },
+  {
+    name: "Filling",
+    value: 2,
+  },
 ];
 
-const colors = ["#1976d2", "#42a5f5", "#90caf9", "#1565c0"];
+const colors = ["#C9A227", "#D4AF37", "#E5C565", "#8B6B1F"];
 
 function ChartBox({ title, children }) {
   return (
     <Paper
+      elevation={0}
       sx={{
-        height: 380,
+        height: 420,
         p: 3,
+        width: "100%",
         borderRadius: 4,
-        border: "1px solid #e5edf5",
+        border: "1px solid #eee3c5",
+        background: "#fff",
       }}
     >
-      <Typography fontWeight={700} color="#092c57" mb={2}>
+      <Typography fontSize={18} fontWeight={700} color="#3d2f12" mb={2}>
         {title}
       </Typography>
 
-      <Box height="320px">{children}</Box>
+      <Box
+        sx={{
+          width: "100%",
+          height: 340,
+        }}
+      >
+        {children}
+      </Box>
     </Paper>
   );
 }
 
 export default function Analytics() {
   return (
-    <Box mt={5}>
-      <Typography fontSize={22} fontWeight={700} color="#092c57" mb={3}>
+    <Box mt={6}>
+      <Typography fontSize={24} fontWeight={800} color="#3d2f12" mb={3}>
         Practice Analytics
       </Typography>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={6}>
+      <Grid
+        container
+        spacing={3}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+        }}
+      >
+        {/* Revenue */}
+
+        <Grid item xs={12} md={6}>
           <ChartBox title="Revenue Trend">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={revenue}>
@@ -87,24 +149,32 @@ export default function Analytics() {
 
                 <Tooltip />
 
-                <Line dataKey="value" stroke="#1976d2" strokeWidth={3} />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#C9A227"
+                  strokeWidth={3}
+                />
               </LineChart>
             </ResponsiveContainer>
           </ChartBox>
         </Grid>
 
-        <Grid item xs={12} lg={6}>
+        {/* Appointment */}
+
+        <Grid item xs={12} md={6}>
           <ChartBox title="Appointment Status">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={status}
                   dataKey="value"
-                  innerRadius={70}
-                  outerRadius={110}
+                  innerRadius={75}
+                  outerRadius={120}
+                  paddingAngle={5}
                 >
-                  {status.map((x, i) => (
-                    <Cell key={i} fill={colors[i]} />
+                  {status.map((item, index) => (
+                    <Cell key={index} fill={colors[index]} />
                   ))}
                 </Pie>
 
@@ -114,7 +184,9 @@ export default function Analytics() {
           </ChartBox>
         </Grid>
 
-        <Grid item xs={12} lg={6}>
+        {/* Patient Growth */}
+
+        <Grid item xs={12} md={6}>
           <ChartBox title="Patient Growth">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={patients}>
@@ -124,13 +196,15 @@ export default function Analytics() {
 
                 <Tooltip />
 
-                <Bar dataKey="value" fill="#1976d2" />
+                <Bar dataKey="value" fill="#C9A227" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartBox>
         </Grid>
 
-        <Grid item xs={12} lg={6}>
+        {/* Popular Treatments */}
+
+        <Grid item xs={12} md={6}>
           <ChartBox title="Popular Treatments">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={treatments} layout="vertical">
@@ -140,7 +214,7 @@ export default function Analytics() {
 
                 <Tooltip />
 
-                <Bar dataKey="value" fill="#1565c0" />
+                <Bar dataKey="value" fill="#8B6B1F" radius={[0, 8, 8, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartBox>

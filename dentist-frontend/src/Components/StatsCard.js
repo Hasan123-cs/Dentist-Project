@@ -1,52 +1,82 @@
 import { Grid, Paper, Box, Typography } from "@mui/material";
 
-export default function StatCard({ icon, title, value, description }) {
+export default function StatCard({
+  icon,
+  title,
+  value,
+  description,
+  color = "#C9A227",
+}) {
   return (
     <Grid item xs={12} sm={6} xl={3}>
       <Paper
+        elevation={0}
         sx={{
-          height: 210,
+          height: 190,
           p: 3,
           borderRadius: 4,
           border: "1px solid #e3edf7",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          boxShadow: "0 2px 10px rgba(0,0,0,.03)",
+          background: "#ffffff",
+          transition: "0.3s",
+
+          "&:hover": {
+            boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
+            transform: "translateY(-3px)",
+          },
         }}
       >
+        {/* Icon */}
         <Box
           sx={{
-            width: 50,
-            height: 50,
-            borderRadius: 3,
+            width: 48,
+            height: 48,
+            borderRadius: "14px",
             background: "#eaf3ff",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#0755a0",
+            color: color,
           }}
         >
           {icon}
         </Box>
 
-        <Box>
-          <Typography color="#58708b" fontWeight={600} fontSize={15}>
+        {/* Text */}
+        <Box mt={2}>
+          <Typography
+            sx={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#64748b",
+              mb: 0.5,
+            }}
+          >
             {title}
           </Typography>
 
           <Typography
             sx={{
-              fontSize: 38,
-              fontWeight: 700,
-              color: "#092c57",
-              lineHeight: 1.2,
+              fontSize: 36,
+              fontWeight: 200,
+              letterSpacing: "-0.5px",
+              color: "black",
+              lineHeight: 1.1,
             }}
           >
             {value}
           </Typography>
 
-          <Typography fontSize={14} color="text.secondary">
+          <Typography
+            sx={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#94a3b8",
+              mt: 1,
+            }}
+          >
             {description}
           </Typography>
         </Box>

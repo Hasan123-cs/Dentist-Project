@@ -9,10 +9,10 @@ export default function FloatingChat() {
         position: "fixed",
         right: 30,
         bottom: 30,
-        background: "#0755a0",
+        background: "#C9A227",
         color: "white",
         "&:hover": {
-          background: "#063d78",
+          background: "#8B6B1F",
         },
       }}
     >

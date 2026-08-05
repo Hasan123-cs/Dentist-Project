@@ -34,9 +34,14 @@ export default function Dashboard() {
         }}
       >
         <Header />
-
+        <br></br>
         {/* Stats Cards */}
-        <Grid container spacing={3} mt={2}>
+        <Grid
+          container
+          spacing={5}
+          mt={2}
+          sx={{ display: "flex", justifyContent: "center" }}
+        >
           <StatCard
             icon={<CalendarMonth />}
             title="Today's Appointments"
@@ -65,19 +70,12 @@ export default function Dashboard() {
             description="9 outstanding invoices"
           />
         </Grid>
-
-
         {/* Quick Actions */}
         <QuickActions />
-
-
         {/* Today's Schedule */}
         <Schedule />
-
-
         {/* Charts */}
         <Analytics />
-
       </Box>
     </Box>
   );

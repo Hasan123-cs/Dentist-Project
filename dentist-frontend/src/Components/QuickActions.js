@@ -1,58 +1,73 @@
 import { Grid, Paper, Typography, Box } from "@mui/material";
 
-import {
-  PersonAdd,
-  CalendarMonth,
-} from "@mui/icons-material";
-
+import { PersonAdd, CalendarMonth } from "@mui/icons-material";
 
 const actions = [
   ["Add Patient", PersonAdd],
   ["Schedule Appointment", CalendarMonth],
 ];
 
-
 export default function QuickActions() {
   return (
-    <Grid container spacing={3} mt={3}>
+    <Grid
+      container
+      spacing={5}
+      mt={5}
+      sx={{
+        p: 3,
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
       {actions.map(([name, Icon]) => (
-        <Grid item xs={12} sm={6} lg={3} key={name}>
+        <Grid sx={{ width: "12%" }} item xs={12} sm={6} md={4} key={name}>
           <Paper
             sx={{
-              height: 110,
-              borderRadius: 4,
+              height: 120,
+              width: "100%",
+              borderRadius: 3,
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
               flexDirection: "column",
-              border: "1px solid #e5edf5",
+              alignItems: "center",
+              mt: 2,
+              justifyContent: "center",
+              gap: 1.5,
+              border: "1px solid #e2eaf3",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               cursor: "pointer",
-
               "&:hover": {
-                background: "#f5faff",
+                background: "#f8fbff",
+                borderColor: "#1976d2",
               },
             }}
           >
             <Box
               sx={{
-                background: "#eaf3ff",
-                color: "#0755a0",
                 width: 45,
                 height: 45,
                 borderRadius: "50%",
+                background: "#eaf3ff",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                color: "#0755a0",
               }}
             >
-              <Icon />
+              <Icon sx={{ color: "#C9A227" }} />
             </Box>
 
             <Typography
-              fontWeight={700}
-              fontSize={14}
-              color="#092c57"
+              sx={{
+                fontSize: 13,
+
+                fontWeight: 600,
+
+                color: "#092c57",
+
+                textAlign: "center",
+
+                whiteSpace: "nowrap",
+              }}
             >
               {name}
             </Typography>

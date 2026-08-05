@@ -18,7 +18,6 @@ import {
   Logout,
 } from "@mui/icons-material";
 
-
 const menu = [
   {
     name: "Dashboard",
@@ -42,7 +41,6 @@ const menu = [
   },
 ];
 
-
 export default function Sidebar() {
   return (
     <Box
@@ -58,7 +56,6 @@ export default function Sidebar() {
         flexDirection: "column",
       }}
     >
-
       {/* Logo */}
 
       <Box display="flex" alignItems="center" gap={2} mb={4}>
@@ -77,25 +74,16 @@ export default function Sidebar() {
           🦷
         </Box>
 
-
         <Box>
-          <Typography
-            fontSize={22}
-            fontWeight={800}
-            color="#092c57"
-          >
+          <Typography fontSize={22} fontWeight={800} color="#C9A227">
             DentalCare
           </Typography>
 
-          <Typography
-            fontSize={12}
-            color="text.secondary"
-          >
+          <Typography fontSize={12} color="text.secondary">
             Clinic Management
           </Typography>
         </Box>
       </Box>
-
 
       {/* Doctor Profile */}
 
@@ -110,7 +98,6 @@ export default function Sidebar() {
           alignItems: "center",
         }}
       >
-
         <Avatar
           src="https://randomuser.me/api/portraits/men/32.jpg"
           sx={{
@@ -119,28 +106,18 @@ export default function Sidebar() {
           }}
         />
 
-
         <Box>
-          <Typography
-            fontWeight={700}
-            color="#092c57"
-          >
+          <Typography fontWeight={700} color="#092c57">
             Dr. David
           </Typography>
 
-          <Typography
-            fontSize={13}
-            color="text.secondary"
-          >
+          <Typography fontSize={13} color="text.secondary">
             Dentist
           </Typography>
         </Box>
-
       </Box>
 
-
       <Divider />
-
 
       {/* Menu */}
 
@@ -150,63 +127,40 @@ export default function Sidebar() {
           flex: 1,
         }}
       >
-
         {menu.map((item, index) => (
-
           <ListItemButton
             key={item.name}
             sx={{
               borderRadius: 3,
               mb: 1,
               height: 48,
+              background: index === 0 ? "#C9A227" : "transparent",
 
-              background:
-                index === 0
-                  ? "#eaf3ff"
-                  : "transparent",
-
-              color:
-                index === 0
-                  ? "#0755a0"
-                  : "#52677e",
-
+              color: index === 0 ? "white" : "#52677e",
 
               "&:hover": {
                 background: "#f5f9ff",
               },
             }}
           >
-
             <ListItemIcon
               sx={{
                 minWidth: 40,
-                color:
-                  index === 0
-                    ? "#0755a0"
-                    : "#657786",
+                color: index === 0 ? "white" : "#657786",
               }}
             >
               {item.icon}
             </ListItemIcon>
 
-
             <ListItemText
               primary={item.name}
               primaryTypographyProps={{
-                fontWeight:
-                  index === 0
-                    ? 700
-                    : 500,
+                fontWeight: index === 0 ? 700 : 500,
               }}
             />
-
           </ListItemButton>
-
         ))}
-
       </List>
-
-
 
       {/* Logout */}
 
@@ -216,7 +170,6 @@ export default function Sidebar() {
           color: "#d32f2f",
         }}
       >
-
         <ListItemIcon
           sx={{
             color: "#d32f2f",
@@ -225,14 +178,8 @@ export default function Sidebar() {
           <Logout />
         </ListItemIcon>
 
-
-        <ListItemText
-          primary="Logout"
-        />
-
+        <ListItemText primary="Logout" />
       </ListItemButton>
-
-
     </Box>
   );
 }
