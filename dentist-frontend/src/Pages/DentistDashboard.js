@@ -5,11 +5,7 @@ import Header from "../Components/Header";
 import StatCard from "../Components/StatsCard";
 import QuickActions from "../Components/QuickActions";
 import Schedule from "../Components/Schedule";
-import Activity from "../Components/Activity";
-import Reminders from "../Components/Reminders";
-import Whatsapp from "../Components/WhatsAppPanel";
 import Analytics from "../Components/Analytics";
-import FloatingChat from "../Components/FloatingChat";
 
 import {
   CalendarMonth,
@@ -39,6 +35,7 @@ export default function Dashboard() {
       >
         <Header />
 
+        {/* Stats Cards */}
         <Grid container spacing={3} mt={2}>
           <StatCard
             icon={<CalendarMonth />}
@@ -69,28 +66,19 @@ export default function Dashboard() {
           />
         </Grid>
 
+
+        {/* Quick Actions */}
         <QuickActions />
 
+
+        {/* Today's Schedule */}
         <Schedule />
 
-        <Grid container spacing={3} mt={3}>
-          <Grid item xs={12} lg={4}>
-            <Activity />
-          </Grid>
 
-          <Grid item xs={12} lg={4}>
-            <Reminders />
-          </Grid>
-
-          <Grid item xs={12} lg={4}>
-            <Whatsapp />
-          </Grid>
-        </Grid>
-
+        {/* Charts */}
         <Analytics />
-      </Box>
 
-      <FloatingChat />
+      </Box>
     </Box>
   );
 }

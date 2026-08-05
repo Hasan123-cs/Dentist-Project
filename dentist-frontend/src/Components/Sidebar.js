@@ -14,11 +14,10 @@ import {
   CalendarMonth,
   People,
   MedicalServices,
-  ReceiptLong,
-  Payments,
   Settings,
   Logout,
 } from "@mui/icons-material";
+
 
 const menu = [
   {
@@ -38,18 +37,11 @@ const menu = [
     icon: <MedicalServices />,
   },
   {
-    name: "Invoices",
-    icon: <ReceiptLong />,
-  },
-  {
-    name: "Payments",
-    icon: <Payments />,
-  },
-  {
     name: "Settings",
     icon: <Settings />,
   },
 ];
+
 
 export default function Sidebar() {
   return (
@@ -66,6 +58,7 @@ export default function Sidebar() {
         flexDirection: "column",
       }}
     >
+
       {/* Logo */}
 
       <Box display="flex" alignItems="center" gap={2} mb={4}>
@@ -84,18 +77,27 @@ export default function Sidebar() {
           🦷
         </Box>
 
+
         <Box>
-          <Typography fontSize={22} fontWeight={800} color="#092c57">
+          <Typography
+            fontSize={22}
+            fontWeight={800}
+            color="#092c57"
+          >
             DentalCare
           </Typography>
 
-          <Typography fontSize={12} color="text.secondary">
+          <Typography
+            fontSize={12}
+            color="text.secondary"
+          >
             Clinic Management
           </Typography>
         </Box>
       </Box>
 
-      {/* Doctor profile */}
+
+      {/* Doctor Profile */}
 
       <Box
         sx={{
@@ -108,6 +110,7 @@ export default function Sidebar() {
           alignItems: "center",
         }}
       >
+
         <Avatar
           src="https://randomuser.me/api/portraits/men/32.jpg"
           sx={{
@@ -116,18 +119,28 @@ export default function Sidebar() {
           }}
         />
 
+
         <Box>
-          <Typography fontWeight={700} color="#092c57">
+          <Typography
+            fontWeight={700}
+            color="#092c57"
+          >
             Dr. David
           </Typography>
 
-          <Typography fontSize={13} color="text.secondary">
+          <Typography
+            fontSize={13}
+            color="text.secondary"
+          >
             Dentist
           </Typography>
         </Box>
+
       </Box>
 
+
       <Divider />
+
 
       {/* Menu */}
 
@@ -137,7 +150,9 @@ export default function Sidebar() {
           flex: 1,
         }}
       >
+
         {menu.map((item, index) => (
+
           <ListItemButton
             key={item.name}
             sx={{
@@ -145,33 +160,53 @@ export default function Sidebar() {
               mb: 1,
               height: 48,
 
-              background: index === 0 ? "#eaf3ff" : "transparent",
+              background:
+                index === 0
+                  ? "#eaf3ff"
+                  : "transparent",
 
-              color: index === 0 ? "#0755a0" : "#52677e",
+              color:
+                index === 0
+                  ? "#0755a0"
+                  : "#52677e",
+
 
               "&:hover": {
                 background: "#f5f9ff",
               },
             }}
           >
+
             <ListItemIcon
               sx={{
                 minWidth: 40,
-                color: index === 0 ? "#0755a0" : "#657786",
+                color:
+                  index === 0
+                    ? "#0755a0"
+                    : "#657786",
               }}
             >
               {item.icon}
             </ListItemIcon>
 
+
             <ListItemText
               primary={item.name}
               primaryTypographyProps={{
-                fontWeight: index === 0 ? 700 : 500,
+                fontWeight:
+                  index === 0
+                    ? 700
+                    : 500,
               }}
             />
+
           </ListItemButton>
+
         ))}
+
       </List>
+
+
 
       {/* Logout */}
 
@@ -181,6 +216,7 @@ export default function Sidebar() {
           color: "#d32f2f",
         }}
       >
+
         <ListItemIcon
           sx={{
             color: "#d32f2f",
@@ -189,8 +225,14 @@ export default function Sidebar() {
           <Logout />
         </ListItemIcon>
 
-        <ListItemText primary="Logout" />
+
+        <ListItemText
+          primary="Logout"
+        />
+
       </ListItemButton>
+
+
     </Box>
   );
 }

@@ -3,16 +3,14 @@ import { Grid, Paper, Typography, Box } from "@mui/material";
 import {
   PersonAdd,
   CalendarMonth,
-  ReceiptLong,
-  Payments,
 } from "@mui/icons-material";
+
 
 const actions = [
   ["Add Patient", PersonAdd],
   ["Schedule Appointment", CalendarMonth],
-  ["Create Invoice", ReceiptLong],
-  ["Record Payment", Payments],
 ];
+
 
 export default function QuickActions() {
   return (
@@ -30,6 +28,7 @@ export default function QuickActions() {
               flexDirection: "column",
               border: "1px solid #e5edf5",
               cursor: "pointer",
+
               "&:hover": {
                 background: "#f5faff",
               },
@@ -50,7 +49,11 @@ export default function QuickActions() {
               <Icon />
             </Box>
 
-            <Typography fontWeight={700} fontSize={14} color="#092c57">
+            <Typography
+              fontWeight={700}
+              fontSize={14}
+              color="#092c57"
+            >
               {name}
             </Typography>
           </Paper>
