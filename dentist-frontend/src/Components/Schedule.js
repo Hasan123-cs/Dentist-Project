@@ -1,29 +1,33 @@
 import { Paper, Typography, Box, Chip } from "@mui/material";
 
-const appointments = [
-  {
-    time: "12:30",
-    name: "Jane Garcia",
-    type: "Consultation",
-  },
-  {
-    time: "10:00",
-    name: "Maria Johnson",
-    type: "Treatment",
-  },
-  {
-    time: "11:00",
-    name: "Maria Johnson",
-    type: "Cleaning",
-  },
-  {
-    time: "13:30",
-    name: "Maria Miller",
-    type: "Cleaning",
-  },
-];
+// const appointments = [
+//   {
+//     time: "12:30",
+//     name: "Jane Garcia",
+//     type: "Consultation",
+//     status: "confirmed",
+//   },
+//   {
+//     time: "10:00",
+//     name: "Maria Johnson",
+//     type: "Treatment",
+//     status: "canceled",
+//   },
+//   {
+//     time: "11:00",
+//     name: "Maria Johnson",
+//     type: "Cleaning",
+//     status: "confirmed",
+//   },
+//   {
+//     time: "13:30",
+//     name: "Maria Miller",
+//     type: "Cleaning",
+//     status: "confirmed",
+//   },
+// ];
 
-export default function Schedule() {
+export default function Schedule({ ScheduleList }) {
   return (
     <Paper
       sx={{
@@ -37,7 +41,7 @@ export default function Schedule() {
         Today's Schedule
       </Typography>
 
-      {appointments.map((item) => (
+      {ScheduleList.map((item) => (
         <Box
           key={item.time}
           sx={{
@@ -64,8 +68,20 @@ export default function Schedule() {
               </Typography>
             </Box>
           </Box>
-
-          <Chip label="Completed" color="success" size="small" />
+          {item.status === "Confirmed" ? (
+            <Chip label="Confirmed" color="success" size="small" />
+          ) : item.status === "Scheduled" ? (
+            <Chip
+              label="Scheduled"
+              sx={{
+                backgroundColor: "#D4AF37",
+                color: "#fff",
+              }}
+              size="small"
+            />
+          ) : (
+            <Chip label="Canceled" color="error" size="small" />
+          )}
         </Box>
       ))}
     </Paper>

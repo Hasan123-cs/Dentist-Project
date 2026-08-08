@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -20,6 +21,7 @@ import {
 } from "@mui/icons-material";
 
 export default function Login() {
+  const navigate = useNavigate();
   // states
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -30,8 +32,9 @@ export default function Login() {
   // === states ===
   //handlers
   async function handleLogin() {
+    alert("handleLogin clicked ");
     try {
-      const response = await fetch("https://localhost:7066/api/auth/login", {
+      const response = await fetch("https://localhost:7166/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +53,7 @@ export default function Login() {
       console.log("Login success:", data);
       localStorage.setItem("token", data.token);
       //   localStorage.setItem("user", JSON.stringify(data.user));
-      // navigate("/dashboard");
+      navigate("/dashboard");
     } catch (error) {
       console.log(error);
 

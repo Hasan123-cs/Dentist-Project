@@ -1,12 +1,9 @@
 import { Grid, Paper, Box, Typography } from "@mui/material";
 
-export default function StatCard({
-  icon,
-  title,
-  value,
-  description,
-  color = "#C9A227",
-}) {
+export default function StatCard(
+  { icon, title, value, description, color = "#C9A227" },
+  dashboardData,
+) {
   return (
     <Grid item xs={12} sm={6} xl={3}>
       <Paper

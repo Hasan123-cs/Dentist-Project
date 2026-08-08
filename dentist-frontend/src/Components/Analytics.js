@@ -90,7 +90,7 @@ const treatments = [
   },
 ];
 
-const colors = ["#C9A227", "#D4AF37", "#E5C565", "#8B6B1F"];
+const colors = ["#D4AF37", "#B8860B", "#996515", "#7A5200"];
 
 function ChartBox({ title, children }) {
   return (
@@ -121,7 +121,7 @@ function ChartBox({ title, children }) {
   );
 }
 
-export default function Analytics() {
+export default function Analytics({ analysisList }) {
   return (
     <Box mt={6}>
       <Typography fontSize={24} fontWeight={800} color="#3d2f12" mb={3}>
@@ -142,7 +142,10 @@ export default function Analytics() {
         <Grid item xs={12} md={6}>
           <ChartBox title="Revenue Trend">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenue}>
+              <LineChart
+                data={analysisList?.revenue || revenue}
+                margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+              >
                 <XAxis dataKey="name" />
 
                 <YAxis />
@@ -167,9 +170,9 @@ export default function Analytics() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={status}
+                  data={analysisList?.status || status}
                   dataKey="value"
-                  innerRadius={75}
+                  innerRadius={85}
                   outerRadius={120}
                   paddingAngle={5}
                 >
@@ -189,7 +192,7 @@ export default function Analytics() {
         <Grid item xs={12} md={6}>
           <ChartBox title="Patient Growth">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={patients}>
+              <BarChart data={analysisList?.patients || patients}>
                 <XAxis dataKey="name" />
 
                 <YAxis />
@@ -207,7 +210,10 @@ export default function Analytics() {
         <Grid item xs={12} md={6}>
           <ChartBox title="Popular Treatments">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={treatments} layout="vertical">
+              <BarChart
+                data={analysisList?.treatments || treatments}
+                layout="vertical"
+              >
                 <XAxis type="number" />
 
                 <YAxis dataKey="name" type="category" />
