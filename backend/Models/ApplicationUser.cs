@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace DentalClinic.Models;
+namespace dentist_project.Models;
 
 public class ApplicationUser : IdentityUser
 {

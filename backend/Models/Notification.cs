@@ -1,6 +1,6 @@
-﻿using DentalClinic.Enums;
+﻿using dentist_project.Enums;
 
-namespace DentalClinic.Models;
+namespace dentist_project.Models;
 
 public class Notification
 {

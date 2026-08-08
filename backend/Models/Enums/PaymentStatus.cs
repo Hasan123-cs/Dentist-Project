@@ -1,4 +1,4 @@
-﻿namespace DentalClinic.Enums;
+﻿namespace dentist_project.Enums;
 
 public enum PaymentStatus
 {

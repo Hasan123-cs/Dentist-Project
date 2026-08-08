@@ -1,5 +1,5 @@
 ﻿
-using DentalClinic.Models;
+using dentist_project.Models;
 using dentist_project.DTO;
 using dentist_project.Service;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 
 
-namespace DentalClinic.Controllers;
+namespace dentist_project.Controllers;
 
 
 [Route("api/auth")]
@@ -42,6 +42,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login(LoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
+        Console.WriteLine("user", dto.Email);
         if (user == null)
         {
             return Unauthorized("Invalid email or password");

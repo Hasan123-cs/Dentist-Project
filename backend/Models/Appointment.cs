@@ -1,5 +1,5 @@
-﻿using DentalClinic.Enums;
-namespace DentalClinic.Models;
+﻿using dentist_project.Enums;
+namespace dentist_project.Models;
 
 public class Appointment
 {

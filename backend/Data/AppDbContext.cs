@@ -1,14 +1,15 @@
-﻿using DentalClinic.Models;
+﻿using 
+    dentist_project.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
 
-namespace DentalClinic.Data
+namespace dentist_project.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext(
-      DbContextOptions<ApplicationDbContext> options
+        public AppDbContext(
+      DbContextOptions<AppDbContext> options
   ) : base(options)
         {
         }

@@ -1,4 +1,4 @@
-﻿namespace DentalClinic.Models;
+﻿namespace dentist_project.Models;
 
 public class Treatment
 {
