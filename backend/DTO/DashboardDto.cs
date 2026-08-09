@@ -2,6 +2,7 @@
 {
     public class DashboardDto
     {
+        public string userName { get; set; } =string.Empty;
         public int TodaysAppointments { get; set; }
 
         public int ConfirmedAppointments { get; set; }
