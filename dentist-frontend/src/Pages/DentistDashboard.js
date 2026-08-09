@@ -68,7 +68,7 @@ export default function Dashboard() {
           overflow: "hidden",
         }}
       >
-        <Header />
+        <Header dashboardData={dashboardData} />
         <br></br>
         {/* Stats Cards */}
         <Grid

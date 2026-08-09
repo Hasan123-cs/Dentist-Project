@@ -1,11 +1,36 @@
 import { Box, Typography, Button } from "@mui/material";
 
-export default function Header() {
+export default function Header({ dashboardData }) {
+  const today = new Date();
+
+  const formattedDate = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const hour = today.getHours();
+
+  let greeting = "Good morning";
+
+  if (hour >= 12 && hour < 17) {
+    greeting = "Good afternoon";
+  } else if (hour >= 17) {
+    greeting = "Good evening";
+  }
+
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center">
       <Box>
-        <Typography color="#2867a8" fontWeight={600} fontSize={16}>
-          Wednesday, August 5, 2026
+        <Typography
+          sx={{
+            fontSize: 42,
+            fontWeight: 700,
+            color: "black",
+          }}
+        >
+          {formattedDate}
         </Typography>
 
         <Typography
@@ -15,26 +40,29 @@ export default function Header() {
             color: "black",
           }}
         >
-          Good afternoon, dev
+          {greeting}, {dashboardData?.userName || "Doctor"}
         </Typography>
 
         <Typography fontSize={17} color="text.secondary">
-          You have <b>18 appointments</b> scheduled for today • 1 confirmed, 1
-          pending
+          You have <b>{dashboardData?.todaysAppointments || 0} appointments</b>{" "}
+          scheduled for today •{" "}
+          <b>{dashboardData?.confirmedAppointments || 0}</b> confirmed,{" "}
+          <b>{dashboardData?.pendingAppointments || 0}</b> pending
         </Typography>
       </Box>
 
       <Button
         variant="contained"
         sx={{
-          background: "#084889",
           borderRadius: 3,
           px: 4,
           py: 1.5,
           backgroundColor: "#C9A227",
           fontWeight: 700,
+          "&:hover": {
+            backgroundColor: "#B08A1D",
+          },
         }}
-        style={{ marginTop: "15px" }}
       >
         + QUICK ADD
       </Button>
