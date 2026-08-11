@@ -29,6 +29,7 @@ export default function WeeklyCalendar({
     const [draggedAppointment, setDraggedAppointment] = useState(null);
 
 
+
     const [appointments, setAppointments] = useState([
 
         {
@@ -40,6 +41,7 @@ export default function WeeklyCalendar({
             status:"confirmed"
         },
 
+
         {
             id:2,
             day:0,
@@ -48,6 +50,7 @@ export default function WeeklyCalendar({
             treatment:"Root Canal",
             status:"scheduled"
         },
+
 
         {
             id:3,
@@ -58,6 +61,7 @@ export default function WeeklyCalendar({
             status:"completed"
         },
 
+
         {
             id:4,
             day:2,
@@ -66,6 +70,7 @@ export default function WeeklyCalendar({
             treatment:"Implant",
             status:"confirmed"
         },
+
 
         {
             id:5,
@@ -76,6 +81,7 @@ export default function WeeklyCalendar({
             status:"scheduled"
         },
 
+
         {
             id:6,
             day:6,
@@ -83,9 +89,21 @@ export default function WeeklyCalendar({
             patient:"Robert Davis",
             treatment:"Cleaning",
             status:"completed"
+        },
+
+
+        // TEST SAME TIME
+        {
+            id:7,
+            day:0,
+            time:"09:00",
+            patient:"Anna White",
+            treatment:"Crown",
+            status:"scheduled"
         }
 
     ]);
+
 
 
 
@@ -104,6 +122,8 @@ export default function WeeklyCalendar({
 
 
 
+
+
     return (
 
         <Paper
@@ -118,13 +138,15 @@ export default function WeeklyCalendar({
         >
 
 
-            {/* Days Header */}
+
+            {/* HEADER */}
 
             <Box
 
                 sx={{
                     display:"grid",
-                    gridTemplateColumns:"80px repeat(7,1fr)"
+                    gridTemplateColumns:
+                    "80px repeat(7,1fr)"
                 }}
 
             >
@@ -142,15 +164,19 @@ export default function WeeklyCalendar({
                             sx={{
                                 p:2,
                                 textAlign:"center",
-                                borderLeft:"1px solid #eee3c5",
+                                borderLeft:
+                                "1px solid #eee3c5",
                                 fontWeight:700
                             }}
 
                         >
 
                             {day.format("ddd")}
+
                             <br/>
+
                             {day.format("D")}
+
 
                         </Box>
 
@@ -163,7 +189,10 @@ export default function WeeklyCalendar({
 
 
 
-            {/* Calendar Body */}
+
+
+            {/* BODY */}
+
 
 
             {
@@ -175,34 +204,26 @@ export default function WeeklyCalendar({
                         key={time}
 
                         sx={{
-
                             display:"grid",
-
-                            gridTemplateColumns:"80px repeat(7,1fr)",
-
+                            gridTemplateColumns:
+                            "80px repeat(7,1fr)",
                             height:80
-
                         }}
 
                     >
 
 
-                        {/* Time Column */}
+
+                        {/* TIME */}
 
                         <Box
 
                             sx={{
-
                                 display:"flex",
-
                                 justifyContent:"center",
-
                                 alignItems:"flex-start",
-
                                 pt:1,
-
                                 fontSize:14
-
                             }}
 
                         >
@@ -214,22 +235,22 @@ export default function WeeklyCalendar({
 
 
 
-                        {
 
+
+                        {
                             days.map((day,index)=>{
 
 
-                                const appointment =
 
-                                    appointments.find(
+                                const cellAppointments =
+                                    appointments.filter(
 
                                         item =>
-
                                         item.day === index &&
-
                                         item.time === time
 
                                     );
+
 
 
 
@@ -238,14 +259,15 @@ export default function WeeklyCalendar({
 
                                     <Box
 
+
                                         key={index}
 
 
+
                                         onDragOver={(e)=>{
-
                                             e.preventDefault();
-
                                         }}
+
 
 
 
@@ -259,7 +281,8 @@ export default function WeeklyCalendar({
 
                                             setAppointments(prev =>
 
-                                                prev.map(item =>
+
+                                                prev.map(item=>
 
 
                                                     item.id === draggedAppointment.id
@@ -267,15 +290,10 @@ export default function WeeklyCalendar({
                                                     ?
 
                                                     {
-
                                                         ...item,
-
                                                         day:index,
-
                                                         time:time
-
                                                     }
-
 
                                                     :
 
@@ -295,37 +313,80 @@ export default function WeeklyCalendar({
 
 
 
+
+
+
                                         sx={{
 
-                                            position:"relative",
+                                            borderLeft:
+                                            "1px solid #eee3c5",
 
-                                            borderLeft:"1px solid #eee3c5",
+                                            borderTop:
+                                            "1px solid #eee3c5",
 
-                                            borderTop:"1px solid #eee3c5"
+                                            p:0.5,
+
+                                            display:"flex",
+
+                                            flexDirection:"row",
+
+                                            gap:0.5,
+
+                                            overflow:"hidden"
 
                                         }}
+
 
                                     >
 
 
+
+
+
                                         {
+                                            cellAppointments.map(app=>(
 
-                                            appointment &&
+
+                                                <Box
+
+                                                    key={app.id}
+
+                                                    sx={{
+
+                                                        width:
+                                                        `${100 / cellAppointments.length}%`
+
+                                                    }}
+
+                                                >
 
 
-                                            <AppointmentCard
+                                                    <AppointmentCard
 
-                                                appointment={appointment}
 
-                                                onDragStart={(app)=>{
+                                                        appointment={app}
 
-                                                    setDraggedAppointment(app);
 
-                                                }}
 
-                                            />
+                                                        onDragStart={(appointment)=>{
 
+                                                            setDraggedAppointment(
+                                                                appointment
+                                                            );
+
+                                                        }}
+
+
+
+                                                    />
+
+
+                                                </Box>
+
+
+                                            ))
                                         }
+
 
 
 
@@ -335,10 +396,10 @@ export default function WeeklyCalendar({
                                 )
 
 
+
                             })
-
-
                         }
+
 
 
 
@@ -346,14 +407,13 @@ export default function WeeklyCalendar({
 
 
                 ))
-
             }
+
 
 
 
         </Paper>
 
     );
-
 
 }
