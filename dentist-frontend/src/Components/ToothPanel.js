@@ -1,3 +1,5 @@
+import React from "react";
+
 import {
     Box,
     Typography,
@@ -5,110 +7,528 @@ import {
 } from "@mui/material";
 
 
+
+
+
 const conditions = [
-    {
-        name:"healthy",
-        label:"Healthy",
-        color:"#dcfce7"
-    },
 
-    {
-        name:"caries",
-        label:"Caries",
-        color:"#d6b08c"
-    },
 
-    {
-        name:"filling",
-        label:"Filling",
-        color:"#93c5fd"
-    },
+{
+    name:"healthy",
+    label:"Healthy",
+    color:"#e8f7ee"
+},
 
-    {
-        name:"crown",
-        label:"Crown",
-        color:"#fde68a"
-    },
 
-    {
-        name:"implant",
-        label:"Implant",
-        color:"#60a5fa"
-    },
+{
+    name:"caries",
+    label:"Caries",
+    color:"#e53935"
+},
 
-    {
-        name:"missing",
-        label:"Missing",
-        color:"#e5e7eb"
-    }
+
+{
+    name:"filling",
+    label:"Filling",
+    color:"#42a5f5"
+},
+
+
+{
+    name:"crown",
+    label:"Crown",
+    color:"#fdd835"
+},
+
+
+{
+    name:"missing",
+    label:"Missing",
+    color:"#bdbdbd"
+},
+
+
+{
+    name:"implant",
+    label:"Implant",
+    color:"#8e7dff"
+},
+
+
+{
+    name:"rootCanal",
+    label:"Root Canal",
+    color:"#8e24aa"
+},
+
+
+{
+    name:"bridge",
+    label:"Bridge",
+    color:"#ffb15c"
+}
+
+
 ];
 
 
 
+
+
+
+const surfaces=[
+
+
+{
+    name:"M",
+    label:"Mesial"
+},
+
+
+{
+    name:"O",
+    label:"Occlusal"
+},
+
+
+{
+    name:"D",
+    label:"Distal"
+},
+
+
+{
+    name:"B",
+    label:"Buccal"
+},
+
+
+{
+    name:"L",
+    label:"Lingual"
+}
+
+
+];
+
+
+
+
+
+
+
+
+
 export default function ToothPanel({
-    tooth,
-    condition,
-    setCondition
+
+
+tooth,
+
+selectedSurface,
+
+setSelectedSurface,
+
+setCondition,
+
+getCondition
+
+
 }){
 
 
+
+
+
 if(!tooth)
-    return null;
+
+return null;
+
+
+
+
+
+
+
+const currentCondition =
+
+selectedSurface
+
+?
+
+getCondition(
+    tooth,
+    selectedSurface
+)
+
+:
+
+null;
+
+
+
+
+
 
 
 
 return (
 
 
+
 <Box
+
+
 
 sx={{
 
-mt:3,
 
-p:2,
+mt:4,
+
+
+p:3,
+
 
 border:"1px solid #eee3c5",
 
+
 borderRadius:3,
+
 
 background:"#faf8f2"
 
+
 }}
 
+
+
 >
+
+
+
+
+
 
 
 <Typography
 
+
+fontSize={20}
+
+
 fontWeight={800}
+
 
 color="#092c57"
 
+
 mb={2}
+
 
 >
 
-Tooth {tooth}
+
+Selected Tooth: {tooth}
+
 
 </Typography>
 
 
 
 
+
+
+
+
+
+{/* SURFACES */}
+
+
+
+<Typography
+
+
+fontWeight={700}
+
+
+fontSize={13}
+
+
+color="#555"
+
+
+mb={1}
+
+
+>
+
+Select Surface
+
+</Typography>
+
+
+
+
+
+
+
 <Box
+
 
 display="flex"
 
+
 gap={1}
 
+
 flexWrap="wrap"
+
+
+mb={3}
+
 
 >
 
 
 {
+
+
+surfaces.map(surface=>(
+
+
+<Button
+
+
+key={surface.name}
+
+
+onClick={()=>setSelectedSurface(surface.name)}
+
+
+sx={{
+
+
+width:55,
+
+
+height:40,
+
+
+borderRadius:2,
+
+
+fontWeight:800,
+
+
+
+border:"1px solid #d5d5d5",
+
+
+
+background:
+
+selectedSurface===surface.name
+
+?
+
+"#092c57"
+
+:
+
+"#ffffff",
+
+
+
+color:
+
+selectedSurface===surface.name
+
+?
+
+"#ffffff"
+
+:
+
+"#092c57"
+
+}}
+
+
+
+>
+
+
+{surface.name}
+
+
+</Button>
+
+
+
+))
+
+
+}
+
+
+</Box>
+
+
+
+
+
+
+
+
+
+{/* INFO */}
+
+
+
+{
+
+selectedSurface &&
+
+
+<Box
+
+
+mb={3}
+
+
+>
+
+
+<Typography
+
+
+fontSize={13}
+
+
+color="#718096"
+
+
+>
+
+
+Selected Surface:
+
+{" "}
+
+<b>
+
+{selectedSurface}
+
+</b>
+
+
+</Typography>
+
+
+
+
+
+
+<Typography
+
+
+fontSize={13}
+
+
+color="#718096"
+
+
+mt={1}
+
+
+>
+
+
+Current:
+
+{" "}
+
+
+<b>
+
+
+{currentCondition || "Healthy"}
+
+
+</b>
+
+
+</Typography>
+
+
+
+
+</Box>
+
+
+}
+
+
+
+
+
+
+
+
+
+{/* CONDITIONS */}
+
+
+
+<Typography
+
+
+fontWeight={700}
+
+
+fontSize={13}
+
+
+color="#555"
+
+
+mb={1}
+
+
+>
+
+
+Treatment / Condition
+
+
+</Typography>
+
+
+
+
+
+
+
+<Box
+
+
+display="flex"
+
+
+gap={1}
+
+
+flexWrap="wrap"
+
+
+>
+
+
+
+{
+
+
 conditions.map(item=>(
+
 
 
 <Button
@@ -117,7 +537,24 @@ conditions.map(item=>(
 key={item.name}
 
 
-onClick={()=>setCondition(item.name)}
+
+disabled={!selectedSurface}
+
+
+
+onClick={()=>
+
+
+setCondition(
+
+selectedSurface,
+
+item.name
+
+)
+
+}
+
 
 
 sx={{
@@ -129,10 +566,33 @@ background:item.color,
 color:"#092c57",
 
 
+fontWeight:700,
+
+
 fontSize:12,
 
 
-fontWeight:700
+borderRadius:2,
+
+
+px:2,
+
+
+py:1,
+
+
+
+border:"1px solid rgba(0,0,0,.1)",
+
+
+
+"&:hover":{
+
+
+background:item.color
+
+
+}
 
 
 }}
@@ -141,12 +601,16 @@ fontWeight:700
 
 >
 
+
 {item.label}
+
 
 </Button>
 
 
+
 ))
+
 
 }
 
@@ -155,9 +619,53 @@ fontWeight:700
 </Box>
 
 
+
+
+
+
+
+
+{
+
+!selectedSurface &&
+
+
+
+<Typography
+
+
+mt={2}
+
+
+fontSize={12}
+
+
+color="#888"
+
+
+>
+
+
+Select a tooth surface first.
+
+
+</Typography>
+
+
+}
+
+
+
+
+
+
+
 </Box>
 
 
-)
+
+);
+
+
 
 }

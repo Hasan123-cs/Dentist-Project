@@ -1,13 +1,12 @@
 import {
-  Box
+    Box
 } from "@mui/material";
 
 
 import { useState } from "react";
+
 import dayjs from "dayjs";
 
-
-import Sidebar from "../Components/Sidebar";
 
 import AppointmentStats from "../Components/Appointmentstats";
 import CalendarToolbar from "../Components/CalendarToolbar";
@@ -22,44 +21,25 @@ export default function Appointments(){
 const [currentDate,setCurrentDate] = useState(dayjs());
 
 
+// NEW
+const [view,setView] = useState("week");
+
+
 
 return (
 
+
 <Box
 
 sx={{
 
-display:"flex",
+width:"100%",
+
+minHeight:"100vh",
 
 background:"#faf8f2",
 
-minHeight:"100vh"
-
-}}
-
->
-
-
-<Sidebar/>
-
-
-
-
-<Box
-
-component="main"
-
-sx={{
-
-flexGrow:1,
-
-ml:"280px",
-
-p:4,
-
-width:"calc(100% - 280px)",
-
-overflowX:"hidden"
+boxSizing:"border-box"
 
 }}
 
@@ -67,12 +47,21 @@ overflowX:"hidden"
 
 
 
-<AppointmentHeader/>
+
+
+<AppointmentHeader />
 
 
 
 
-<AppointmentStats/>
+
+
+
+<AppointmentStats />
+
+
+
+
 
 
 
@@ -80,11 +69,24 @@ overflowX:"hidden"
 
 <CalendarToolbar
 
+
 currentDate={currentDate}
+
 
 setCurrentDate={setCurrentDate}
 
+
+view={view}
+
+
+setView={setView}
+
+
 />
+
+
+
+
 
 
 
@@ -92,7 +94,12 @@ setCurrentDate={setCurrentDate}
 
 <WeeklyCalendar
 
+
 currentDate={currentDate}
+
+
+view={view}
+
 
 />
 
@@ -100,12 +107,14 @@ currentDate={currentDate}
 
 
 
-</Box>
+
+
 
 
 </Box>
 
 
 )
+
 
 }

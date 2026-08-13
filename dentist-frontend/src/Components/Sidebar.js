@@ -5,8 +5,9 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    Avatar,
+    Avatar
 } from "@mui/material";
+
 
 import {
     Home,
@@ -14,8 +15,9 @@ import {
     People,
     MedicalServices,
     Settings,
-    Logout,
+    Logout
 } from "@mui/icons-material";
+
 
 import {
     useNavigate,
@@ -23,46 +25,52 @@ import {
 } from "react-router-dom";
 
 
+
 const menu = [
 
     {
-        name: "Dashboard",
-        icon: <Home />,
-        path: "/dashboard"
+        name:"Dashboard",
+        icon:<Home />,
+        path:"/dashboard"
     },
 
     {
-        name: "Appointments",
-        icon: <CalendarMonth />,
-        path: "/appointments"
+        name:"Appointments",
+        icon:<CalendarMonth />,
+        path:"/appointments"
     },
 
     {
-        name: "Patients",
-        icon: <People />,
-        path: "/patients"
+        name:"Patients",
+        icon:<People />,
+        path:"/patients"
     },
 
     {
-        name: "Treatments",
-        icon: <MedicalServices />,
-        path: "/treatments"
+        name:"Treatments",
+        icon:<MedicalServices />,
+        path:"/treatments"
     },
 
     {
-        name: "Settings",
-        icon: <Settings />,
-        path: "/settings"
+        name:"Settings",
+        icon:<Settings />,
+        path:"/settings"
     }
 
 ];
 
 
+
+
+
 export default function Sidebar(){
+
 
     const navigate = useNavigate();
 
     const location = useLocation();
+
 
 
     return (
@@ -73,15 +81,9 @@ export default function Sidebar(){
 
                 width:280,
 
+                minWidth:280,
+
                 height:"100vh",
-
-                position:"fixed",
-
-                left:0,
-
-                top:0,
-
-                zIndex:1200,
 
                 background:"#ffffff",
 
@@ -100,7 +102,10 @@ export default function Sidebar(){
         >
 
 
+
+
             {/* LOGO */}
+
 
             <Box
 
@@ -117,6 +122,7 @@ export default function Sidebar(){
                 }}
 
             >
+
 
                 <Box
 
@@ -147,7 +153,9 @@ export default function Sidebar(){
                 </Box>
 
 
+
                 <Box>
+
 
                     <Typography
 
@@ -176,6 +184,7 @@ export default function Sidebar(){
 
                     </Typography>
 
+
                 </Box>
 
 
@@ -183,7 +192,12 @@ export default function Sidebar(){
 
 
 
-            {/* DOCTOR CARD */}
+
+
+
+
+            {/* DOCTOR */}
+
 
 
             <Box
@@ -208,6 +222,8 @@ export default function Sidebar(){
 
             >
 
+
+
                 <Avatar
 
                     src="https://randomuser.me/api/portraits/men/32.jpg"
@@ -223,19 +239,21 @@ export default function Sidebar(){
                 />
 
 
+
+
                 <Box>
+
 
                     <Typography
 
                         fontWeight={700}
-
-                        color="#3d2f12"
 
                     >
 
                         Dr. David
 
                     </Typography>
+
 
 
                     <Typography
@@ -250,6 +268,7 @@ export default function Sidebar(){
 
                     </Typography>
 
+
                 </Box>
 
 
@@ -257,46 +276,65 @@ export default function Sidebar(){
 
 
 
+
+
+
+
+
+
             {/* MENU */}
+
 
 
             <List
 
                 sx={{
 
-                    flex:1,
-
-                    mt:2
+                    flex:1
 
                 }}
 
             >
+
+
 
                 {
 
                     menu.map((item)=>{
 
 
-                        const active = 
+                        const active =
+
                         location.pathname.startsWith(item.path);
 
 
 
                         return (
 
+
+
                             <ListItemButton
+
 
                                 key={item.name}
 
+
                                 onClick={()=>navigate(item.path)}
+
+
 
                                 sx={{
 
+
+
                                     height:48,
+
 
                                     borderRadius:3,
 
+
                                     mb:1,
+
 
 
                                     background:
@@ -312,13 +350,14 @@ export default function Sidebar(){
                                     "transparent",
 
 
+
                                     color:
 
                                     active
 
                                     ?
 
-                                    "#ffffff"
+                                    "#fff"
 
                                     :
 
@@ -326,7 +365,9 @@ export default function Sidebar(){
 
 
 
+
                                     "&:hover":{
+
 
                                         background:
 
@@ -342,36 +383,52 @@ export default function Sidebar(){
 
                                     }
 
+
+
                                 }}
+
+
 
                             >
 
 
+
+
                                 <ListItemIcon
+
 
                                     sx={{
 
+
                                         minWidth:40,
 
+
                                         color:
+
 
                                         active
 
                                         ?
 
-                                        "#ffffff"
+                                        "#fff"
 
                                         :
 
                                         "#8a7a55"
 
+
                                     }}
+
 
                                 >
 
                                     {item.icon}
 
+
                                 </ListItemIcon>
+
+
+
 
 
 
@@ -379,26 +436,14 @@ export default function Sidebar(){
 
                                     primary={item.name}
 
-                                    primaryTypographyProps={{
-
-                                        fontWeight:
-
-                                        active
-
-                                        ?
-
-                                        700
-
-                                        :
-
-                                        500
-
-                                    }}
-
                                 />
 
 
+
+
                             </ListItemButton>
+
+
 
                         )
 
@@ -408,11 +453,19 @@ export default function Sidebar(){
                 }
 
 
+
             </List>
 
 
 
+
+
+
+
+
+
             {/* LOGOUT */}
+
 
 
             <ListItemButton
@@ -427,6 +480,8 @@ export default function Sidebar(){
 
             >
 
+
+
                 <ListItemIcon
 
                     sx={{
@@ -439,9 +494,10 @@ export default function Sidebar(){
 
                 >
 
-                    <Logout />
+                    <Logout/>
 
                 </ListItemIcon>
+
 
 
                 <ListItemText
@@ -451,11 +507,17 @@ export default function Sidebar(){
                 />
 
 
+
             </ListItemButton>
+
+
+
 
 
         </Box>
 
+
     );
+
 
 }

@@ -1,195 +1,145 @@
-import {
-    Box,
-    Typography
-} from "@mui/material";
-
-
-import {
-    useState
-} from "react";
-
+import { Box, Typography } from "@mui/material";
+import { useState } from "react";
 
 import Tooth from "./Tooth";
 import ToothPanel from "./ToothPanel";
-
-
-
+import ConditionLegend from "./ConditionLegend";
 
 
 export default function DentalChart(){
 
 
+const [selectedTooth,setSelectedTooth]=useState(null);
 
-    const [selectedTooth,setSelectedTooth] = useState(null);
+const [selectedSurface,setSelectedSurface]=useState(null);
 
+const [conditions,setConditions]=useState({});
 
 
-    const [toothConditions,setToothConditions] = useState({});
 
+const upperRight=[18,17,16,15,14,13,12,11];
 
+const upperLeft=[21,22,23,24,25,26,27,28];
 
 
+const lowerRight=[48,47,46,45,44,43,42,41];
 
+const lowerLeft=[31,32,33,34,35,36,37,38];
 
-    const upperRight = [
-        18,17,16,15,14,13,12,11
-    ];
 
 
 
-    const upperLeft = [
-        21,22,23,24,25,26,27,28
-    ];
 
+const updateCondition=(surface,value)=>{
 
 
-    const lowerRight = [
-        48,47,46,45,44,43,42,41
-    ];
+if(!selectedTooth)
+return;
 
 
+setConditions(prev=>({
 
-    const lowerLeft = [
-        31,32,33,34,35,36,37,38
-    ];
+...prev,
 
 
+[selectedTooth]:{
 
+...(prev[selectedTooth] || {}),
 
+[surface]:value
 
+}
 
 
+}));
 
+};
 
-    const renderTeeth = (teeth)=>(
 
 
-        teeth.map(number=>(
 
 
-            <Tooth
 
+const renderTeeth=(list,isUpper)=>{
 
-                key={number}
 
+return list.map(number=>(
 
-                number={number}
 
+<Tooth
 
+key={number}
 
-                condition={
-                    toothConditions[number] || "healthy"
-                }
+number={number}
 
+isUpper={isUpper}
 
+selected={selectedTooth===number}
 
+conditions={conditions[number] || {}}
 
-                onClick={()=>{
 
 
-                    setSelectedTooth(number);
+onClick={()=>{
 
+setSelectedTooth(number);
 
-                }}
+setSelectedSurface(null);
 
+}}
 
-            />
 
 
-        ))
+onSurfaceClick={(surface)=>{
 
+setSelectedTooth(number);
 
-    );
+setSelectedSurface(surface);
 
+}}
 
 
 
+/>
 
 
+));
 
-return (
 
+};
 
 
-<Box>
 
 
 
 
 
-<Typography
-
-fontWeight={800}
-
-color="#092c57"
-
-mb={3}
-
-textAlign="center"
-
->
-
-Dental Chart
-
-</Typography>
-
-
-
-
-
-
-
-
-
-{/* UPPER */}
-
-
-
-
-<Typography
-
-textAlign="center"
-
-fontSize={12}
-
-color="#718096"
-
-mb={2}
-
->
-
-MAXILLARY (UPPER)
-
-</Typography>
-
-
-
-
-
+const ToothRow=({right,left,isUpper})=>(
 
 
 <Box
 
 sx={{
 
+width:"100%",
+
 display:"flex",
 
 justifyContent:"center",
 
-alignItems:"center",
+alignItems:"flex-start",
 
-width:"100%",
+flexWrap:"nowrap",
 
-overflow:"auto",
+overflow:"hidden",
 
-gap:2
+gap:1,
+
+py:2
 
 }}
 
 >
-
-
-
 
 
 
@@ -201,18 +151,19 @@ display:"flex",
 
 flexDirection:"row",
 
-gap:1
+flexWrap:"nowrap",
+
+gap:0.5,
+
+flexShrink:0
 
 }}
 
 >
 
-{
-    renderTeeth(upperRight)
-}
+{renderTeeth(right,isUpper)}
 
 </Box>
-
 
 
 
@@ -223,13 +174,15 @@ gap:1
 
 sx={{
 
-height:80,
+height:150,
 
 width:"2px",
 
 background:"#ddd",
 
-mx:2
+mx:1,
+
+flexShrink:0
 
 }}
 
@@ -249,27 +202,129 @@ display:"flex",
 
 flexDirection:"row",
 
-gap:1
+flexWrap:"nowrap",
+
+gap:0.5,
+
+flexShrink:0
 
 }}
 
 >
 
-{
-    renderTeeth(upperLeft)
-}
+{renderTeeth(left,isUpper)}
 
 </Box>
-
-
 
 
 
 </Box>
 
 
+);
 
 
+
+
+
+
+
+
+
+return (
+
+
+<Box
+
+sx={{
+
+width:"100%",
+
+background:"#fff",
+
+borderRadius:3,
+
+p:3,
+
+boxSizing:"border-box",
+
+overflow:"hidden"
+
+}}
+
+>
+
+
+<Typography
+
+textAlign="center"
+
+fontSize={22}
+
+fontWeight={800}
+
+color="#092c57"
+
+>
+
+Dental Chart
+
+</Typography>
+
+
+
+<Typography
+
+textAlign="center"
+
+fontSize={13}
+
+color="#718096"
+
+mb={3}
+
+>
+
+Clinical Odontogram
+
+<br/>
+
+Patient Dental Chart
+
+</Typography>
+
+
+
+
+
+
+<Typography
+
+textAlign="center"
+
+fontWeight={800}
+
+color="#092c57"
+
+mb={2}
+
+>
+
+MAXILLARY (UPPER)
+
+</Typography>
+
+
+
+<ToothRow
+
+right={upperRight}
+
+left={upperLeft}
+
+isUpper={true}
+
+/>
 
 
 
@@ -294,19 +349,13 @@ my:4
 
 
 
-
-{/* LOWER */}
-
-
-
-
 <Typography
 
 textAlign="center"
 
-fontSize={12}
+fontWeight={800}
 
-color="#718096"
+color="#092c57"
 
 mb={2}
 
@@ -318,119 +367,18 @@ MANDIBULAR (LOWER)
 
 
 
+<ToothRow
 
+right={lowerRight}
 
+left={lowerLeft}
 
-
-
-<Box
-
-sx={{
-
-display:"flex",
-
-justifyContent:"center",
-
-alignItems:"center",
-
-width:"100%",
-
-overflow:"auto",
-
-gap:2
-
-}}
-
->
-
-
-
-
-
-
-<Box
-
-sx={{
-
-display:"flex",
-
-flexDirection:"row",
-
-gap:1
-
-}}
-
->
-
-{
-    renderTeeth(lowerRight)
-}
-
-</Box>
-
-
-
-
-
-
-
-<Box
-
-sx={{
-
-height:80,
-
-width:"2px",
-
-background:"#ddd",
-
-mx:2
-
-}}
+isUpper={false}
 
 />
 
 
 
-
-
-
-
-<Box
-
-sx={{
-
-display:"flex",
-
-flexDirection:"row",
-
-gap:1
-
-}}
-
->
-
-{
-    renderTeeth(lowerLeft)
-}
-
-</Box>
-
-
-
-
-
-</Box>
-
-
-
-
-
-
-
-
-
-{/* CONDITION PANEL */}
 
 
 
@@ -438,47 +386,19 @@ gap:1
 
 <ToothPanel
 
-
 tooth={selectedTooth}
 
+selectedSurface={selectedSurface}
 
+setSelectedSurface={setSelectedSurface}
 
-condition={
+setCondition={updateCondition}
 
-    selectedTooth
+getCondition={(tooth,surface)=>
 
-    ?
-
-    toothConditions[selectedTooth] || "healthy"
-
-    :
-
-    null
+conditions[tooth]?.[surface]
 
 }
-
-
-
-
-setCondition={(value)=>{
-
-
-    setToothConditions(prev=>({
-
-
-        ...prev,
-
-
-        [selectedTooth]:value
-
-
-    }));
-
-
-
-}}
-
-
 
 />
 
@@ -486,15 +406,15 @@ setCondition={(value)=>{
 
 
 
+<ConditionLegend />
+
 
 
 
 </Box>
 
 
-
-)
-
+);
 
 
 }

@@ -2,158 +2,241 @@ import { Grid, Paper, Typography, Box } from "@mui/material";
 import { PersonAdd, CalendarMonth } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 
+
 const actions = [
     ["Add Patient", PersonAdd, "/Patients/AddPatient"],
     ["Schedule Appointment", CalendarMonth, "/Schedule"],
 ];
 
-export default function QuickActions() {
 
-    return (
 
-        <Grid
-            container
-            spacing={5}
-            mt={5}
-            sx={{
-                p: 3,
-                justifyContent: "center",
-                alignItems: "center"
-            }}
-        >
+export default function QuickActions(){
 
-            {
-                actions.map(([name, Icon, route]) => (
 
-                    <Grid
-                        item
-                        xs="auto"
-                        key={name}
-                    >
+return (
 
-                        <Link
-                            to={route}
-                            style={{
-                                textDecoration: "none"
-                            }}
-                        >
 
-                            <Paper
+<Grid
 
-                                sx={{
+container
 
-                                    width: 250,
-                                    height: 150,
+spacing={3}
 
-                                    borderRadius: 3,
+mt={4}
 
-                                    display: "flex",
+sx={{
 
-                                    flexDirection: "column",
+    width:"100%",
 
-                                    alignItems: "center",
+    justifyContent:"flex-start",
 
-                                    justifyContent: "center",
+    alignItems:"center"
 
-                                    gap: 1.5,
+}}
 
-                                    border: "1px solid #e2eaf3",
+>
 
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
 
-                                    cursor: "pointer",
+{
 
-                                    transition: "0.3s",
+actions.map(([name, Icon, route])=>(
 
-                                    "&:hover": {
 
-                                        background: "#f8fbff",
+<Grid
 
-                                        borderColor: "#1976d2",
+item
 
-                                        transform: "translateY(-3px)"
+xs={12}
 
-                                    }
+sm={6}
 
-                                }}
+md="auto"
 
-                            >
+key={name}
 
+>
 
-                                <Box
 
-                                    sx={{
+<Link
 
-                                        width: 55,
+to={route}
 
-                                        height: 55,
+style={{
 
-                                        borderRadius: "50%",
+textDecoration:"none"
 
-                                        background: "#eaf3ff",
+}}
 
-                                        display: "flex",
+>
 
-                                        alignItems: "center",
 
-                                        justifyContent: "center"
+<Paper
 
-                                    }}
 
-                                >
+sx={{
 
-                                    <Icon
 
-                                        sx={{
+width:250,
 
-                                            color: "#C9A227",
+height:150,
 
-                                            fontSize: 28
 
-                                        }}
+borderRadius:3,
 
-                                    />
 
-                                </Box>
+display:"flex",
 
 
+flexDirection:"column",
 
-                                <Typography
 
-                                    sx={{
+alignItems:"center",
 
-                                        fontSize: 13,
 
-                                        fontWeight: 600,
+justifyContent:"center",
 
-                                        color: "#092c57",
 
-                                        textAlign: "center",
+gap:1.5,
 
-                                        whiteSpace: "nowrap"
 
-                                    }}
+border:"1px solid #e2eaf3",
 
-                                >
 
-                                    {name}
+boxShadow:"0 2px 8px rgba(0,0,0,0.08)",
 
-                                </Typography>
 
+cursor:"pointer",
 
-                            </Paper>
 
+transition:"0.3s",
 
-                        </Link>
 
 
-                    </Grid>
+"&:hover":{
 
-                ))
-            }
 
+background:"#f8fbff",
 
-        </Grid>
 
-    );
+borderColor:"#C9A227",
+
+
+transform:"translateY(-3px)"
+
+
+}
+
+
+}}
+
+
+
+>
+
+
+<Box
+
+
+sx={{
+
+
+width:55,
+
+height:55,
+
+borderRadius:"50%",
+
+background:"#eaf3ff",
+
+display:"flex",
+
+alignItems:"center",
+
+justifyContent:"center"
+
+}}
+
+
+>
+
+
+<Icon
+
+sx={{
+
+color:"#C9A227",
+
+fontSize:28
+
+}}
+
+/>
+
+
+</Box>
+
+
+
+
+
+<Typography
+
+
+sx={{
+
+
+fontSize:14,
+
+
+fontWeight:700,
+
+
+color:"#092c57",
+
+
+textAlign:"center",
+
+
+whiteSpace:"nowrap"
+
+
+}}
+
+
+>
+
+{name}
+
+</Typography>
+
+
+
+
+
+</Paper>
+
+
+
+</Link>
+
+
+
+</Grid>
+
+
+
+))
+
+
+}
+
+
+
+</Grid>
+
+
+
+);
+
+
 }

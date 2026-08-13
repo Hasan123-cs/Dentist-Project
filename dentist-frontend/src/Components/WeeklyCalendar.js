@@ -3,12 +3,16 @@ import {
     Paper
 } from "@mui/material";
 
+
 import { useState } from "react";
+
 
 import AppointmentCard from "../Components/AppointmentCard";
 
 
+
 const times = [
+
     "09:00",
     "10:00",
     "11:00",
@@ -18,402 +22,603 @@ const times = [
     "15:00",
     "16:00",
     "17:00"
+
 ];
 
 
+
+
+
 export default function WeeklyCalendar({
-    currentDate
+
+    currentDate,
+
+    view
+
 }) {
 
 
-    const [draggedAppointment, setDraggedAppointment] = useState(null);
 
+const [draggedAppointment,setDraggedAppointment] = useState(null);
 
 
-    const [appointments, setAppointments] = useState([
 
-        {
-            id:1,
-            day:0,
-            time:"09:00",
-            patient:"Jane Smith",
-            treatment:"Cleaning",
-            status:"confirmed"
-        },
 
 
-        {
-            id:2,
-            day:0,
-            time:"11:00",
-            patient:"John Miller",
-            treatment:"Root Canal",
-            status:"scheduled"
-        },
+const [appointments,setAppointments] = useState([
 
 
-        {
-            id:3,
-            day:1,
-            time:"10:00",
-            patient:"Sarah Johnson",
-            treatment:"Crown",
-            status:"completed"
-        },
+{
+id:1,
+day:0,
+time:"09:00",
+patient:"Jane Smith",
+treatment:"Cleaning",
+status:"confirmed"
+},
 
 
-        {
-            id:4,
-            day:2,
-            time:"13:00",
-            patient:"David Brown",
-            treatment:"Implant",
-            status:"confirmed"
-        },
+{
+id:2,
+day:0,
+time:"11:00",
+patient:"John Miller",
+treatment:"Root Canal",
+status:"scheduled"
+},
 
 
-        {
-            id:5,
-            day:4,
-            time:"15:00",
-            patient:"Michael Jones",
-            treatment:"Filling",
-            status:"scheduled"
-        },
+{
+id:3,
+day:1,
+time:"10:00",
+patient:"Sarah Johnson",
+treatment:"Crown",
+status:"completed"
+},
 
 
-        {
-            id:6,
-            day:6,
-            time:"12:00",
-            patient:"Robert Davis",
-            treatment:"Cleaning",
-            status:"completed"
-        },
+{
+id:4,
+day:2,
+time:"13:00",
+patient:"David Brown",
+treatment:"Implant",
+status:"confirmed"
+},
 
 
-        // TEST SAME TIME
-        {
-            id:7,
-            day:0,
-            time:"09:00",
-            patient:"Anna White",
-            treatment:"Crown",
-            status:"scheduled"
-        }
+{
+id:5,
+day:4,
+time:"15:00",
+patient:"Michael Jones",
+treatment:"Filling",
+status:"scheduled"
+},
 
-    ]);
 
+{
+id:6,
+day:6,
+time:"12:00",
+patient:"Robert Davis",
+treatment:"Cleaning",
+status:"completed"
+},
 
 
+{
+id:7,
+day:0,
+time:"09:00",
+patient:"Anna White",
+treatment:"Crown",
+status:"scheduled"
+}
 
-    const startOfWeek =
-        currentDate
-        .startOf("week")
-        .add(1,"day");
 
 
+]);
 
-    const days =
-        Array.from(
-            {length:7},
-            (_,i)=>startOfWeek.add(i,"day")
-        );
 
 
 
 
 
-    return (
 
-        <Paper
 
-            sx={{
-                mt:3,
-                borderRadius:4,
-                overflow:"hidden",
-                border:"1px solid #eee3c5"
-            }}
 
-        >
+const startOfWeek = currentDate
+.startOf("week")
+.add(1,"day");
 
 
 
-            {/* HEADER */}
 
-            <Box
 
-                sx={{
-                    display:"grid",
-                    gridTemplateColumns:
-                    "80px repeat(7,1fr)"
-                }}
 
-            >
+let days=[];
 
-                <Box />
 
 
-                {
-                    days.map(day=>(
+if(view==="day"){
 
-                        <Box
 
-                            key={day.format()}
+days=[
 
-                            sx={{
-                                p:2,
-                                textAlign:"center",
-                                borderLeft:
-                                "1px solid #eee3c5",
-                                fontWeight:700
-                            }}
+currentDate
 
-                        >
+];
 
-                            {day.format("ddd")}
 
-                            <br/>
+}
 
-                            {day.format("D")}
 
+else if(view==="3days"){
 
-                        </Box>
 
-                    ))
-                }
+days=[
 
+currentDate,
 
-            </Box>
+currentDate.add(1,"day"),
 
+currentDate.add(2,"day")
 
+];
 
 
+}
 
 
-            {/* BODY */}
+else{
 
 
+days=
 
-            {
-                times.map(time=>(
+Array.from(
 
+{length:7},
 
-                    <Box
+(_,i)=>
 
-                        key={time}
+startOfWeek.add(i,"day")
 
-                        sx={{
-                            display:"grid",
-                            gridTemplateColumns:
-                            "80px repeat(7,1fr)",
-                            height:80
-                        }}
+);
 
-                    >
 
+}
 
 
-                        {/* TIME */}
 
-                        <Box
 
-                            sx={{
-                                display:"flex",
-                                justifyContent:"center",
-                                alignItems:"flex-start",
-                                pt:1,
-                                fontSize:14
-                            }}
 
-                        >
 
-                            {time}
 
-                        </Box>
 
 
+return (
 
 
+<Paper
 
 
-                        {
-                            days.map((day,index)=>{
+sx={{
 
 
+mt:3,
 
-                                const cellAppointments =
-                                    appointments.filter(
+borderRadius:4,
 
-                                        item =>
-                                        item.day === index &&
-                                        item.time === time
+overflow:"hidden",
 
-                                    );
+border:"1px solid #eee3c5",
 
+background:"#fff"
 
+}}
 
 
-                                return (
+>
 
 
-                                    <Box
 
 
-                                        key={index}
 
 
 
-                                        onDragOver={(e)=>{
-                                            e.preventDefault();
-                                        }}
+{/* HEADER */}
 
 
 
+<Box
 
-                                        onDrop={()=>{
 
+sx={{
 
-                                            if(!draggedAppointment)
-                                                return;
 
+display:"grid",
 
+gridTemplateColumns:
 
-                                            setAppointments(prev =>
+`80px repeat(${days.length},1fr)`
 
 
-                                                prev.map(item=>
+}}
 
 
-                                                    item.id === draggedAppointment.id
+>
 
-                                                    ?
 
-                                                    {
-                                                        ...item,
-                                                        day:index,
-                                                        time:time
-                                                    }
 
-                                                    :
+<Box/>
 
-                                                    item
 
 
-                                                )
 
-                                            );
+{
 
+days.map(day=>(
 
 
-                                            setDraggedAppointment(null);
+<Box
 
 
-                                        }}
+key={day.format()}
 
 
+sx={{
 
 
+p:2,
 
+textAlign:"center",
 
-                                        sx={{
+borderLeft:"1px solid #eee3c5",
 
-                                            borderLeft:
-                                            "1px solid #eee3c5",
+fontWeight:700
 
-                                            borderTop:
-                                            "1px solid #eee3c5",
+}}
 
-                                            p:0.5,
 
-                                            display:"flex",
+>
 
-                                            flexDirection:"row",
 
-                                            gap:0.5,
+{day.format("ddd")}
 
-                                            overflow:"hidden"
+<br/>
 
-                                        }}
+{day.format("D")}
 
 
-                                    >
 
+</Box>
 
 
 
+))
 
-                                        {
-                                            cellAppointments.map(app=>(
 
+}
 
-                                                <Box
 
-                                                    key={app.id}
 
-                                                    sx={{
 
-                                                        width:
-                                                        `${100 / cellAppointments.length}%`
+</Box>
 
-                                                    }}
 
-                                                >
 
 
-                                                    <AppointmentCard
 
 
-                                                        appointment={app}
 
 
 
-                                                        onDragStart={(appointment)=>{
+{/* BODY */}
 
-                                                            setDraggedAppointment(
-                                                                appointment
-                                                            );
 
-                                                        }}
 
+{
 
 
-                                                    />
+times.map(time=>(
 
 
-                                                </Box>
 
+<Box
 
-                                            ))
-                                        }
 
+key={time}
 
 
+sx={{
 
-                                    </Box>
 
+display:"grid",
 
-                                )
+gridTemplateColumns:
 
+`80px repeat(${days.length},1fr)`,
 
+height:80
 
-                            })
-                        }
 
+}}
 
 
+>
 
-                    </Box>
 
 
-                ))
-            }
 
 
 
+{/* TIME */}
 
-        </Paper>
 
-    );
+
+<Box
+
+
+sx={{
+
+
+display:"flex",
+
+justifyContent:"center",
+
+alignItems:"flex-start",
+
+pt:1,
+
+fontSize:14
+
+
+}}
+
+
+>
+
+
+{time}
+
+
+</Box>
+
+
+
+
+
+
+
+
+{
+
+days.map((day,index)=>{
+
+
+
+const cellAppointments =
+
+appointments.filter(
+
+item=>
+
+item.day===index &&
+
+item.time===time
+
+);
+
+
+
+
+
+return (
+
+
+<Box
+
+
+key={index}
+
+
+
+
+onDragOver={(e)=>{
+
+e.preventDefault();
+
+}}
+
+
+
+
+
+
+onDrop={()=>{
+
+
+
+if(!draggedAppointment)
+
+return;
+
+
+
+
+setAppointments(prev=>
+
+prev.map(item=>
+
+item.id===draggedAppointment.id
+
+?
+
+{
+
+...item,
+
+day:index,
+
+time:time
+
+}
+
+:
+
+item
+
+)
+
+);
+
+
+
+setDraggedAppointment(null);
+
+
+
+}}
+
+
+
+
+
+sx={{
+
+
+borderLeft:
+
+"1px solid #eee3c5",
+
+
+borderTop:
+
+"1px solid #eee3c5",
+
+
+p:0.5,
+
+
+display:"flex",
+
+
+gap:0.5,
+
+
+overflow:"hidden"
+
+
+}}
+
+
+>
+
+
+
+
+{
+
+
+cellAppointments.map(app=>(
+
+
+<Box
+
+
+key={app.id}
+
+
+sx={{
+
+
+width:
+
+`${100 / cellAppointments.length}%`
+
+
+}}
+
+
+>
+
+
+<AppointmentCard
+
+
+appointment={app}
+
+
+
+onDragStart={(appointment)=>{
+
+
+setDraggedAppointment(
+
+appointment
+
+);
+
+
+}}
+
+
+
+/>
+
+
+
+</Box>
+
+
+
+))
+
+
+}
+
+
+
+
+
+</Box>
+
+
+)
+
+
+
+})
+
+
+}
+
+
+
+
+
+
+
+
+</Box>
+
+
+))
+
+
+}
+
+
+
+
+
+
+</Paper>
+
+
+);
+
 
 }

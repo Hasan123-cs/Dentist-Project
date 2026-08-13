@@ -13,13 +13,15 @@ import {
   CalendarMonth
 } from "@mui/icons-material";
 
-import dayjs from "dayjs";
-
 
 
 export default function CalendarToolbar({
+
   currentDate,
-  setCurrentDate
+  setCurrentDate,
+  view,
+  setView
+
 }) {
 
 
@@ -27,7 +29,6 @@ export default function CalendarToolbar({
 const startOfWeek = currentDate
   .startOf("week")
   .add(1,"day");
-
 
 
 const endOfWeek = startOfWeek
@@ -66,11 +67,15 @@ justifyContent="space-between"
 
 alignItems="center"
 
+flexWrap="wrap"
+
+gap={2}
+
 >
 
 
 
-{/* Left */}
+
 
 <Box
 
@@ -108,7 +113,6 @@ Calendar View
 </Typography>
 
 
-
 </Box>
 
 
@@ -116,7 +120,8 @@ Calendar View
 
 
 
-{/* Date navigation */}
+
+
 
 <Box
 
@@ -127,7 +132,6 @@ alignItems="center"
 gap={2}
 
 >
-
 
 
 <IconButton
@@ -158,6 +162,8 @@ border:"1px solid #eee3c5"
 
 
 
+
+
 <Typography
 
 fontWeight={700}
@@ -176,6 +182,7 @@ color="#3d2f12"
 
 
 </Typography>
+
 
 
 
@@ -207,7 +214,6 @@ border:"1px solid #eee3c5"
 </IconButton>
 
 
-
 </Box>
 
 
@@ -216,7 +222,7 @@ border:"1px solid #eee3c5"
 
 
 
-{/* View buttons */}
+
 
 <Box
 
@@ -227,11 +233,28 @@ gap={1}
 >
 
 
+
 <Button
+
+onClick={()=>setView("day")}
 
 sx={{
 
-color:"#8a7a55"
+color:view==="day" ? "#fff" : "#8a7a55",
+
+background:
+
+view==="day"
+
+?
+
+"#C9A227"
+
+:
+
+"transparent",
+
+fontWeight:700
 
 }}
 
@@ -243,11 +266,31 @@ Day
 
 
 
+
+
+
+
 <Button
+
+onClick={()=>setView("3days")}
 
 sx={{
 
-color:"#8a7a55"
+color:view==="3days" ? "#fff" : "#8a7a55",
+
+background:
+
+view==="3days"
+
+?
+
+"#C9A227"
+
+:
+
+"transparent",
+
+fontWeight:700
 
 }}
 
@@ -260,13 +303,30 @@ color:"#8a7a55"
 
 
 
+
+
+
+
+
 <Button
+
+onClick={()=>setView("week")}
 
 sx={{
 
-background:"#C9A227",
+color:view==="week" ? "#fff" : "#8a7a55",
 
-color:"#fff",
+background:
+
+view==="week"
+
+?
+
+"#C9A227"
+
+:
+
+"transparent",
 
 fontWeight:700,
 
@@ -287,17 +347,19 @@ Week
 
 
 
-</Box>
-
-
-
-
 
 </Box>
 
+
+
+
+
+
+</Box>
 
 
 </Paper>
+
 
 )
 

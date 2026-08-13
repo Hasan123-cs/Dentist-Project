@@ -1,116 +1,217 @@
 import "./App.css";
 
+
 import {
-    BrowserRouter,
-    Routes,
-    Route,
-    Navigate
+
+BrowserRouter,
+
+Routes,
+
+Route,
+
+Navigate
+
 } from "react-router-dom";
 
 
-import NewAppointment from "./Pages/NewAppointment";
+
 import Login from "./Components/Login";
 
 
 import DentistDashboard from "./Pages/DentistDashboard";
+
 import Appointments from "./Pages/Appointments";
+
+import NewAppointment from "./Pages/NewAppointment";
+
 import Patients from "./Pages/Patients";
+
 import PatientProfile from "./Components/PatientProfile";
 
+import Treatments from "./Pages/Treatments";
 
 
-function App() {
-
-
-    return (
-
-        <div className="App">
-
-
-            <BrowserRouter>
-
-
-                <Routes>
-
-
-
-                    {/* Login */}
-
-                    <Route
-                        path="/"
-                        element={<Login />}
-                    />
-
-
-
-
-                    {/* Dashboard */}
-
-                    <Route
-                        path="/dashboard"
-                        element={<DentistDashboard />}
-                    />
+import MainLayout from "./Layout/MainLayout";
 
 
 
 
 
-                    {/* Appointments */}
-
-                    <Route
-                        path="/appointments"
-                        element={<Appointments />}
-                    />
+function App(){
 
 
-                    <Route
-                        path="/appointments/new"
-                        element={<NewAppointment />}
-                    />
+
+return (
+
+
+<div className="App">
+
+
+
+<BrowserRouter>
+
+
+
+<Routes>
+
+
+
+
+
+{/* LOGIN */}
+
+
+
+<Route
+
+path="/"
+
+element={<Login />}
+
+/>
 
 
 
 
 
 
-                    {/* Patients */}
 
 
-                    <Route
-                        path="/patients"
-                        element={<Patients />}
-                    />
 
-
-                    <Route
-                        path="/patients/:id"
-                        element={<PatientProfile />}
-                    />
+{/* MAIN APP WITH SIDEBAR */}
 
 
 
 
 
-                    {/* Fallback */}
-
-                    <Route
-                        path="*"
-                        element={
-                            <Navigate to="/dashboard"/>
-                        }
-                    />
+<Route element={<MainLayout />}>
 
 
 
-                </Routes>
 
 
-            </BrowserRouter>
+
+<Route
+
+path="/dashboard"
+
+element={<DentistDashboard />}
+
+/>
 
 
-        </div>
 
-    );
+
+
+
+
+<Route
+
+path="/appointments"
+
+element={<Appointments />}
+
+/>
+
+
+
+
+
+
+
+<Route
+
+path="/appointments/new"
+
+element={<NewAppointment />}
+
+/>
+
+
+
+
+
+
+
+
+<Route
+
+path="/patients"
+
+element={<Patients />}
+
+/>
+
+
+
+
+
+
+
+<Route
+
+path="/patients/:id"
+
+element={<PatientProfile />}
+
+/>
+
+
+
+
+
+
+
+<Route
+
+path="/treatments"
+
+element={<Treatments />}
+
+/>
+
+
+
+
+
+
+
+</Route>
+
+
+
+
+
+
+
+
+
+
+
+<Route
+
+path="*"
+
+element={<Navigate to="/dashboard" />}
+
+/>
+
+
+
+
+
+</Routes>
+
+
+
+</BrowserRouter>
+
+
+
+</div>
+
+
+);
 
 
 }

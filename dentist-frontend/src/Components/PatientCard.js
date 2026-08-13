@@ -4,12 +4,18 @@ import {
     Typography,
     Avatar,
     Chip,
-    IconButton
+    IconButton,
+    Button
 } from "@mui/material";
 
 
 import {
-    MoreHoriz
+    MoreHoriz,
+    Email,
+    Phone,
+    CalendarMonth,
+    Payments,
+    ArrowForward
 } from "@mui/icons-material";
 
 
@@ -19,293 +25,511 @@ import {
 
 
 
+
+
 export default function PatientCard({patient}){
 
 
-    const navigate = useNavigate();
+const navigate = useNavigate();
 
 
 
-    return (
+return (
 
 
-        <Paper
+<Paper
 
 
-            onClick={()=>{
+sx={{
 
-                navigate(`/patients/${patient.id}`);
 
-            }}
+width:"100%",
 
+height:520,
 
-            sx={{
+boxSizing:"border-box",
 
 
-                p:2,
+p:3,
 
 
-                mb:1.5,
+borderRadius:4,
 
 
-                borderRadius:3,
+border:"1px solid #eee3c5",
 
 
-                border:"1px solid #eee3c5",
+background:"#fff",
 
 
-                display:"flex",
+display:"flex",
 
 
-                alignItems:"center",
+flexDirection:"column",
 
 
-                justifyContent:"space-between",
+justifyContent:"space-between",
 
 
-                cursor:"pointer",
 
+cursor:"pointer",
 
-                "&:hover":{
 
-                    boxShadow:"0 4px 15px rgba(0,0,0,.12)"
 
-                }
+transition:"0.25s",
 
 
-            }}
 
+"&:hover":{
 
+boxShadow:"0 10px 25px rgba(0,0,0,.12)",
 
-        >
+transform:"translateY(-4px)"
 
+}
 
 
-            <Box
-                display="flex"
-                alignItems="center"
-                gap={2}
-            >
+}}
 
 
-                <Avatar
 
-                    sx={{
+>
 
-                        background:"#eef2f7",
 
-                        color:"#092c57"
 
-                    }}
 
-                >
 
-                    {
-                        patient.name
-                        .split(" ")
-                        .map(x=>x[0])
-                        .join("")
-                    }
 
+{/* TOP SECTION */}
 
-                </Avatar>
 
 
+<Box>
 
 
 
-                <Box>
+<Box
 
+display="flex"
 
-                    <Typography
+justifyContent="space-between"
 
-                        fontWeight={700}
+alignItems="center"
 
-                        color="#092c57"
+>
 
-                    >
 
-                        {patient.name}
+<Avatar
 
-                    </Typography>
+sx={{
 
+width:70,
 
+height:70,
 
+background:"#eef2f7",
 
-                    <Typography
+color:"#092c57",
 
-                        fontSize={13}
+fontSize:22,
 
-                        color="#718096"
+fontWeight:800
 
-                    >
+}}
 
-                        ✉ {patient.email}   ☎ {patient.phone}
+>
 
-                    </Typography>
 
+{
 
-                </Box>
+patient.name
 
+.split(" ")
 
+.map(x=>x[0])
 
-            </Box>
+.join("")
 
+}
 
 
+</Avatar>
 
 
 
 
-            <Box
 
-                display="flex"
 
-                alignItems="center"
+<IconButton
 
-                gap={4}
+onClick={(e)=>e.stopPropagation()}
 
-            >
+>
 
 
+<MoreHoriz
 
+color="action"
 
-                <Box textAlign="center">
+/>
 
 
-                    <Typography
-                        fontSize={12}
-                        color="#718096"
-                    >
+</IconButton>
 
-                        Last Visit
 
-                    </Typography>
 
+</Box>
 
-                    <Typography>
 
-                        Not scheduled
 
-                    </Typography>
 
 
-                </Box>
 
 
+<Box
 
+textAlign="center"
 
+mt={2}
 
+>
 
 
-                <Box textAlign="center">
 
+<Typography
 
-                    <Typography
-                        fontSize={12}
-                        color="#718096"
-                    >
+fontSize={18}
 
-                        Next Appointment
+fontWeight={800}
 
-                    </Typography>
+color="#092c57"
 
+>
 
-                    <Typography>
+{patient.name}
 
-                        Not scheduled
+</Typography>
 
-                    </Typography>
 
 
-                </Box>
 
 
 
+<Chip
 
+label={patient.status || "Active"}
 
+size="small"
 
+sx={{
 
-                <Box textAlign="center">
+mt:1,
 
 
-                    <Typography
-                        fontSize={12}
-                        color="#718096"
-                    >
+background:
 
-                        Balance
+patient.status==="Inactive"
 
-                    </Typography>
+?
 
+"#9ca3af"
 
-                    <Typography color="green">
+:
 
-                        $0.00
+"#16a34a",
 
-                    </Typography>
 
+color:"#fff",
 
-                </Box>
+fontWeight:700
 
+}}
 
 
+/>
 
 
 
+</Box>
 
-                <Chip
 
-                    label="Active"
 
-                    size="small"
 
-                    sx={{
 
-                        background:"#16a34a",
+{/* CONTACT */}
 
-                        color:"white",
 
-                        fontWeight:700
 
-                    }}
+<Box
 
-                />
+mt={3}
 
+textAlign="center"
 
+>
 
 
 
+<Email
 
+sx={{
 
-                <IconButton
+color:"#C9A227",
 
-                    onClick={(e)=>{
+fontSize:22
 
-                        e.stopPropagation();
+}}
 
-                    }}
+/>
 
-                >
 
-                    <MoreHoriz/>
 
-                </IconButton>
+<Typography
 
+fontSize={14}
 
+mt={1}
 
+>
 
+{patient.email}
 
-            </Box>
+</Typography>
 
 
 
 
 
-        </Paper>
 
 
-    )
+<Phone
 
+sx={{
+
+color:"#C9A227",
+
+fontSize:22,
+
+mt:2
+
+}}
+
+/>
+
+
+
+
+<Typography
+
+fontSize={14}
+
+>
+
+{patient.phone}
+
+</Typography>
+
+
+
+</Box>
+
+
+
+
+
+
+
+{/* INFO */}
+
+
+
+<Box
+
+mt={3}
+
+textAlign="center"
+
+>
+
+
+
+<CalendarMonth
+
+sx={{
+
+color:"#C9A227",
+
+fontSize:22
+
+}}
+
+/>
+
+
+
+<Typography
+
+fontSize={13}
+
+color="#718096"
+
+>
+
+Last Visit
+
+</Typography>
+
+
+
+<Typography
+
+fontWeight={700}
+
+>
+
+{patient.lastVisit || "Not scheduled"}
+
+</Typography>
+
+
+
+
+
+
+<Payments
+
+sx={{
+
+color:"#C9A227",
+
+fontSize:22,
+
+mt:2
+
+}}
+
+/>
+
+
+
+<Typography
+
+fontSize={13}
+
+color="#718096"
+
+>
+
+Balance
+
+</Typography>
+
+
+
+<Typography
+
+fontWeight={700}
+
+color={
+
+patient.balance !== "$0.00"
+
+?
+
+"#d97706"
+
+:
+
+"green"
+
+}
+
+>
+
+{patient.balance || "$0.00"}
+
+</Typography>
+
+
+
+</Box>
+
+
+
+</Box>
+
+
+
+
+
+
+
+{/* BUTTON */}
+
+
+
+<Button
+
+
+fullWidth
+
+
+variant="contained"
+
+
+endIcon={<ArrowForward/>}
+
+
+
+onClick={()=>navigate(`/patients/${patient.id}`)}
+
+
+
+sx={{
+
+
+background:"#C9A227",
+
+
+borderRadius:3,
+
+
+py:1.3,
+
+
+fontWeight:800,
+
+
+fontSize:13,
+
+
+
+"&:hover":{
+
+background:"#b18c1f"
+
+}
+
+
+}}
+
+
+>
+
+
+VIEW PATIENT PROFILE
+
+
+</Button>
+
+
+
+
+
+
+</Paper>
+
+
+)
 
 }
