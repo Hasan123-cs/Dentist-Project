@@ -1,19 +1,25 @@
 import { Box, Typography } from "@mui/material";
-import { useState } from "react";
 
+import { useState } from "react";
 import Tooth from "./Tooth";
 import ToothPanel from "./ToothPanel";
-import ConditionLegend from "./ConditionLegend";
 
 
-export default function DentalChart(){
+
+export default function DentalChart({
+
+    conditions,
+
+    setConditions
+
+}){
+
 
 
 const [selectedTooth,setSelectedTooth]=useState(null);
 
 const [selectedSurface,setSelectedSurface]=useState(null);
 
-const [conditions,setConditions]=useState({});
 
 
 
@@ -30,30 +36,80 @@ const lowerLeft=[31,32,33,34,35,36,37,38];
 
 
 
+
+
 const updateCondition=(surface,value)=>{
 
 
-if(!selectedTooth)
-return;
+    if(!selectedTooth)
+        return;
 
 
-setConditions(prev=>({
 
-...prev,
+    // ROOT CANAL WITHOUT SURFACE
 
-
-[selectedTooth]:{
-
-...(prev[selectedTooth] || {}),
-
-[surface]:value
-
-}
+    if(value==="rootCanal"){
 
 
-}));
+        setConditions(prev=>({
+
+            ...prev,
+
+
+            [selectedTooth]:{
+
+                rootCanal:"Root Canal"
+
+            }
+
+        }));
+
+
+        setSelectedSurface(null);
+
+        return;
+
+    }
+
+
+
+
+
+
+    // OTHER CONDITIONS NEED SURFACE
+
+    if(!surface)
+        return;
+
+
+
+
+    setConditions(prev=>({
+
+
+        ...prev,
+
+
+        [selectedTooth]:{
+
+
+            ...(prev[selectedTooth] || {}),
+
+
+            [surface]:value
+
+
+        }
+
+
+    }));
+
+
 
 };
+
+
+
 
 
 
@@ -80,21 +136,23 @@ conditions={conditions[number] || {}}
 
 
 
+
 onClick={()=>{
 
-setSelectedTooth(number);
+    setSelectedTooth(number);
 
-setSelectedSurface(null);
+    setSelectedSurface(null);
 
 }}
 
 
 
+
 onSurfaceClick={(surface)=>{
 
-setSelectedTooth(number);
+    setSelectedTooth(number);
 
-setSelectedSurface(surface);
+    setSelectedSurface(surface);
 
 }}
 
@@ -114,6 +172,8 @@ setSelectedSurface(surface);
 
 
 
+
+
 const ToothRow=({right,left,isUpper})=>(
 
 
@@ -125,13 +185,15 @@ width:"100%",
 
 display:"flex",
 
+flexDirection:"row",
+
 justifyContent:"center",
 
 alignItems:"flex-start",
 
 flexWrap:"nowrap",
 
-overflow:"hidden",
+overflowX:"auto",
 
 gap:1,
 
@@ -141,6 +203,10 @@ py:2
 
 >
 
+
+
+
+{/* RIGHT SIDE */}
 
 
 <Box
@@ -170,6 +236,10 @@ flexShrink:0
 
 
 
+
+{/* MID LINE */}
+
+
 <Box
 
 sx={{
@@ -194,6 +264,9 @@ flexShrink:0
 
 
 
+{/* LEFT SIDE */}
+
+
 <Box
 
 sx={{
@@ -215,6 +288,8 @@ flexShrink:0
 {renderTeeth(left,isUpper)}
 
 </Box>
+
+
 
 
 
@@ -255,6 +330,8 @@ overflow:"hidden"
 >
 
 
+
+
 <Typography
 
 textAlign="center"
@@ -270,6 +347,9 @@ color="#092c57"
 Dental Chart
 
 </Typography>
+
+
+
 
 
 
@@ -298,6 +378,9 @@ Patient Dental Chart
 
 
 
+
+
+
 <Typography
 
 textAlign="center"
@@ -316,6 +399,10 @@ MAXILLARY (UPPER)
 
 
 
+
+
+
+
 <ToothRow
 
 right={upperRight}
@@ -325,6 +412,11 @@ left={upperLeft}
 isUpper={true}
 
 />
+
+
+
+
+
 
 
 
@@ -341,6 +433,7 @@ my:4
 }}
 
 />
+
 
 
 
@@ -367,6 +460,11 @@ MANDIBULAR (LOWER)
 
 
 
+
+
+
+
+
 <ToothRow
 
 right={lowerRight}
@@ -376,6 +474,9 @@ left={lowerLeft}
 isUpper={false}
 
 />
+
+
+
 
 
 
@@ -394,19 +495,16 @@ setSelectedSurface={setSelectedSurface}
 
 setCondition={updateCondition}
 
-getCondition={(tooth,surface)=>
+getCondition={(tooth,surface)=>{
 
-conditions[tooth]?.[surface]
+return conditions[tooth]?.[surface]
 
-}
+}}
 
 />
 
 
 
-
-
-<ConditionLegend />
 
 
 

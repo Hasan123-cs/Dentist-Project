@@ -3,55 +3,40 @@ import Sidebar from "../Components/Sidebar";
 import { Outlet } from "react-router-dom";
 
 
-export default function Layout(){
+export default function MainLayout(){
 
-return (
+    return (
 
-<Box
+        <Box
+            sx={{
+                display:"flex",
+                width:"100%",
+                minHeight:"100vh",
+                background:"#faf8f2"
+            }}
+        >
 
-sx={{
-display:"flex",
-minHeight:"100vh",
-background:"#faf8f2"
-}}
-
->
-
-
-<Sidebar />
+            <Sidebar />
 
 
+            <Box
+                component="main"
+                sx={{
+                    flexGrow:1,
+                    width:"calc(100% - 280px)",
+                    minWidth:0,
+                    p:4,
+                    boxSizing:"border-box",
+                    background:"#f7fbff"
+                }}
+            >
 
-<Box
+                <Outlet />
 
-component="main"
-
-sx={{
-
-flex:1,
-
-minWidth:0,
-
-p:4,
-
-boxSizing:"border-box",
-
-overflowX:"hidden"
-
-}}
-
->
+            </Box>
 
 
-<Outlet />
+        </Box>
 
-
-</Box>
-
-
-
-</Box>
-
-)
-
+    );
 }

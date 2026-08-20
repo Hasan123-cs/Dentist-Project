@@ -9,555 +9,531 @@ import Analytics from "../Components/Analytics";
 
 
 import { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
 
 
 import {
-  CalendarMonth,
-  AttachMoney,
-  People,
-  Warning,
+    CalendarMonth,
+    AttachMoney,
+    People,
+    Warning,
 } from "@mui/icons-material";
-
 
 
 
 export default function DentistDashboard(){
 
 
+    const navigate = useNavigate();
 
-const navigate = useNavigate();
 
+    const [dashboardData,setDashboardData] = useState(null);
 
+    const [loading,setLoading] = useState(true);
 
-const [dashboardData,setDashboardData] = useState(null);
 
 
-const [loading,setLoading] = useState(true);
+    const token = localStorage.getItem("token");
 
 
 
-const token = localStorage.getItem("token");
 
 
+    useEffect(()=>{
 
 
+        const fetchDashboardData = async()=>{
 
 
+            try{
 
-useEffect(()=>{
 
+                const response = await fetch(
 
-const fetchDashboardData = async()=>{
+                    "https://localhost:7166/api/dashboard",
 
+                    {
 
-try{
+                        headers:{
 
+                            Authorization:`Bearer ${token}`
 
-const response = await fetch(
+                        }
 
-"https://localhost:7166/api/dashboard",
+                    }
 
-{
+                );
 
-headers:{
 
-Authorization:`Bearer ${token}`
 
-}
+                if(!response.ok){
 
-}
 
-);
+                    const errorText = await response.text();
 
+                    console.log(errorText);
 
+                    return;
 
+                }
 
 
-if(!response.ok){
 
 
-const errorText = await response.text();
 
+                const data = await response.json();
 
-console.log(errorText);
 
+                console.log(data);
 
-return;
 
+                setDashboardData(data);
 
-}
 
 
+            }
 
+            catch(error){
 
 
-const data = await response.json();
+                navigate(
+                    "/error?message=" +
+                    encodeURIComponent(error.message)
+                );
 
 
-console.log(data);
+            }
 
+            finally{
 
-setDashboardData(data);
+                setLoading(false);
 
+            }
 
 
-}
+        };
 
-catch(error){
 
 
-navigate(
+        fetchDashboardData();
 
-"/error?message=" +
 
-encodeURIComponent(error.message)
 
-);
+    },[navigate,token]);
 
 
-}
 
-finally{
 
 
-setLoading(false);
 
 
-}
+    if(loading){
 
 
+        return (
 
-};
+            <Box
 
+                p={4}
 
+                color="#092c57"
 
-fetchDashboardData();
+            >
 
+                Loading Dashboard...
 
 
-},[navigate,token]);
+            </Box>
 
+        );
 
 
+    }
 
 
 
 
 
-if(loading){
 
 
-return (
+    return (
 
-<Box
 
-p={4}
+        <Box
 
-color="#092c57"
 
->
+            sx={{
 
-Loading Dashboard...
 
+                width:"100%",
 
-</Box>
 
-);
+                background:"#f7fbff",
 
 
-}
+                boxSizing:"border-box",
 
 
+                overflow:"hidden"
 
 
+            }}
 
 
 
+        >
 
-return (
 
 
-<Box
 
 
-sx={{
 
+            {/* HEADER */}
 
-width:"100%",
 
+            <Header
 
-minHeight:"100vh",
+                dashboardData={dashboardData}
 
+            />
 
-background:"#f7fbff",
 
 
-boxSizing:"border-box"
 
 
-}}
 
 
 
->
 
+            {/* STAT CARDS */}
 
 
 
+            <Grid
 
 
+                container
 
-{/* HEADER */}
 
+                spacing={3}
 
 
-<Header
+                mt={3}
 
-dashboardData={dashboardData}
 
-/>
+                sx={{
 
 
+                    width:"100%",
 
 
+                    marginLeft:0
 
 
+                }}
 
 
 
-{/* STAT CARDS */}
+            >
 
 
 
-<Grid
 
 
-container
+                <Grid
 
+                    item
 
-spacing={3}
+                    xs={12}
 
+                    sm={6}
 
-mt={3}
+                    lg={3}
 
+                >
 
-sx={{
 
+                    <StatCard
 
-width:"100%",
 
+                        icon={<CalendarMonth />}
 
-alignItems:"stretch"
 
+                        title="Today's Appointments"
 
-}}
 
+                        value={
 
+                            dashboardData?.todaysAppointments || 0
 
->
+                        }
 
 
+                        description={
 
+                            `${dashboardData?.confirmedAppointments || 0} confirmed ${
+                                dashboardData?.pendingAppointments || 0
+                            } pending`
 
+                        }
 
-<Grid
 
-item
+                    />
 
-xs={12}
 
-sm={6}
+                </Grid>
 
-lg={3}
 
->
 
 
-<StatCard
 
 
-icon={<CalendarMonth />}
 
 
-title="Today's Appointments"
+                <Grid
 
+                    item
 
-value={
+                    xs={12}
 
-dashboardData?.todaysAppointments || 0
+                    sm={6}
 
-}
+                    lg={3}
 
+                >
 
-description={
 
-`${dashboardData?.confirmedAppointments || 0} confirmed ${
-dashboardData?.pendingAppointments || 0
-} pending`
+                    <StatCard
 
-}
 
+                        icon={<AttachMoney />}
 
-/>
 
+                        title="Weekly Revenue"
 
-</Grid>
 
+                        value={
 
+                            dashboardData?.weeklyRevenue || 0
 
+                        }
 
 
+                        description="vs last week"
 
 
+                    />
 
 
-<Grid
+                </Grid>
 
-item
 
-xs={12}
 
-sm={6}
 
-lg={3}
 
->
 
 
-<StatCard
 
 
-icon={<AttachMoney />}
+                <Grid
 
+                    item
 
-title="Weekly Revenue"
+                    xs={12}
 
+                    sm={6}
 
-value={
+                    lg={3}
 
-dashboardData?.weeklyRevenue || 0
+                >
 
-}
 
+                    <StatCard
 
-description="vs last week"
 
+                        icon={<People />}
 
-/>
 
+                        title="Total Patients"
 
-</Grid>
 
+                        value={
 
+                            dashboardData?.totalPatients || 0
 
+                        }
 
 
+                        description={
 
+                            `${dashboardData?.newPatientsMonth || 0} new this month`
 
+                        }
 
 
-<Grid
+                    />
 
-item
 
-xs={12}
+                </Grid>
 
-sm={6}
 
-lg={3}
 
->
 
 
-<StatCard
 
 
-icon={<People />}
 
 
-title="Total Patients"
+                <Grid
 
+                    item
 
-value={
+                    xs={12}
 
-dashboardData?.totalPatients || 0
+                    sm={6}
 
-}
+                    lg={3}
 
+                >
 
-description={
 
-`${dashboardData?.newPatientsMonth || 0} new this month`
+                    <StatCard
 
-}
 
+                        icon={<Warning />}
 
-/>
 
+                        title="Outstanding Balance"
 
-</Grid>
 
+                        value={
 
+                            dashboardData?.outstandingBalance || 0
 
+                        }
 
 
+                        description="9 outstanding invoices"
 
 
+                    />
 
 
-<Grid
+                </Grid>
 
-item
 
-xs={12}
 
-sm={6}
 
-lg={3}
+            </Grid>
 
->
 
 
-<StatCard
 
 
-icon={<Warning />}
 
 
-title="Outstanding Balance"
 
 
-value={
+            {/* QUICK ACTIONS */}
 
-dashboardData?.outstandingBalance || 0
 
-}
 
+            <Box
 
-description="9 outstanding invoices"
+                mt={4}
 
+                width="100%"
 
-/>
+            >
 
 
-</Grid>
+                <QuickActions />
 
 
+            </Box>
 
 
 
-</Grid>
 
 
 
 
 
 
+            {/* SCHEDULE */}
 
 
 
-{/* QUICK ACTIONS */}
+            <Box
 
+                mt={4}
 
+                width="100%"
 
-<Box
+            >
 
-mt={4}
 
-width="100%"
+                <Schedule
 
->
 
+                    ScheduleList={
 
-<QuickActions />
+                        dashboardData?.schedule || []
 
+                    }
 
-</Box>
 
+                />
 
 
+            </Box>
 
 
 
 
 
 
-{/* SCHEDULE */}
 
 
 
-<Box
+            {/* ANALYTICS */}
 
-mt={4}
 
-width="100%"
 
->
+            <Box
 
+                mt={4}
 
-<Schedule
+                width="100%"
 
+            >
 
-ScheduleList={
 
-dashboardData?.schedule || []
+                <Analytics
 
-}
 
+                    analysisList={
 
-/>
+                        dashboardData?.analytics || {}
 
+                    }
 
-</Box>
 
+                />
 
 
+            </Box>
 
 
 
 
 
 
-{/* ANALYTICS */}
 
+        </Box>
 
 
-<Box
-
-mt={4}
-
-width="100%"
-
->
-
-
-<Analytics
-
-
-analysisList={
-
-dashboardData?.analytics || {}
-
-}
-
-
-/>
-
-
-</Box>
-
-
-
-
-
-
-
-</Box>
-
-
-);
+    );
 
 
 }

@@ -11,6 +11,9 @@ import {
 } from "@mui/material";
 
 
+import ClinicalSummary from "../Components/ClinicalSummary";
+
+
 import {
     useNavigate,
     useParams
@@ -36,38 +39,37 @@ import ConditionLegend from "../Components/ConditionLegend";
 
 
 
-const patients = [
+const patients=[
 
 {
-    id:1,
-    name:"Amanda White",
-    email:"amanda.white@email.com",
-    phone:"+1 555 456-8901"
+id:1,
+name:"Amanda White",
+email:"amanda.white@email.com",
+phone:"+1 555 456-8901"
 },
 
 {
-    id:2,
-    name:"Ashley Young",
-    email:"ashley.young@email.com",
-    phone:"+1 555 012-4567"
+id:2,
+name:"Ashley Young",
+email:"ashley.young@email.com",
+phone:"+1 555 012-4567"
 },
 
 {
-    id:3,
-    name:"Brian Lewis",
-    email:"brian.lewis@email.com",
-    phone:"+1 555 789-1234"
+id:3,
+name:"Brian Lewis",
+email:"brian.lewis@email.com",
+phone:"+1 555 789-1234"
 },
 
 {
-    id:4,
-    name:"Christopher Taylor",
-    email:"chris.taylor@email.com",
-    phone:"+1 555 567-9012"
+id:4,
+name:"Christopher Taylor",
+email:"chris.taylor@email.com",
+phone:"+1 555 567-9012"
 }
 
 ];
-
 
 
 
@@ -88,11 +90,15 @@ const navigate=useNavigate();
 const [tab,setTab]=useState(0);
 
 
+const [conditions,setConditions]=useState({});
+
+
+const [notes,setNotes]=useState("");
 
 
 
-const patient = patients.find(
-    p=>p.id===Number(id)
+const patient=patients.find(
+p=>p.id===Number(id)
 );
 
 
@@ -101,7 +107,7 @@ const patient = patients.find(
 
 if(!patient){
 
-return (
+return(
 
 <Box p={4}>
 
@@ -121,7 +127,7 @@ Patient not found
 
 
 
-return (
+return(
 
 <Box
 
@@ -136,7 +142,6 @@ minHeight:"100vh"
 }}
 
 >
-
 
 
 
@@ -168,17 +173,13 @@ mb:3
 
 display="flex"
 
-justifyContent="space-between"
-
 alignItems="center"
+
+justifyContent="space-between"
 
 >
 
 
-
-
-
-{/* PATIENT INFO */}
 
 
 
@@ -189,8 +190,6 @@ display="flex"
 gap={3}
 
 alignItems="center"
-
-flex={1}
 
 >
 
@@ -239,7 +238,7 @@ patient.name
 
 <Typography
 
-fontSize={28}
+fontSize={24}
 
 fontWeight={800}
 
@@ -277,47 +276,41 @@ fontWeight:700
 
 
 
-<Typography
-
-mt={1}
-
-color="#718096"
-
->
+<Typography mt={1}>
 
 Patient ID #{patient.id}
 
 </Typography>
 
 
+</Box>
+
 
 </Box>
 
 
 
-</Box>
 
 
 
 
 
-
-
-
-
-{/* ACTIONS */}
-
+{/* BUTTONS */}
 
 
 <Box
 
-display="flex"
-
-gap={1}
-
 sx={{
 
-marginLeft:"auto"
+flex:1,
+
+display:"flex",
+
+justifyContent:"space-between",
+
+alignItems:"center",
+
+ml:5
 
 }}
 
@@ -326,37 +319,30 @@ marginLeft:"auto"
 
 <Button
 
+variant="contained"
+
 sx={{
 
-color:"#C9A227",
+background:"#C9A227",
 
-fontWeight:700
+fontWeight:700,
+
+position:"absolute",
+
+left:"50%",
+
+transform:"translateX(-50%)"
 
 }}
 
 >
 
-Chairside Mode
+EDIT
 
 </Button>
 
 
 
-<Button
-
-sx={{
-
-color:"#C9A227",
-
-fontWeight:700
-
-}}
-
->
-
-Export PDF
-
-</Button>
 
 
 
@@ -374,36 +360,9 @@ fontWeight:700
 
 >
 
-Back
+BACK
 
 </Button>
-
-
-
-<Button
-
-variant="contained"
-
-sx={{
-
-background:"#C9A227",
-
-fontWeight:700,
-
-"&:hover":{
-
-background:"#b18c1f"
-
-}
-
-}}
-
->
-
-Edit
-
-</Button>
-
 
 
 </Box>
@@ -411,9 +370,7 @@ Edit
 
 
 
-
 </Box>
-
 
 
 </Paper>
@@ -435,7 +392,9 @@ sx={{
 
 borderRadius:4,
 
-border:"1px solid #eee3c5"
+border:"1px solid #eee3c5",
+
+mb:4
 
 }}
 
@@ -481,6 +440,7 @@ background:"#C9A227"
 
 
 
+
 {/* OVERVIEW */}
 
 
@@ -496,23 +456,19 @@ container
 
 spacing={3}
 
-mt={3}
+mt={5}
 
-justifyContent="center"
+sx={{
 
-alignItems="stretch"
+width:"100%",
+
+justifyContent:"center",
+
+alignItems:"stretch"
+
+}}
 
 >
-
-
-
-
-
-
-{/* CONTACT */}
-
-
-
 <Grid
 
 item
@@ -536,26 +492,16 @@ justifyContent:"center"
 
 <CardBox>
 
-
 <Email color="warning"/>
 
-
 <Title>
-
 Contact Information
-
 </Title>
 
 
-
-
 <Typography>
-
 {patient.email}
-
 </Typography>
-
-
 
 
 <Typography mt={1}>
@@ -569,7 +515,6 @@ Contact Information
 </Typography>
 
 
-
 </CardBox>
 
 
@@ -578,12 +523,6 @@ Contact Information
 
 
 
-
-
-
-
-
-{/* PERSONAL */}
 
 
 
@@ -615,20 +554,13 @@ justifyContent:"center"
 
 
 <Title>
-
 Personal Information
-
 </Title>
 
 
-
-
-<Typography mt={1}>
-
+<Typography>
 Gender
-
 </Typography>
-
 
 
 <Typography color="text.secondary">
@@ -636,9 +568,6 @@ Gender
 Not set
 
 </Typography>
-
-
-
 
 
 <Typography mt={1}>
@@ -648,13 +577,11 @@ Birth Date
 </Typography>
 
 
-
 <Typography color="text.secondary">
 
 Not set
 
 </Typography>
-
 
 
 </CardBox>
@@ -665,12 +592,6 @@ Not set
 
 
 
-
-
-
-
-
-{/* FINANCIAL */}
 
 
 
@@ -702,13 +623,8 @@ justifyContent:"center"
 
 
 <Title>
-
 Financial
-
 </Title>
-
-
-
 
 
 <Typography
@@ -727,13 +643,11 @@ $0.00
 
 
 
-
 <Typography color="text.secondary">
 
 Outstanding Balance
 
 </Typography>
-
 
 
 </CardBox>
@@ -744,12 +658,6 @@ Outstanding Balance
 
 
 
-
-
-
-
-
-{/* APPOINTMENTS */}
 
 
 
@@ -781,13 +689,8 @@ justifyContent:"center"
 
 
 <Title>
-
 Appointments
-
 </Title>
-
-
-
 
 
 <Typography
@@ -805,9 +708,6 @@ color="#092c57"
 </Typography>
 
 
-
-
-
 <Typography color="text.secondary">
 
 Upcoming Visits
@@ -815,14 +715,10 @@ Upcoming Visits
 </Typography>
 
 
-
 </CardBox>
 
 
 </Grid>
-
-
-
 
 
 </Grid>
@@ -837,9 +733,7 @@ Upcoming Visits
 
 
 
-
 {/* DENTAL CHART */}
-
 
 
 {
@@ -883,13 +777,121 @@ Dental Chart
 
 
 
-<DentalChart/>
+<DentalChart
+
+conditions={conditions}
+
+setConditions={setConditions}
+
+/>
 
 
 
 
-<ConditionLegend/>
+<ConditionLegend />
 
+
+
+
+
+<ClinicalSummary
+
+conditions={conditions}
+
+/>
+
+
+
+
+
+
+<Paper
+
+sx={{
+
+mt:3,
+
+p:3,
+
+borderRadius:4,
+
+border:"1px solid #eee3c5"
+
+}}
+
+>
+
+
+<Typography
+
+fontSize={20}
+
+fontWeight={800}
+
+color="#092c57"
+
+>
+
+Patient Notes
+
+</Typography>
+
+
+
+
+<Box
+
+component="textarea"
+
+value={notes}
+
+onChange={(e)=>setNotes(e.target.value)}
+
+placeholder="Write notes about patient..."
+
+sx={{
+
+width:"100%",
+
+minHeight:"120px",
+
+mt:2,
+
+p:2,
+
+borderRadius:2,
+
+border:"1px solid #ddd",
+
+fontFamily:"inherit"
+
+}}
+
+/>
+
+
+
+
+<Button
+
+variant="contained"
+
+sx={{
+
+mt:2,
+
+background:"#C9A227"
+
+}}
+
+>
+
+Save Notes
+
+</Button>
+
+
+</Paper>
 
 
 
@@ -905,9 +907,7 @@ Dental Chart
 
 
 
-
 {/* TREATMENT PLAN */}
-
 
 
 {
@@ -948,14 +948,7 @@ Treatment Plan
 
 
 
-
-<Typography
-
-mt={2}
-
-color="#718096"
-
->
+<Typography mt={2}>
 
 No treatments added yet.
 
@@ -975,9 +968,7 @@ No treatments added yet.
 
 
 
-
 {/* IMAGES */}
-
 
 
 {
@@ -1018,14 +1009,7 @@ Patient Images
 
 
 
-
-<Typography
-
-mt={2}
-
-color="#718096"
-
->
+<Typography mt={2}>
 
 No images available.
 
@@ -1037,9 +1021,6 @@ No images available.
 
 
 }
-
-
-
 
 
 
@@ -1058,65 +1039,40 @@ No images available.
 
 
 
+
 function CardBox({children}){
 
 
-return (
+return(
 
 <Paper
 
 sx={{
 
-
 p:3,
-
 
 width:"260px",
 
-
-height:170,
-
+minHeight:"190px",
+height:"auto",
 
 borderRadius:4,
 
-
 border:"1px solid #eee3c5",
-
 
 display:"flex",
 
-
 flexDirection:"column",
-
 
 justifyContent:"center",
 
-
 alignItems:"center",
-
 
 textAlign:"center",
 
+gap:1.5,
 
-gap:1,
-
-
-transition:"0.3s",
-
-
-
-"&:hover":{
-
-
-transform:"translateY(-5px)",
-
-
-boxShadow:"0 8px 25px rgba(0,0,0,.08)"
-
-
-}
-
-
+boxSizing:"border-box"
 
 }}
 
@@ -1130,7 +1086,6 @@ boxShadow:"0 8px 25px rgba(0,0,0,.08)"
 
 )
 
-
 }
 
 
@@ -1143,7 +1098,7 @@ boxShadow:"0 8px 25px rgba(0,0,0,.08)"
 function Title({children}){
 
 
-return (
+return(
 
 <Typography
 

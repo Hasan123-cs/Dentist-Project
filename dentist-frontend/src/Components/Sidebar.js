@@ -25,7 +25,6 @@ import {
 } from "react-router-dom";
 
 
-
 const menu = [
 
     {
@@ -61,16 +60,10 @@ const menu = [
 ];
 
 
-
-
-
 export default function Sidebar(){
 
-
     const navigate = useNavigate();
-
     const location = useLocation();
-
 
 
     return (
@@ -80,8 +73,8 @@ export default function Sidebar(){
             sx={{
 
                 width:280,
-
                 minWidth:280,
+                flexShrink:0,
 
                 height:"100vh",
 
@@ -94,364 +87,204 @@ export default function Sidebar(){
                 boxSizing:"border-box",
 
                 display:"flex",
+                flexDirection:"column",
 
-                flexDirection:"column"
+                position:"sticky",
+                top:0
 
             }}
 
         >
 
 
-
-
             {/* LOGO */}
 
-
             <Box
-
                 sx={{
-
                     display:"flex",
-
                     alignItems:"center",
-
                     gap:2,
-
                     mb:4
-
                 }}
-
             >
 
-
                 <Box
-
                     sx={{
-
                         width:45,
-
                         height:45,
-
                         borderRadius:3,
-
                         background:"#F8F0D8",
-
                         display:"flex",
-
                         alignItems:"center",
-
                         justifyContent:"center",
-
                         fontSize:25
-
                     }}
-
                 >
-
                     🦷
-
                 </Box>
-
 
 
                 <Box>
 
-
                     <Typography
-
                         fontSize={20}
-
                         fontWeight={800}
-
                         color="#C9A227"
-
                     >
-
                         DentalCare
-
                     </Typography>
 
 
                     <Typography
-
                         fontSize={12}
-
                         color="text.secondary"
-
                     >
-
                         Clinic Management
-
                     </Typography>
-
 
                 </Box>
 
 
             </Box>
-
-
-
-
 
 
 
             {/* DOCTOR */}
 
-
-
             <Box
-
                 sx={{
-
                     background:"#faf7ed",
-
                     borderRadius:4,
-
                     p:2,
-
                     mb:3,
-
                     display:"flex",
-
                     alignItems:"center",
-
                     gap:2
-
                 }}
-
             >
 
-
-
                 <Avatar
-
                     src="https://randomuser.me/api/portraits/men/32.jpg"
-
                     sx={{
-
                         width:55,
-
                         height:55
-
                     }}
-
                 />
-
-
 
 
                 <Box>
 
-
-                    <Typography
-
-                        fontWeight={700}
-
-                    >
-
+                    <Typography fontWeight={700}>
                         Dr. David
-
                     </Typography>
-
 
 
                     <Typography
-
                         fontSize={13}
-
                         color="text.secondary"
-
                     >
-
                         Dentist
-
                     </Typography>
-
 
                 </Box>
 
 
             </Box>
-
-
-
-
-
 
 
 
 
             {/* MENU */}
 
-
-
             <List
-
                 sx={{
-
                     flex:1
-
                 }}
-
             >
 
-
-
                 {
-
                     menu.map((item)=>{
 
-
                         const active =
-
                         location.pathname.startsWith(item.path);
-
 
 
                         return (
 
-
-
                             <ListItemButton
-
 
                                 key={item.name}
 
-
                                 onClick={()=>navigate(item.path)}
-
-
 
                                 sx={{
 
-
-
                                     height:48,
-
 
                                     borderRadius:3,
 
-
                                     mb:1,
 
-
-
                                     background:
-
                                     active
-
                                     ?
-
                                     "#C9A227"
-
                                     :
-
                                     "transparent",
 
 
-
                                     color:
-
                                     active
-
                                     ?
-
                                     "#fff"
-
                                     :
-
                                     "#52677e",
 
 
-
-
                                     "&:hover":{
-
-
                                         background:
-
                                         active
-
                                         ?
-
                                         "#C9A227"
-
                                         :
-
                                         "#faf7ed"
-
                                     }
-
-
 
                                 }}
 
-
-
                             >
-
-
-
 
                                 <ListItemIcon
 
-
                                     sx={{
-
-
                                         minWidth:40,
 
-
                                         color:
-
-
                                         active
-
                                         ?
-
                                         "#fff"
-
                                         :
-
                                         "#8a7a55"
-
-
                                     }}
-
 
                                 >
 
                                     {item.icon}
 
-
                                 </ListItemIcon>
 
 
-
-
-
-
                                 <ListItemText
-
                                     primary={item.name}
-
                                 />
-
-
 
 
                             </ListItemButton>
 
-
-
                         )
 
-
                     })
-
                 }
-
 
 
             </List>
@@ -459,65 +292,40 @@ export default function Sidebar(){
 
 
 
-
-
-
-
-
             {/* LOGOUT */}
-
-
 
             <ListItemButton
 
                 sx={{
-
                     borderRadius:3,
-
                     color:"#d32f2f"
-
                 }}
 
             >
 
-
-
                 <ListItemIcon
 
                     sx={{
-
                         minWidth:40,
-
                         color:"#d32f2f"
-
                     }}
 
                 >
 
-                    <Logout/>
+                    <Logout />
 
                 </ListItemIcon>
 
 
-
                 <ListItemText
-
                     primary="Logout"
-
                 />
-
-
 
             </ListItemButton>
 
 
-
-
-
         </Box>
 
-
     );
-
 
 }

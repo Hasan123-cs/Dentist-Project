@@ -7,7 +7,7 @@ import {
 
 import {
     Add,
-    Upload
+    
 } from "@mui/icons-material";
 
 
@@ -110,54 +110,6 @@ flexWrap="wrap"
 
 
 
-<Button
-
-
-variant="outlined"
-
-
-startIcon={<Upload />}
-
-
-sx={{
-
-
-height:42,
-
-
-borderRadius:3,
-
-
-borderColor:"#C9A227",
-
-
-color:"#8a6d1d",
-
-
-fontWeight:700,
-
-
-
-"&:hover":{
-
-
-borderColor:"#b18c1f"
-
-
-}
-
-
-}}
-
-
-
->
-
-
-Import Patients
-
-
-</Button>
 
 
 

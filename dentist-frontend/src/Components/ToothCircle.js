@@ -1,234 +1,303 @@
-import {Box} from "@mui/material";
+import { Box } from "@mui/material";
 
 
-const colors={
+const colors = {
 
-healthy:"#e8f7ee",
+    healthy:"#e8f7ee",
 
-caries:"#e53935",
+    caries:"#e53935",
 
-filling:"#42a5f5",
+    filling:"#42a5f5",
 
-crown:"#fdd835",
+    crown:"#fdd835",
 
-missing:"#bdbdbd",
+    missing:"#bdbdbd",
 
-rootCanal:"#8e24aa",
+    rootCanal:"#8e24aa",
 
-implant:"#8e7dff",
+    implant:"#8e7dff",
 
-bridge:"#ffb15c"
+    bridge:"#ffb15c"
 
 };
 
 
 
 
+
 export default function ToothCircle({
 
-condition={},
+    condition = {},
 
-onSurfaceClick
+    onSurfaceClick
 
 }){
 
 
-const color=(s)=>
 
-colors[condition[s] || "healthy"];
+    const isRootCanal =
 
+    Object.values(condition).includes("rootCanal");
 
 
-return (
 
-<Box
 
-sx={{
 
-width:38,
+    const color = (surface) => {
 
-height:38,
 
-borderRadius:"50%",
+        if(isRootCanal)
 
-border:"1.5px solid #666",
+            return colors.healthy;
 
-overflow:"hidden",
 
-display:"grid",
 
-gridTemplateColumns:"1fr 1fr 1fr",
+        return colors[condition[surface] || "healthy"];
 
-gridTemplateRows:"1fr 1fr 1fr",
 
-background:"#fff"
+    };
 
-}}
 
->
 
 
 
+    const handleClick = (surface) => {
 
 
-{/* Buccal */}
+        if(isRootCanal)
 
-<Box
+            return;
 
-onClick={(e)=>{
 
-e.stopPropagation();
 
-onSurfaceClick("B")
+        if(onSurfaceClick)
 
-}}
+            onSurfaceClick(surface);
 
-sx={{
 
-gridColumn:2,
+    };
 
-gridRow:1,
 
-background:color("B"),
 
-borderBottom:"1px solid #777"
 
-}}
 
-/>
+    return (
 
 
+        <Box
 
 
+            sx={{
 
 
-{/* Mesial */}
+                width:38,
 
-<Box
+                height:38,
 
-onClick={(e)=>{
+                borderRadius:"50%",
 
-e.stopPropagation();
+                border:"1.5px solid #666",
 
-onSurfaceClick("M")
+                overflow:"hidden",
 
-}}
+                display:"grid",
 
-sx={{
+                gridTemplateColumns:"1fr 1fr 1fr",
 
-gridColumn:1,
+                gridTemplateRows:"1fr 1fr 1fr",
 
-gridRow:2,
+                background:"#fff"
 
-background:color("M"),
 
-borderRight:"1px solid #777"
+            }}
 
-}}
 
-/>
+        >
 
 
 
 
 
 
-{/* Occlusal */}
 
-<Box
+            {/* Buccal */}
 
-onClick={(e)=>{
 
-e.stopPropagation();
+            <Box
 
-onSurfaceClick("O")
+                onClick={(e)=>{
 
-}}
+                    e.stopPropagation();
 
-sx={{
+                    handleClick("B");
 
-gridColumn:2,
+                }}
 
-gridRow:2,
+                sx={{
 
-background:color("O"),
+                    gridColumn:2,
 
-borderRadius:"50%",
+                    gridRow:1,
 
-border:"1px solid #777",
+                    background:color("B"),
 
-zIndex:2
+                    borderBottom:"1px solid #777"
 
-}}
+                }}
 
-/>
+            />
 
 
 
 
 
 
-{/* Distal */}
 
-<Box
 
-onClick={(e)=>{
 
-e.stopPropagation();
+            {/* Mesial */}
 
-onSurfaceClick("D")
 
-}}
+            <Box
 
-sx={{
+                onClick={(e)=>{
 
-gridColumn:3,
+                    e.stopPropagation();
 
-gridRow:2,
+                    handleClick("M");
 
-background:color("D"),
+                }}
 
-borderLeft:"1px solid #777"
+                sx={{
 
-}}
+                    gridColumn:1,
 
-/>
+                    gridRow:2,
 
+                    background:color("M"),
 
+                    borderRight:"1px solid #777"
 
+                }}
 
+            />
 
 
-{/* Lingual */}
 
-<Box
 
-onClick={(e)=>{
 
-e.stopPropagation();
 
-onSurfaceClick("L")
 
-}}
 
-sx={{
 
-gridColumn:2,
+            {/* Occlusal */}
 
-gridRow:3,
 
-background:color("L"),
+            <Box
 
-borderTop:"1px solid #777"
+                onClick={(e)=>{
 
-}}
+                    e.stopPropagation();
 
-/>
+                    handleClick("O");
 
+                }}
 
+                sx={{
 
-</Box>
+                    gridColumn:2,
 
-)
+                    gridRow:2,
+
+                    background:color("O"),
+
+                    borderRadius:"50%",
+
+                    border:"1px solid #777",
+
+                    zIndex:2
+
+                }}
+
+            />
+
+
+
+
+
+
+
+
+
+            {/* Distal */}
+
+
+            <Box
+
+                onClick={(e)=>{
+
+                    e.stopPropagation();
+
+                    handleClick("D");
+
+                }}
+
+                sx={{
+
+                    gridColumn:3,
+
+                    gridRow:2,
+
+                    background:color("D"),
+
+                    borderLeft:"1px solid #777"
+
+                }}
+
+            />
+
+
+
+
+
+
+
+
+
+            {/* Lingual */}
+
+
+            <Box
+
+                onClick={(e)=>{
+
+                    e.stopPropagation();
+
+                    handleClick("L");
+
+                }}
+
+                sx={{
+
+                    gridColumn:2,
+
+                    gridRow:3,
+
+                    background:color("L"),
+
+                    borderTop:"1px solid #777"
+
+                }}
+
+            />
+
+
+
+
+
+        </Box>
+
+
+    );
 
 }

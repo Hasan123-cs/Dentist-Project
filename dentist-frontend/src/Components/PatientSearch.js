@@ -7,8 +7,8 @@ Button
 
 
 import {
-Search,
-FilterList
+Search
+
 } from "@mui/icons-material";
 
 
@@ -49,22 +49,7 @@ borderColor:"#eee3c5"
 />
 
 
-<Box
-mt={2}
-display="flex"
-justifyContent="flex-end"
->
 
-<Button
-startIcon={<FilterList/>}
-sx={{
-color:"#8a6d1d"
-}}
->
-Filters
-</Button>
-
-</Box>
 
 
 </Paper>
