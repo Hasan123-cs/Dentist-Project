@@ -6,85 +6,43 @@ import PatientList from "../Components/PatientList";
 
 import { useEffect, useState } from "react";
 
+export default function Patients() {
+  const [patients, setPatients] = useState([]);
+  const [error, setError] = useState("");
 
-export default function Patients(){
+  useEffect(() => {
+    const getPatients = async () => {
+      try {
+        const fetchApi = await fetch("https://localhost:7166/api/patients");
 
-    const [patients,setPatients] = useState([]);
-    const [error,setError] = useState("");
+        if (!fetchApi.ok) {
+          setError("Data not Found");
+        }
 
+        const response = await fetchApi.json();
 
-    useEffect(()=>{
+        setPatients(response);
+      } catch (error) {
+        console.log("error");
+      }
+    };
 
+    getPatients();
+  }, []);
 
-        const getPatients = async()=>{
+  return (
+    <Box
+      sx={{
+        width: "100%",
+      }}
+    >
+      {error && <h3>{error}</h3>}
 
-            try{
+      <PatientHeader />
 
-                const fetchApi = await fetch(
-                    "https://localhost:7066/api/patients"
-                );
+      <PatientSearch />
 
-
-                if(!fetchApi.ok){
-
-                    setError("Data not Found");
-
-                }
-
-
-                const response = await fetchApi.json();
-
-
-                setPatients(response);
-
-
-            }
-            catch(error){
-
-               
-                console.log("error")
-
-            }
-
-
-        };
-
-
-        getPatients();
-
-
-    },[]);
-
-
-
-
-return (
-
-<Box
-
-sx={{
-
-width:"100%"
-
-}}
-
->
-
-
-{
-error && <h3>{error}</h3>
-}
-
-
-<PatientHeader />
-
-<PatientSearch />
-
-<PatientList patients={patients}/>
-
-
-</Box>
-
-)
-
+      <PatientList patients={patients} />
+    </Box>
+  );
 }

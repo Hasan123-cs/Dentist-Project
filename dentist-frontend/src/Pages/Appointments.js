@@ -1,81 +1,87 @@
 import { Box } from "@mui/material";
-import { useState } from "react";
+import axios from "axios";
 import dayjs from "dayjs";
+import { useState, useEffect } from "react";
 
 import AppointmentStats from "../Components/Appointmentstats";
 import CalendarToolbar from "../Components/CalendarToolbar";
 import WeeklyCalendar from "../Components/WeeklyCalendar";
 import AppointmentHeader from "../Components/AppointmentHeader";
 
+export default function Appointments() {
+  const [currentDate, setCurrentDate] = useState(dayjs());
 
-export default function Appointments(){
+  const [appointments, setAppointments] = useState([]);
+  const [stats, setStats] = useState({});
+  const [view, setView] = useState("week");
 
-    const [currentDate,setCurrentDate] = useState(dayjs());
+  useEffect(() => {
+    loadAppointments();
+  }, [currentDate]);
 
-    const [view,setView] = useState("week");
+  const loadAppointments = async () => {
+    const start = currentDate
+      .startOf("week")
+      .add(1, "day")
+      .startOf("day")
+      .toISOString();
+    const end = currentDate
+      .startOf("week")
+      .add(7, "day")
+      .endOf("day")
+      .toISOString();
 
+    const token = localStorage.getItem("token");
+    console.log(token);
+    try {
+      const response = await axios.get(
+        `https://localhost:7166/api/appointments?start=${start}&end=${end}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-    return (
+      console.log("Fetched Data:", response.data);
+      setAppointments(response.data.appointments);
+      setStats({
+        totalToday: response.data.totalToday,
+        completed: response.data.completed,
+        inProgress: response.data.inProgress,
+        scheduled: response.data.scheduled,
+      });
+      console.log(stats);
+    } catch (error) {
+      console.log("Error fetching appointments:", error);
+    }
+  };
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        background: "#faf8f2",
+        boxSizing: "border-box",
+      }}
+    >
+      <AppointmentHeader />
 
-        <Box
-            sx={{
-                width:"100%",
-                background:"#faf8f2",
-                boxSizing:"border-box"
-            }}
-        >
+      <AppointmentStats stats={stats} />
 
+      <CalendarToolbar
+        currentDate={currentDate}
+        setCurrentDate={setCurrentDate}
+        view={view}
+        setView={setView}
+      />
 
-            <AppointmentHeader />
-
-
-            <Box
-                sx={{
-                    width:"100%",
-                    mt:3
-                }}
-            >
-                <AppointmentStats />
-            </Box>
-
-
-
-            <Box
-                sx={{
-                    width:"100%",
-                    mt:3
-                }}
-            >
-
-                <CalendarToolbar
-                    currentDate={currentDate}
-                    setCurrentDate={setCurrentDate}
-                    view={view}
-                    setView={setView}
-                />
-
-            </Box>
-
-
-
-
-            <Box
-                sx={{
-                    width:"100%",
-                    mt:3
-                }}
-            >
-
-                <WeeklyCalendar
-                    currentDate={currentDate}
-                    view={view}
-                />
-
-            </Box>
-
-
-        </Box>
-
-    );
-
+      <WeeklyCalendar
+        currentDate={currentDate}
+        view={view}
+        appointments={appointments}
+        setAppointments={setAppointments}
+      />
+    </Box>
+  );
 }

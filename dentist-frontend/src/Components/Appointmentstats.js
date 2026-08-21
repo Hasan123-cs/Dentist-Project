@@ -7,159 +7,111 @@ import {
   CalendarMonth,
 } from "@mui/icons-material";
 
-
-const data = [
-  {
-    title: "Today's Total",
-    value: "18",
-    icon: <Event />,
-    color: "#C9A227",
-  },
-  {
-    title: "Completed",
-    value: "8",
-    icon: <CheckCircle />,
-    color: "#16a34a",
-  },
-  {
-    title: "In Progress",
-    value: "3",
-    icon: <AccessTime />,
-    color: "#f59e0b",
-  },
-  {
-    title: "Scheduled",
-    value: "18",
-    icon: <CalendarMonth />,
-    color: "#2563eb",
-  },
-];
-
-
-export default function AppointmentStats() {
-
+export default function AppointmentStats({ stats }) {
+  const data = [
+    {
+      title: "Today's Total",
+      value: stats.totalToday ?? 0,
+      icon: <Event />,
+      color: "#C9A227",
+    },
+    {
+      title: "Completed",
+      value: stats.completed,
+      icon: <CheckCircle />,
+      color: "#16a34a",
+    },
+    {
+      title: "In Progress",
+      value: stats.inProgress ?? 0,
+      icon: <AccessTime />,
+      color: "#f59e0b",
+    },
+    {
+      title: "Scheduled",
+      value: stats.scheduled ?? 0,
+      icon: <CalendarMonth />,
+      color: "#2563eb",
+    },
+  ];
   return (
-
     <Grid
       container
       spacing={3}
       sx={{
-        width:"100%",
-        margin:0,
-        mt:3
+        width: "100%",
+        margin: 0,
+        mt: 3,
       }}
     >
-
-      {data.map((item)=>(
-
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={3}
-          key={item.title}
-        >
-
+      {data.map((item) => (
+        <Grid item xs={12} sm={6} lg={3} key={item.title}>
           <Paper
             sx={{
+              width: "100%",
 
-              width:"100%",
+              height: 140,
 
-              height:140,
+              borderRadius: 4,
 
-              borderRadius:4,
+              border: "1px solid #eee3c5",
 
-              border:"1px solid #eee3c5",
+              background: "#fff",
 
-              background:"#fff",
+              display: "flex",
 
-              display:"flex",
+              alignItems: "center",
 
-              alignItems:"center",
+              gap: 3,
 
-              gap:3,
+              px: 3,
 
-              px:3,
+              boxSizing: "border-box",
 
-              boxSizing:"border-box",
+              transition: "0.3s",
 
-              transition:"0.3s",
-
-              "&:hover":{
-                transform:"translateY(-4px)",
-                boxShadow:"0 8px 20px rgba(0,0,0,0.08)"
-              }
-
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+              },
             }}
           >
-
-
             <Box
               sx={{
+                width: 55,
 
-                width:55,
+                height: 55,
 
-                height:55,
+                flexShrink: 0,
 
-                flexShrink:0,
+                borderRadius: 3,
 
-                borderRadius:3,
+                background: "#faf3df",
 
-                background:"#faf3df",
+                display: "flex",
 
-                display:"flex",
+                alignItems: "center",
 
-                alignItems:"center",
+                justifyContent: "center",
 
-                justifyContent:"center",
-
-                color:item.color
-
+                color: item.color,
               }}
             >
-
               {item.icon}
-
             </Box>
 
-
-
-
             <Box>
-
-              <Typography
-                fontSize={32}
-                fontWeight={800}
-                color="#3d2f12"
-              >
+              <Typography fontSize={32} fontWeight={800} color="#3d2f12">
                 {item.value}
               </Typography>
 
-
-              <Typography
-                fontSize={14}
-                fontWeight={600}
-                color="#64748b"
-              >
+              <Typography fontSize={14} fontWeight={600} color="#64748b">
                 {item.title}
               </Typography>
-
-
             </Box>
-
-
-
           </Paper>
-
-
         </Grid>
-
-
       ))}
-
-
     </Grid>
-
   );
-
 }
