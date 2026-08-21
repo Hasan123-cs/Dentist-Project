@@ -31,6 +31,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     );
 });
+// services injected 
+builder.Services.AddScoped<AppointmentsService>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<DashboardService>();
 // identity 
