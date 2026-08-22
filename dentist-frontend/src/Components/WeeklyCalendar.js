@@ -2,7 +2,7 @@ import { Box, Paper } from "@mui/material";
 import dayjs from "dayjs";
 import { useState } from "react";
 import AppointmentCard from "../Components/AppointmentCard";
-
+import axios from "axios";
 const times = [
   "09:00",
   "10:00",
@@ -13,6 +13,9 @@ const times = [
   "15:00",
   "16:00",
   "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
 ];
 
 export default function WeeklyCalendar({
@@ -22,7 +25,7 @@ export default function WeeklyCalendar({
   setAppointments,
 }) {
   const [draggedAppointment, setDraggedAppointment] = useState(null);
-
+  const [message, setMessage] = useState("");
   const startOfWeek = currentDate.startOf("week").add(1, "day");
 
   let days = [];
@@ -34,7 +37,77 @@ export default function WeeklyCalendar({
   } else {
     days = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, "day"));
   }
+  // methode for drag and drop
+  const handleDrop = async (day, time) => {
+    if (!draggedAppointment) return;
 
+    const appointment = draggedAppointment;
+
+    const oldStart = appointment.startDateTime;
+    const oldEnd = appointment.endDateTime;
+
+    const oldDuration = getAppointmentDuration(appointment);
+
+    const newStart = dayjs(`${day.format("YYYY-MM-DD")} ${time}`);
+
+    const newEnd = newStart.add(oldDuration, "minute");
+
+    // Update UI immediately
+    setAppointments((prev) =>
+      prev.map((item) =>
+        item.id === appointment.id
+          ? {
+              ...item,
+              startDateTime: newStart.toISOString(),
+              endDateTime: newEnd.toISOString(),
+            }
+          : item,
+      ),
+    );
+
+    setDraggedAppointment(null);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.put(
+        `https://localhost:7166/api/appointments/${appointment.id}/time`,
+        {
+          startDateTime: newStart.toISOString(),
+          endDateTime: newEnd.toISOString(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log("success");
+    } catch (error) {
+      console.log(
+        "Failed to update appointment:",
+        error.response?.data?.message,
+      );
+      console.log(message);
+      // use it only for errors
+      setMessage(error.response?.data?.message);
+      // Rollback if backend fails
+      setAppointments((prev) =>
+        prev.map((item) =>
+          item.id === appointment.id
+            ? {
+                ...item,
+                startDateTime: oldStart,
+                endDateTime: oldEnd,
+              }
+            : item,
+        ),
+      );
+
+      alert("Failed to update appointment" + " cause : " + message);
+    }
+  };
+  // === drag drop methode ===
   const getAppointmentDuration = (appointment) => {
     const startStr =
       appointment.startDateTime ||
@@ -43,31 +116,6 @@ export default function WeeklyCalendar({
       appointment.endDateTime ||
       `${appointment.appointmentDate} ${appointment.endTime}`;
     return dayjs(endStr).diff(dayjs(startStr), "minute") || 30;
-  };
-
-  const handleDrop = (day, time) => {
-    if (!draggedAppointment) return;
-
-    const oldDuration = getAppointmentDuration(draggedAppointment);
-    const newStart = dayjs(`${day.format("YYYY-MM-DD")} ${time}`);
-    const newEnd = newStart.add(oldDuration, "minute");
-
-    setAppointments((prev) =>
-      prev.map((item) =>
-        item.id === draggedAppointment.id
-          ? {
-              ...item,
-              startDateTime: newStart.toISOString(),
-              endDateTime: newEnd.toISOString(),
-              appointmentDate: day.format("YYYY-MM-DD"),
-              startTime: newStart.format("HH:mm:ss"),
-              endTime: newEnd.format("HH:mm:ss"),
-            }
-          : item,
-      ),
-    );
-
-    setDraggedAppointment(null);
   };
 
   return (
