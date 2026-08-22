@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using DotNetEnv;
 
+Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -25,10 +27,19 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection");
+
+var password = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+connectionString = connectionString!.Replace(
+    "{DB_PASSWORD}",
+    password
+);
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
+        connectionString
     );
 });
 // services injected 

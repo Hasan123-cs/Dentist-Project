@@ -20,7 +20,6 @@ appsettings.Development.json
 wwwroot/uploads/
 wwwroot/images/uploads/
 .env
-.env.*
 docker-compose.override.yml
 *.nupkg
 packages/

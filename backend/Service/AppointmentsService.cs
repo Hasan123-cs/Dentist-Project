@@ -1,6 +1,7 @@
 ﻿
 using dentist_project.Data;
 using dentist_project.DTO;
+using dentist_project.Enums;
 using Microsoft.EntityFrameworkCore;
 namespace dentist_project.Service
 {
@@ -24,7 +25,6 @@ namespace dentist_project.Service
             var todayUtcStart = DateTime.UtcNow.Date;
             var todayUtcEnd = todayUtcStart.AddDays(1);
 
-            // 1. Calculate Real Stats for Today once from Database
             var todayAppointments = await _db.Appointments
                 .AsNoTracking()
                 .Where(a => a.StartDateTime >= todayUtcStart && a.StartDateTime < todayUtcEnd)
@@ -39,7 +39,6 @@ namespace dentist_project.Service
                 a.EndDateTime >= nowUtc &&
                 !a.Status.ToString().Equals("Cancelled", StringComparison.OrdinalIgnoreCase));
 
-            // 2. Fetch Range Appointments for Calendar
             var rawData = await _db.Appointments
                 .AsNoTracking()
                 .Where(a =>
@@ -92,6 +91,53 @@ namespace dentist_project.Service
                 Appointments = appointmentsList
             };
 
+        }
+        public async Task<(bool success ,string message)> UpdateAppointmentTimeAsync(
+        int appointmentId,
+        UpdateAppointmentTimeDto dto)
+        {
+            if (dto.EndDateTime <= dto.StartDateTime)
+            {
+                return (false,
+                    "End time must be after start time."
+                    );
+            }
+
+            var appointment = await _db.Appointments
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (appointment == null)
+            {
+                return (false,
+                    "Appointment not found."
+                    );
+            }
+
+            if (appointment.Status == AppointmentStatus.Cancelled)
+            {
+                return (false,
+                    "Cancelled appointments cannot be moved.");
+            }
+
+            var hasConflict = await _db.Appointments
+                .AnyAsync(a =>
+                    a.Id != appointmentId &&
+                    a.Status != AppointmentStatus.Cancelled &&
+                    dto.StartDateTime < a.EndDateTime &&
+                    dto.EndDateTime > a.StartDateTime
+                );
+
+            if (hasConflict)
+            {
+                return (false,
+                    "This time overlaps with another appointment.");
+            }
+
+            appointment.StartDateTime = dto.StartDateTime;
+            appointment.EndDateTime = dto.EndDateTime;
+
+            await _db.SaveChangesAsync();
+            return (true, "data Updated Successfuly.");
         }
 
     }

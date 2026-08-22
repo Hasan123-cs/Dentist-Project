@@ -1,4 +1,5 @@
-﻿using dentist_project.Service;
+﻿using dentist_project.DTO;
+using dentist_project.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,27 @@ namespace dentist_project.Controllers
         {
             var appointments =await _appointmentService.GetAppointmentsAsync(start,end);
             return Ok(appointments);
+        }
+        [HttpPut("{id}/time")]
+        public async Task<IActionResult> UpdateAppointmentTime(
+        int id,
+        UpdateAppointmentTimeDto dto)
+        {
+            var result =
+                await _appointmentService.UpdateAppointmentTimeAsync(id, dto);
+
+            if (!result.success)
+            {
+                return BadRequest(new
+                {
+                    message = result.message
+                });
+            }
+
+            return Ok(new
+            {
+                message = "Appointment updated successfully."
+            });
         }
     }
 }
