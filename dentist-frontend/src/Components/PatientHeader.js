@@ -6,13 +6,20 @@ import {
 
 
 import {
-    Add,
-    
+    Add
 } from "@mui/icons-material";
+
+
+import {
+    useNavigate
+} from "react-router-dom";
 
 
 
 export default function PatientHeader(){
+
+
+const navigate = useNavigate();
 
 
 
@@ -45,10 +52,6 @@ sx={{
 
 
 
-{/* TITLE */}
-
-
-
 <Box>
 
 
@@ -69,6 +72,7 @@ Patients
 
 
 
+
 <Typography
 
 fontSize={15}
@@ -84,7 +88,6 @@ Manage your patient database
 </Typography>
 
 
-
 </Box>
 
 
@@ -92,9 +95,6 @@ Manage your patient database
 
 
 
-
-
-{/* ACTIONS */}
 
 
 
@@ -109,23 +109,17 @@ flexWrap="wrap"
 >
 
 
-
-
-
-
-
-
-
-
-
 <Button
-
 
 
 variant="contained"
 
 
 startIcon={<Add />}
+
+
+
+onClick={()=>navigate("/patients/add")}
 
 
 
@@ -168,8 +162,6 @@ Add Patient
 
 
 </Button>
-
-
 
 
 

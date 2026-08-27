@@ -13,6 +13,7 @@ const patients=[
 
 {
     id:1,
+    patientId:1,
     name:"Amanda White",
     email:"amanda.white@email.com",
     phone:"+1 555 456-8901",
@@ -21,8 +22,10 @@ const patients=[
     balance:"$0.00"
 },
 
+
 {
     id:2,
+    patientId:2,
     name:"Ashley Young",
     email:"ashley.young@email.com",
     phone:"+1 555 012-4567",
@@ -31,8 +34,10 @@ const patients=[
     balance:"$120.00"
 },
 
+
 {
     id:3,
+    patientId:3,
     name:"Brian Lewis",
     email:"brian.lewis@email.com",
     phone:"+1 555 789-1234",
@@ -41,11 +46,13 @@ const patients=[
     balance:"$50.00"
 },
 
+
 {
     id:4,
+    patientId:4,
     name:"Christopher Taylor",
     email:"chris.taylor@email.com",
-    phone:" +1 555 567-9012",
+    phone:"+1 555 567-9012",
     status:"Inactive",
     lastVisit:"15 Jun 2026",
     balance:"$0.00"
@@ -55,12 +62,22 @@ const patients=[
 
 
 
+
+
 export default function PatientList(){
 
 
 return (
 
-<Box>
+<Box
+
+sx={{
+
+width:"100%"
+
+}}
+
+>
 
 
 <Typography
@@ -83,6 +100,8 @@ All Patients ({patients.length})
 
 
 
+
+
 <Grid
 
 container
@@ -101,6 +120,7 @@ margin:0
 
 
 {
+
 patients.map((p)=>(
 
 
@@ -120,9 +140,7 @@ lg={3}
 
 sx={{
 
-display:"flex",
-
-justifyContent:"center"
+display:"flex"
 
 }}
 
@@ -139,7 +157,12 @@ width:"100%"
 
 >
 
-<PatientCard patient={p}/>
+
+<PatientCard
+
+patient={p}
+
+/>
 
 
 </Box>
@@ -149,11 +172,13 @@ width:"100%"
 
 
 ))
+
+
 }
 
 
-</Grid>
 
+</Grid>
 
 
 </Box>

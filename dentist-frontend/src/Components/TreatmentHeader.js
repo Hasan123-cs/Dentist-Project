@@ -1,16 +1,13 @@
 import {
     Box,
-    Typography,
-    Button
+    Typography
 } from "@mui/material";
 
 
 export default function TreatmentHeader(){
 
 
-
 return (
-
 
 <Box
 
@@ -29,7 +26,6 @@ mb:4
 >
 
 
-
 <Box>
 
 
@@ -46,7 +42,6 @@ color="#092c57"
 Treatments
 
 </Typography>
-
 
 
 
@@ -69,55 +64,8 @@ Manage and track patient dental treatments
 
 
 
-
-
-
-
-<Button
-
-variant="contained"
-
-sx={{
-
-
-background:"#C9A227",
-
-
-borderRadius:3,
-
-
-px:3,
-
-
-py:1.2,
-
-
-fontWeight:700,
-
-
-"&:hover":{
-
-background:"#b18c1f"
-
-}
-
-
-}}
-
->
-
-+ ADD TREATMENT
-
-</Button>
-
-
-
-
-
 </Box>
 
-
-)
-
+);
 
 }

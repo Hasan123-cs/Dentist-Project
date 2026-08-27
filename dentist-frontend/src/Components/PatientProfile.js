@@ -41,35 +41,53 @@ import ConditionLegend from "../Components/ConditionLegend";
 
 const patients=[
 
+
 {
 id:1,
 name:"Amanda White",
 email:"amanda.white@email.com",
-phone:"+1 555 456-8901"
+phone:"+1 555 456-8901",
+gender:"Female",
+birthDate:"12 Aug 1995",
+notes:"No allergies. Regular dental follow up required."
 },
+
 
 {
 id:2,
 name:"Ashley Young",
 email:"ashley.young@email.com",
-phone:"+1 555 012-4567"
+phone:"+1 555 012-4567",
+gender:"Female",
+birthDate:"20 Mar 1998",
+notes:"Sensitive teeth."
 },
+
 
 {
 id:3,
 name:"Brian Lewis",
 email:"brian.lewis@email.com",
-phone:"+1 555 789-1234"
+phone:"+1 555 789-1234",
+gender:"Male",
+birthDate:"05 Jan 1990",
+notes:"No medical issues."
 },
+
 
 {
 id:4,
 name:"Christopher Taylor",
 email:"chris.taylor@email.com",
-phone:"+1 555 567-9012"
+phone:"+1 555 567-9012",
+gender:"Male",
+birthDate:"22 Nov 1987",
+notes:"Needs regular cleaning."
 }
 
+
 ];
+
 
 
 
@@ -93,13 +111,13 @@ const [tab,setTab]=useState(0);
 const [conditions,setConditions]=useState({});
 
 
-const [notes,setNotes]=useState("");
 
 
 
 const patient=patients.find(
 p=>p.id===Number(id)
 );
+
 
 
 
@@ -127,7 +145,9 @@ Patient not found
 
 
 
+
 return(
+
 
 <Box
 
@@ -137,7 +157,9 @@ width:"100%",
 
 background:"#faf8f2",
 
-minHeight:"100vh"
+minHeight:"100vh",
+
+pt:3
 
 }}
 
@@ -147,8 +169,6 @@ minHeight:"100vh"
 
 
 
-
-{/* HEADER */}
 
 
 
@@ -169,6 +189,7 @@ mb:3
 >
 
 
+
 <Box
 
 display="flex"
@@ -183,6 +204,7 @@ justifyContent="space-between"
 
 
 
+
 <Box
 
 display="flex"
@@ -192,6 +214,7 @@ gap={3}
 alignItems="center"
 
 >
+
 
 
 <Avatar
@@ -227,6 +250,8 @@ patient.name
 
 
 </Avatar>
+
+
 
 
 
@@ -295,24 +320,12 @@ Patient ID #{patient.id}
 
 
 
-{/* BUTTONS */}
-
 
 <Box
 
-sx={{
+display="flex"
 
-flex:1,
-
-display:"flex",
-
-justifyContent:"space-between",
-
-alignItems:"center",
-
-ml:5
-
-}}
+gap={2}
 
 >
 
@@ -325,13 +338,7 @@ sx={{
 
 background:"#C9A227",
 
-fontWeight:700,
-
-position:"absolute",
-
-left:"50%",
-
-transform:"translateX(-50%)"
+fontWeight:700
 
 }}
 
@@ -370,6 +377,7 @@ BACK
 
 
 
+
 </Box>
 
 
@@ -380,9 +388,6 @@ BACK
 
 
 
-
-
-{/* TABS */}
 
 
 
@@ -441,9 +446,6 @@ background:"#C9A227"
 
 
 
-{/* OVERVIEW */}
-
-
 
 {
 
@@ -456,52 +458,32 @@ container
 
 spacing={3}
 
-mt={5}
-
-sx={{
-
-width:"100%",
-
-justifyContent:"center",
-
-alignItems:"stretch"
-
-}}
-
 >
-<Grid
 
-item
 
-xs={12}
 
-sm={6}
-
-md={3}
-
-sx={{
-
-display:"flex",
-
-justifyContent:"center"
-
-}}
-
->
+<Grid item xs={12} md={3}>
 
 
 <CardBox>
 
+
 <Email color="warning"/>
+
 
 <Title>
 Contact Information
 </Title>
 
 
+
 <Typography>
+
 {patient.email}
+
 </Typography>
+
+
 
 
 <Typography mt={1}>
@@ -515,6 +497,7 @@ Contact Information
 </Typography>
 
 
+
 </CardBox>
 
 
@@ -526,25 +509,8 @@ Contact Information
 
 
 
-<Grid
 
-item
-
-xs={12}
-
-sm={6}
-
-md={3}
-
-sx={{
-
-display:"flex",
-
-justifyContent:"center"
-
-}}
-
->
+<Grid item xs={12} md={3}>
 
 
 <CardBox>
@@ -558,6 +524,7 @@ Personal Information
 </Title>
 
 
+
 <Typography>
 Gender
 </Typography>
@@ -565,9 +532,11 @@ Gender
 
 <Typography color="text.secondary">
 
-Not set
+{patient.gender}
 
 </Typography>
+
+
 
 
 <Typography mt={1}>
@@ -577,11 +546,13 @@ Birth Date
 </Typography>
 
 
+
 <Typography color="text.secondary">
 
-Not set
+{patient.birthDate}
 
 </Typography>
+
 
 
 </CardBox>
@@ -595,25 +566,8 @@ Not set
 
 
 
-<Grid
 
-item
-
-xs={12}
-
-sm={6}
-
-md={3}
-
-sx={{
-
-display:"flex",
-
-justifyContent:"center"
-
-}}
-
->
+<Grid item xs={12} md={3}>
 
 
 <CardBox>
@@ -625,6 +579,8 @@ justifyContent:"center"
 <Title>
 Financial
 </Title>
+
+
 
 
 <Typography
@@ -650,37 +606,13 @@ Outstanding Balance
 </Typography>
 
 
+
 </CardBox>
 
 
 </Grid>
 
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-sm={6}
-
-md={3}
-
-sx={{
-
-display:"flex",
-
-justifyContent:"center"
-
-}}
-
->
-
+<Grid item xs={12} md={3}>
 
 <CardBox>
 
@@ -691,6 +623,7 @@ justifyContent:"center"
 <Title>
 Appointments
 </Title>
+
 
 
 <Typography
@@ -708,6 +641,8 @@ color="#092c57"
 </Typography>
 
 
+
+
 <Typography color="text.secondary">
 
 Upcoming Visits
@@ -715,10 +650,97 @@ Upcoming Visits
 </Typography>
 
 
+
 </CardBox>
 
 
 </Grid>
+
+
+
+
+
+
+
+
+{/* MEDICAL NOTES */}
+
+<Grid item xs={12}>
+
+
+<Paper
+
+sx={{
+
+p:3,
+
+borderRadius:4,
+
+border:"1px solid #eee3c5"
+
+}}
+
+>
+
+
+<Typography
+
+fontSize={20}
+
+fontWeight={800}
+
+color="#092c57"
+
+mb={2}
+
+>
+
+Medical Notes
+
+</Typography>
+
+
+
+
+
+<Box
+
+sx={{
+
+background:"#faf8f2",
+
+borderRadius:3,
+
+p:3,
+
+minHeight:100,
+
+display:"flex",
+
+alignItems:"center"
+
+}}
+
+>
+
+
+<Typography>
+
+{patient.notes || "No medical notes available."}
+
+</Typography>
+
+
+</Box>
+
+
+
+</Paper>
+
+
+</Grid>
+
+
 
 
 </Grid>
@@ -733,8 +755,8 @@ Upcoming Visits
 
 
 
-{/* DENTAL CHART */}
 
+{/* DENTAL CHART */}
 
 {
 
@@ -788,6 +810,7 @@ setConditions={setConditions}
 
 
 
+
 <ConditionLegend />
 
 
@@ -799,99 +822,6 @@ setConditions={setConditions}
 conditions={conditions}
 
 />
-
-
-
-
-
-
-<Paper
-
-sx={{
-
-mt:3,
-
-p:3,
-
-borderRadius:4,
-
-border:"1px solid #eee3c5"
-
-}}
-
->
-
-
-<Typography
-
-fontSize={20}
-
-fontWeight={800}
-
-color="#092c57"
-
->
-
-Patient Notes
-
-</Typography>
-
-
-
-
-<Box
-
-component="textarea"
-
-value={notes}
-
-onChange={(e)=>setNotes(e.target.value)}
-
-placeholder="Write notes about patient..."
-
-sx={{
-
-width:"100%",
-
-minHeight:"120px",
-
-mt:2,
-
-p:2,
-
-borderRadius:2,
-
-border:"1px solid #ddd",
-
-fontFamily:"inherit"
-
-}}
-
-/>
-
-
-
-
-<Button
-
-variant="contained"
-
-sx={{
-
-mt:2,
-
-background:"#C9A227"
-
-}}
-
->
-
-Save Notes
-
-</Button>
-
-
-</Paper>
 
 
 
@@ -907,8 +837,8 @@ Save Notes
 
 
 
-{/* TREATMENT PLAN */}
 
+{/* TREATMENT PLAN */}
 
 {
 
@@ -932,6 +862,17 @@ border:"1px solid #eee3c5"
 >
 
 
+<Box
+
+display="flex"
+
+justifyContent="space-between"
+
+alignItems="center"
+
+>
+
+
 <Typography
 
 fontSize={22}
@@ -948,7 +889,43 @@ Treatment Plan
 
 
 
-<Typography mt={2}>
+
+
+<Button
+
+variant="contained"
+
+onClick={()=>navigate(`/patients/${patient.id}/add-treatment`)}
+
+sx={{
+
+background:"#C9A227",
+
+fontWeight:700
+
+}}
+
+>
+
++ ADD TREATMENT
+
+</Button>
+
+
+</Box>
+
+
+
+
+
+
+<Typography
+
+mt={3}
+
+color="#718096"
+
+>
 
 No treatments added yet.
 
@@ -968,8 +945,8 @@ No treatments added yet.
 
 
 
-{/* IMAGES */}
 
+{/* IMAGES */}
 
 {
 
@@ -1009,11 +986,149 @@ Patient Images
 
 
 
-<Typography mt={2}>
 
-No images available.
+
+<Grid
+
+container
+
+spacing={3}
+
+mt={2}
+
+>
+
+
+{
+
+[
+
+"Bitewing X-Ray",
+
+"Panoramic X-Ray",
+
+"Periapical X-Ray",
+
+"Dental Scan"
+
+].map((image,index)=>(
+
+
+<Grid
+
+item
+
+xs={12}
+
+sm={6}
+
+md={3}
+
+key={index}
+
+>
+
+
+<Paper
+
+sx={{
+
+borderRadius:3,
+
+overflow:"hidden",
+
+border:"1px solid #eee3c5"
+
+}}
+
+>
+
+
+<Box
+
+sx={{
+
+height:170,
+
+background:"#111",
+
+display:"flex",
+
+alignItems:"center",
+
+justifyContent:"center",
+
+fontSize:45,
+
+color:"#fff"
+
+}}
+
+>
+
+🦷
+
+</Box>
+
+
+
+
+
+<Box p={2}>
+
+
+<Typography
+
+fontWeight={700}
+
+>
+
+{image}
 
 </Typography>
+
+
+
+
+<Chip
+
+label="X-RAY"
+
+size="small"
+
+sx={{
+
+mt:1,
+
+background:"#faf0c8",
+
+color:"#C9A227",
+
+fontWeight:700
+
+}}
+
+/>
+
+
+
+</Box>
+
+
+
+</Paper>
+
+
+</Grid>
+
+
+))
+
+
+}
+
+
+</Grid>
 
 
 
@@ -1028,7 +1143,6 @@ No images available.
 
 
 );
-
 
 }
 
@@ -1053,8 +1167,7 @@ p:3,
 
 width:"260px",
 
-minHeight:"190px",
-height:"auto",
+height:"190px",
 
 borderRadius:4,
 
@@ -1080,13 +1193,13 @@ boxSizing:"border-box"
 
 {children}
 
-
 </Paper>
 
 
 )
 
 }
+
 
 
 
@@ -1118,3 +1231,12 @@ color="#092c57"
 )
 
 }
+
+
+
+
+
+
+
+
+

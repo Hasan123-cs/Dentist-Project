@@ -1,46 +1,33 @@
 import { Box } from "@mui/material";
 
-
 import TreatmentHeader from "../Components/TreatmentHeader";
 import TreatmentStats from "../Components/TreatmentStats";
 import TreatmentList from "../Components/TreatmentList";
 
 
-
 export default function Treatments(){
 
+  return (
 
-return (
+    <Box
+      sx={{
+        width:"100%",
+        minHeight:"100vh",
+        background:"#faf8f2",
+        px:3,
+        py:3,
+        boxSizing:"border-box"
+      }}
+    >
 
+      <TreatmentHeader />
 
-<Box
+      <TreatmentStats />
 
-sx={{
+      <TreatmentList />
 
-width:"100%",
+    </Box>
 
-minHeight:"100vh",
-
-background:"#faf8f2"
-
-}}
-
->
-
-
-<TreatmentHeader />
-
-
-<TreatmentStats />
-
-
-<TreatmentList />
-
-
-</Box>
-
-
-)
-
+  );
 
 }

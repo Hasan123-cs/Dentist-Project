@@ -1,27 +1,34 @@
 import {
-    Paper,
-    Box,
-    Typography,
-    Chip,
-    Button
+  Paper,
+  Box,
+  Typography,
+  Chip,
+  Button
 } from "@mui/material";
 
 
 import {
-    MedicalServices,
-    AccessTime,
-    CalendarMonth,
-    AttachMoney,
-    ArrowForward
+  MedicalServices,
+  AccessTime,
+  CalendarMonth,
+  AttachMoney,
+  ArrowForward
 } from "@mui/icons-material";
 
 
-
-export default function TreatmentCard({treatment}){
-
+import { useNavigate } from "react-router-dom";
 
 
-const statusColor = {
+
+
+export default function TreatmentCard({ treatment }) {
+
+
+  const navigate = useNavigate();
+
+
+
+  const statusColor = {
 
     Completed:"#16a34a",
 
@@ -29,414 +36,434 @@ const statusColor = {
 
     Pending:"#ef4444"
 
-};
+  };
 
 
 
 
-return (
 
+  return (
 
 
-<Paper
+    <Paper
 
 
-sx={{
+      sx={{
 
 
-width:"100%",
+        width:"100%",
 
+        height:"100%",
 
-height:420,
+        minHeight:420,
 
 
-p:3,
+        p:3,
 
 
-borderRadius:4,
+        borderRadius:4,
 
 
-background:"#fff",
+        background:"#fff",
 
 
-border:"1px solid #eee3c5",
+        border:"1px solid #eee3c5",
 
 
-display:"flex",
+        display:"flex",
 
 
-flexDirection:"column",
+        flexDirection:"column",
 
 
-justifyContent:"space-between",
+        justifyContent:"space-between",
 
 
+        boxSizing:"border-box",
 
-transition:"0.25s",
 
+        transition:"0.25s",
 
 
-"&:hover":{
 
+        "&:hover":{
 
-transform:"translateY(-4px)",
 
+          transform:"translateY(-4px)",
 
-boxShadow:"0 10px 25px rgba(0,0,0,.1)"
+          boxShadow:"0 10px 25px rgba(0,0,0,.1)"
 
+        }
 
-}
 
+      }}
 
 
-}}
+    >
 
 
 
->
 
 
+      {/* HEADER */}
 
 
+      <Box>
 
 
 
+        <Box
 
-{/* HEADER */}
+          display="flex"
 
+          alignItems="center"
 
+          justifyContent="space-between"
 
-<Box>
+        >
 
 
-<Box
 
-display="flex"
+          <Box
 
-alignItems="center"
+            sx={{
 
-justifyContent="space-between"
 
->
+              width:55,
 
+              height:55,
 
-<Box
+              borderRadius:"50%",
 
 
-sx={{
+              background:"#faf7ed",
 
 
-width:55,
+              display:"flex",
 
+              alignItems:"center",
 
-height:55,
+              justifyContent:"center"
 
 
-borderRadius:"50%",
+            }}
 
 
-background:"#faf7ed",
+          >
 
 
-display:"flex",
+            <MedicalServices
 
+              sx={{
 
-alignItems:"center",
+                color:"#C9A227"
 
+              }}
 
-justifyContent:"center"
+            />
 
 
-}}
+          </Box>
 
 
->
 
 
-<MedicalServices
 
-sx={{
 
-color:"#C9A227"
+          <Chip
 
-}}
 
-/>
+            label={treatment.status}
 
 
-</Box>
+            size="small"
 
 
+            sx={{
 
 
+              background:
+              statusColor[treatment.status] || "#999",
 
 
-<Chip
+              color:"#fff",
 
 
-label={treatment.status}
+              fontWeight:700
 
 
-size="small"
+            }}
 
 
-sx={{
+          />
 
 
-background:
+        </Box>
 
-statusColor[treatment.status],
 
 
-color:"#fff",
 
 
-fontWeight:700
 
 
-}}
+        <Typography
 
+          fontSize={19}
 
+          fontWeight={800}
 
-/>
+          color="#092c57"
 
+          mt={2}
 
+        >
 
-</Box>
+          {treatment.patient}
 
+        </Typography>
 
 
 
 
 
+        <Typography
 
+          fontSize={14}
 
+          color="#718096"
 
-<Typography
+        >
 
-fontSize={19}
+          {treatment.treatment}
 
-fontWeight={800}
+        </Typography>
 
-color="#092c57"
 
-mt={2}
 
->
+      </Box>
 
-{treatment.patient}
 
-</Typography>
 
 
 
 
-<Typography
 
-fontSize={14}
 
-color="#718096"
 
->
+      {/* DETAILS */}
 
-{treatment.treatment}
 
-</Typography>
 
+      <Box mt={2}>
 
 
-</Box>
+        <Box
 
+          display="flex"
 
+          gap={1}
 
+          alignItems="center"
 
+          mb={1}
 
+        >
 
+          <MedicalServices
 
+            fontSize="small"
 
+            sx={{
+              color:"#C9A227"
+            }}
 
-{/* DETAILS */}
+          />
 
 
+          <Typography fontSize={14}>
 
-<Box mt={2}>
+            Tooth: <b>{treatment.tooth}</b>
 
+          </Typography>
 
 
+        </Box>
 
-<Box
 
-display="flex"
 
-gap={1}
 
-alignItems="center"
 
-mb={1}
 
->
+        <Box
 
+          display="flex"
 
-<MedicalServices
+          gap={1}
 
-fontSize="small"
+          alignItems="center"
 
-sx={{color:"#C9A227"}}
+          mb={1}
 
-/>
+        >
 
 
+          <CalendarMonth
 
-<Typography
+            fontSize="small"
 
-fontSize={14}
+            sx={{
+              color:"#C9A227"
+            }}
 
->
+          />
 
-Tooth: <b>{treatment.tooth}</b>
 
-</Typography>
+          <Typography fontSize={14}>
 
+            {treatment.date}
 
+          </Typography>
 
-</Box>
 
+        </Box>
 
 
 
 
 
 
-<Box
 
-display="flex"
+        <Box
 
-gap={1}
+          display="flex"
 
-alignItems="center"
+          gap={1}
 
-mb={1}
+          alignItems="center"
 
->
+          mb={1}
 
+        >
 
-<CalendarMonth
 
-fontSize="small"
+          <AccessTime
 
-sx={{color:"#C9A227"}}
+            fontSize="small"
 
-/>
+            sx={{
+              color:"#C9A227"
+            }}
 
+          />
 
 
-<Typography
+          <Typography fontSize={14}>
 
-fontSize={14}
+            {treatment.duration}
 
->
+          </Typography>
 
-{treatment.date}
 
-</Typography>
+        </Box>
 
 
-</Box>
 
 
 
 
 
+        <Box
 
+          display="flex"
 
+          gap={1}
 
-<Box
+          alignItems="center"
 
-display="flex"
+        >
 
-gap={1}
 
-alignItems="center"
+          <AttachMoney
 
-mb={1}
+            fontSize="small"
 
->
+            sx={{
+              color:"#C9A227"
+            }}
 
+          />
 
-<AccessTime
 
-fontSize="small"
+          <Typography
 
-sx={{color:"#C9A227"}}
+            fontWeight={700}
 
-/>
+            color="green"
 
+          >
 
+            {treatment.price}
 
-<Typography
+          </Typography>
 
-fontSize={14}
 
->
+        </Box>
 
-{treatment.duration}
 
-</Typography>
+      </Box>
 
 
 
-</Box>
 
 
 
 
 
 
+      {/* NOTES */}
 
 
-<Box
 
-display="flex"
+      <Box
 
-gap={1}
 
-alignItems="center"
+        sx={{
 
->
 
+          background:"#faf8f2",
 
-<AttachMoney
 
-fontSize="small"
+          borderRadius:2,
 
-sx={{color:"#C9A227"}}
 
-/>
+          p:1.5,
 
 
+          mt:2
 
-<Typography
 
-fontWeight={700}
+        }}
 
-color="green"
 
->
+      >
 
-{treatment.price}
 
-</Typography>
+        <Typography
 
+          fontSize={12}
 
+          color="#718096"
 
-</Box>
+        >
 
+          {treatment.notes}
 
+        </Typography>
 
 
+      </Box>
 
 
-</Box>
 
 
 
@@ -444,121 +471,80 @@ color="green"
 
 
 
+      {/* BUTTON */}
 
 
 
-{/* NOTES */}
+      <Button
 
 
+        fullWidth
 
-<Box
 
+        variant="contained"
 
-sx={{
 
+        endIcon={<ArrowForward/>}
 
-background:"#faf8f2",
 
 
-borderRadius:2,
+        onClick={()=>{
 
 
-p:1.5,
+          navigate(
 
+            `/patients/${treatment.patientId}?tab=treatment`
 
-mt:2
+          );
 
-}}
 
->
+        }}
 
 
 
-<Typography
+        sx={{
 
-fontSize={12}
 
-color="#718096"
+          mt:2,
 
->
+          height:42,
 
-{treatment.notes}
 
-</Typography>
+          background:"#C9A227",
 
 
+          borderRadius:3,
 
-</Box>
 
+          fontWeight:700,
 
 
+          "&:hover":{
 
+            background:"#b18c1f"
 
+          }
 
 
+        }}
 
 
-{/* BUTTON */}
+      >
 
 
+        VIEW DETAILS
 
-<Button
 
+      </Button>
 
-fullWidth
 
 
-variant="contained"
 
 
-endIcon={<ArrowForward/>}
 
+    </Paper>
 
-sx={{
 
-
-mt:2,
-
-
-background:"#C9A227",
-
-
-borderRadius:3,
-
-
-fontWeight:700,
-
-
-"&:hover":{
-
-
-background:"#b18c1f"
-
-
-}
-
-
-}}
-
-
->
-
-
-VIEW DETAILS
-
-
-</Button>
-
-
-
-
-
-
-
-</Paper>
-
-
-)
-
+  );
 
 }
