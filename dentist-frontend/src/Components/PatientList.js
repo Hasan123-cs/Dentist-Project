@@ -9,65 +9,18 @@ import PatientCard from "./PatientCard";
 
 
 
-const patients=[
-
-{
-    id:1,
-    patientId:1,
-    name:"Amanda White",
-    email:"amanda.white@email.com",
-    phone:"+1 555 456-8901",
-    status:"Active",
-    lastVisit:"12 Aug 2026",
-    balance:"$0.00"
-},
-
-
-{
-    id:2,
-    patientId:2,
-    name:"Ashley Young",
-    email:"ashley.young@email.com",
-    phone:"+1 555 012-4567",
-    status:"Active",
-    lastVisit:"05 Aug 2026",
-    balance:"$120.00"
-},
-
-
-{
-    id:3,
-    patientId:3,
-    name:"Brian Lewis",
-    email:"brian.lewis@email.com",
-    phone:"+1 555 789-1234",
-    status:"Active",
-    lastVisit:"28 Jul 2026",
-    balance:"$50.00"
-},
-
-
-{
-    id:4,
-    patientId:4,
-    name:"Christopher Taylor",
-    email:"chris.taylor@email.com",
-    phone:"+1 555 567-9012",
-    status:"Inactive",
-    lastVisit:"15 Jun 2026",
-    balance:"$0.00"
-}
-
-];
 
 
 
 
+export default function PatientList({patients}){
 
-export default function PatientList(){
+
+
 
 
 return (
+
 
 <Box
 
@@ -78,6 +31,9 @@ width:"100%"
 }}
 
 >
+
+
+
 
 
 <Typography
@@ -102,6 +58,10 @@ All Patients ({patients.length})
 
 
 
+
+
+
+
 <Grid
 
 container
@@ -120,6 +80,7 @@ margin:0
 
 
 {
+
 
 patients.map((p)=>(
 
@@ -160,12 +121,44 @@ width:"100%"
 
 <PatientCard
 
-patient={p}
+patient={{
+
+id:p.id,
+
+name:
+
+`${p.firstName} ${p.lastName}`,
+
+phone:
+
+p.phone || "No phone",
+
+status:"Active",
+
+lastVisit:
+
+p.createdAt
+
+?
+
+new Date(
+p.createdAt
+).toLocaleDateString()
+
+:
+
+"No visits",
+
+balance:"$0.00"
+
+}}
 
 />
 
 
+
 </Box>
+
 
 
 </Grid>
@@ -181,8 +174,14 @@ patient={p}
 </Grid>
 
 
+
+
+
+
 </Box>
 
+
 )
+
 
 }

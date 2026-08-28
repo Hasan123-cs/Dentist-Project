@@ -6,43 +6,196 @@ import PatientList from "../Components/PatientList";
 
 import { useEffect, useState } from "react";
 
+
+
 export default function Patients() {
-  const [patients, setPatients] = useState([]);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const getPatients = async () => {
-      try {
-        const fetchApi = await fetch("https://localhost:7166/api/patients");
 
-        if (!fetchApi.ok) {
-          setError("Data not Found");
-        }
+const [patients,setPatients]=useState([]);
 
-        const response = await fetchApi.json();
+const [filteredPatients,setFilteredPatients]=useState([]);
 
-        setPatients(response);
-      } catch (error) {
-        console.log("error");
-      }
-    };
+const [search,setSearch]=useState("");
 
-    getPatients();
-  }, []);
+const [error,setError]=useState("");
 
-  return (
-    <Box
-      sx={{
-        width: "100%",
-      }}
-    >
-      {error && <h3>{error}</h3>}
 
-      <PatientHeader />
 
-      <PatientSearch />
 
-      <PatientList patients={patients} />
-    </Box>
-  );
+
+useEffect(()=>{
+
+
+const getPatients=async()=>{
+
+
+try{
+
+
+const fetchApi = await fetch(
+"https://localhost:7166/api/patients"
+);
+
+
+
+if(!fetchApi.ok){
+
+setError("Data not Found");
+
+return;
+
+}
+
+
+
+const response = await fetchApi.json();
+
+
+
+setPatients(response);
+
+setFilteredPatients(response);
+
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+setError("Connection Error");
+
+
+}
+
+
+
+};
+
+
+
+getPatients();
+
+
+},[]);
+
+
+
+
+
+
+
+
+useEffect(()=>{
+
+
+const value = search.toLowerCase();
+
+
+
+const result = patients.filter((p)=>{
+
+
+const fullName =
+
+`${p.firstName} ${p.lastName}`
+
+.toLowerCase();
+
+
+
+return (
+
+fullName.includes(value)
+
+||
+
+p.phone?.includes(value)
+
+);
+
+
+
+});
+
+
+
+setFilteredPatients(result);
+
+
+
+},[search,patients]);
+
+
+
+
+
+
+
+
+
+
+return(
+
+
+<Box
+
+sx={{
+
+width:"100%"
+
+}}
+
+>
+
+
+{
+
+error &&
+
+<h3>
+
+{error}
+
+</h3>
+
+}
+
+
+
+<PatientHeader />
+
+
+
+
+<PatientSearch
+
+search={search}
+
+setSearch={setSearch}
+
+/>
+
+
+
+
+
+<PatientList
+
+patients={filteredPatients}
+
+/>
+
+
+
+
+
+</Box>
+
+
+);
+
+
 }

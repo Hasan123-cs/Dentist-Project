@@ -7,7 +7,8 @@ import {
     Chip,
     Grid,
     Tabs,
-    Tab
+    Tab,
+    Dialog
 } from "@mui/material";
 
 
@@ -21,7 +22,6 @@ import {
 
 
 import {
-    Email,
     Phone,
     Person,
     Payments,
@@ -29,67 +29,14 @@ import {
 } from "@mui/icons-material";
 
 
-import { useState } from "react";
+import { 
+    useState,
+    useEffect
+} from "react";
 
 
 import DentalChart from "../Components/DentalChart";
 import ConditionLegend from "../Components/ConditionLegend";
-
-
-
-
-
-const patients=[
-
-
-{
-id:1,
-name:"Amanda White",
-email:"amanda.white@email.com",
-phone:"+1 555 456-8901",
-gender:"Female",
-birthDate:"12 Aug 1995",
-notes:"No allergies. Regular dental follow up required."
-},
-
-
-{
-id:2,
-name:"Ashley Young",
-email:"ashley.young@email.com",
-phone:"+1 555 012-4567",
-gender:"Female",
-birthDate:"20 Mar 1998",
-notes:"Sensitive teeth."
-},
-
-
-{
-id:3,
-name:"Brian Lewis",
-email:"brian.lewis@email.com",
-phone:"+1 555 789-1234",
-gender:"Male",
-birthDate:"05 Jan 1990",
-notes:"No medical issues."
-},
-
-
-{
-id:4,
-name:"Christopher Taylor",
-email:"chris.taylor@email.com",
-phone:"+1 555 567-9012",
-gender:"Male",
-birthDate:"22 Nov 1987",
-notes:"Needs regular cleaning."
-}
-
-
-];
-
-
-
 
 
 
@@ -101,7 +48,6 @@ export default function PatientProfile(){
 
 const {id}=useParams();
 
-
 const navigate=useNavigate();
 
 
@@ -111,12 +57,58 @@ const [tab,setTab]=useState(0);
 const [conditions,setConditions]=useState({});
 
 
+const [patient,setPatient]=useState(null);
+
+
+const [selectedImage,setSelectedImage]=useState(null);
 
 
 
-const patient=patients.find(
-p=>p.id===Number(id)
+
+
+
+
+useEffect(()=>{
+
+
+const getPatient=async()=>{
+
+
+try{
+
+
+const res=await fetch(
+`https://localhost:7166/api/patients/${id}`
 );
+
+
+
+if(res.ok){
+
+const data=await res.json();
+
+setPatient(data);
+
+}
+
+
+}catch(err){
+
+console.log(err);
+
+}
+
+
+};
+
+
+
+getPatient();
+
+
+},[id]);
+
+
 
 
 
@@ -130,7 +122,9 @@ return(
 <Box p={4}>
 
 <Typography>
-Patient not found
+
+Loading...
+
 </Typography>
 
 </Box>
@@ -170,6 +164,7 @@ pt:3
 
 
 
+{/* HEADER */}
 
 
 <Paper
@@ -189,20 +184,15 @@ mb:3
 >
 
 
-
 <Box
 
 display="flex"
 
-alignItems="center"
-
 justifyContent="space-between"
 
+alignItems="center"
+
 >
-
-
-
-
 
 
 <Box
@@ -229,7 +219,9 @@ background:"#eef2f7",
 
 color:"#C9A227",
 
-fontSize:28
+fontSize:28,
+
+fontWeight:800
 
 }}
 
@@ -238,13 +230,11 @@ fontSize:28
 
 {
 
-patient.name
+(patient.firstName + patient.lastName)
 
-.split(" ")
+.substring(0,2)
 
-.map(x=>x[0])
-
-.join("")
+.toUpperCase()
 
 }
 
@@ -271,7 +261,7 @@ color="#092c57"
 
 >
 
-{patient.name}
+{patient.firstName} {patient.lastName}
 
 </Typography>
 
@@ -308,12 +298,11 @@ Patient ID #{patient.id}
 </Typography>
 
 
-</Box>
-
 
 </Box>
 
 
+</Box>
 
 
 
@@ -321,13 +310,7 @@ Patient ID #{patient.id}
 
 
 
-<Box
-
-display="flex"
-
-gap={2}
-
->
+<Box display="flex" gap={2}>
 
 
 <Button
@@ -352,7 +335,6 @@ EDIT
 
 
 
-
 <Button
 
 onClick={()=>navigate("/patients")}
@@ -370,6 +352,7 @@ fontWeight:700
 BACK
 
 </Button>
+
 
 
 </Box>
@@ -391,6 +374,11 @@ BACK
 
 
 
+
+{/* TABS */}
+
+
+
 <Paper
 
 sx={{
@@ -399,7 +387,7 @@ borderRadius:4,
 
 border:"1px solid #eee3c5",
 
-mb:4
+mb:3
 
 }}
 
@@ -411,16 +399,6 @@ mb:4
 value={tab}
 
 onChange={(e,v)=>setTab(v)}
-
-sx={{
-
-"& .MuiTabs-indicator":{
-
-background:"#C9A227"
-
-}
-
-}}
 
 >
 
@@ -447,9 +425,16 @@ background:"#C9A227"
 
 
 
+
+{/* OVERVIEW */}
+
+
 {
 
 tab===0 &&
+
+
+<Box>
 
 
 <Grid
@@ -458,17 +443,25 @@ container
 
 spacing={3}
 
+sx={{
+
+width:"100%",
+
+margin:0
+
+}}
+
 >
 
 
 
-<Grid item xs={12} md={3}>
+<Grid item xs={12} sm={6} md={3}>
 
 
 <CardBox>
 
 
-<Email color="warning"/>
+<Phone color="warning"/>
 
 
 <Title>
@@ -476,26 +469,11 @@ Contact Information
 </Title>
 
 
-
 <Typography>
 
-{patient.email}
+{patient.phone || "No phone"}
 
 </Typography>
-
-
-
-
-<Typography mt={1}>
-
-<Phone fontSize="small"/>
-
-{" "}
-
-{patient.phone}
-
-</Typography>
-
 
 
 </CardBox>
@@ -509,8 +487,7 @@ Contact Information
 
 
 
-
-<Grid item xs={12} md={3}>
+<Grid item xs={12} sm={6} md={3}>
 
 
 <CardBox>
@@ -524,9 +501,10 @@ Personal Information
 </Title>
 
 
-
 <Typography>
+
 Gender
+
 </Typography>
 
 
@@ -539,6 +517,7 @@ Gender
 
 
 
+
 <Typography mt={1}>
 
 Birth Date
@@ -546,10 +525,22 @@ Birth Date
 </Typography>
 
 
-
 <Typography color="text.secondary">
 
-{patient.birthDate}
+{
+
+patient.dateOfBirth
+
+?
+
+new Date(patient.dateOfBirth)
+.toLocaleDateString()
+
+:
+
+"Not available"
+
+}
 
 </Typography>
 
@@ -566,8 +557,7 @@ Birth Date
 
 
 
-
-<Grid item xs={12} md={3}>
+<Grid item xs={12} sm={6} md={3}>
 
 
 <CardBox>
@@ -579,7 +569,6 @@ Birth Date
 <Title>
 Financial
 </Title>
-
 
 
 
@@ -599,7 +588,7 @@ $0.00
 
 
 
-<Typography color="text.secondary">
+<Typography>
 
 Outstanding Balance
 
@@ -611,8 +600,8 @@ Outstanding Balance
 
 
 </Grid>
+<Grid item xs={12} sm={6} md={3}>
 
-<Grid item xs={12} md={3}>
 
 <CardBox>
 
@@ -643,7 +632,7 @@ color="#092c57"
 
 
 
-<Typography color="text.secondary">
+<Typography>
 
 Upcoming Visits
 
@@ -658,29 +647,40 @@ Upcoming Visits
 
 
 
+</Grid>
 
 
 
 
 
-{/* MEDICAL NOTES */}
 
-<Grid item xs={12}>
+
+
+
+{/* MEDICAL NOTES FULL WIDTH */}
+
 
 
 <Paper
 
 sx={{
 
+mt:3,
+
 p:3,
+
+width:"100%",
 
 borderRadius:4,
 
-border:"1px solid #eee3c5"
+border:"1px solid #eee3c5",
+
+boxSizing:"border-box"
 
 }}
 
 >
+
 
 
 <Typography
@@ -690,6 +690,8 @@ fontSize={20}
 fontWeight={800}
 
 color="#092c57"
+
+textAlign="center"
 
 mb={2}
 
@@ -717,7 +719,9 @@ minHeight:100,
 
 display:"flex",
 
-alignItems:"center"
+alignItems:"center",
+
+justifyContent:"center"
 
 }}
 
@@ -726,7 +730,16 @@ alignItems:"center"
 
 <Typography>
 
-{patient.notes || "No medical notes available."}
+{
+
+patient.medicalHistory ||
+
+patient.allergies ||
+
+"No medical notes available."
+
+}
+
 
 </Typography>
 
@@ -734,17 +747,11 @@ alignItems:"center"
 </Box>
 
 
-
 </Paper>
 
 
-</Grid>
 
-
-
-
-</Grid>
-
+</Box>
 
 }
 
@@ -757,6 +764,7 @@ alignItems:"center"
 
 
 {/* DENTAL CHART */}
+
 
 {
 
@@ -798,7 +806,6 @@ Dental Chart
 
 
 
-
 <DentalChart
 
 conditions={conditions}
@@ -809,11 +816,7 @@ setConditions={setConditions}
 
 
 
-
-
 <ConditionLegend />
-
-
 
 
 
@@ -901,7 +904,9 @@ sx={{
 
 background:"#C9A227",
 
-fontWeight:700
+fontWeight:700,
+
+borderRadius:3
 
 }}
 
@@ -912,6 +917,7 @@ fontWeight:700
 </Button>
 
 
+
 </Box>
 
 
@@ -919,9 +925,27 @@ fontWeight:700
 
 
 
-<Typography
 
-mt={3}
+<Paper
+
+sx={{
+
+mt:3,
+
+p:3,
+
+background:"#faf8f2",
+
+borderRadius:3,
+
+border:"1px solid #eee3c5"
+
+}}
+
+>
+
+
+<Typography
 
 color="#718096"
 
@@ -930,6 +954,11 @@ color="#718096"
 No treatments added yet.
 
 </Typography>
+
+
+</Paper>
+
+
 
 
 
@@ -943,10 +972,9 @@ No treatments added yet.
 
 
 
-
-
-
 {/* IMAGES */}
+
+
 
 {
 
@@ -960,6 +988,8 @@ sx={{
 mt:3,
 
 p:4,
+
+width:"100%",
 
 borderRadius:4,
 
@@ -978,11 +1008,15 @@ fontWeight={800}
 
 color="#C9A227"
 
+textAlign="center"
+
 >
 
 Patient Images
 
 </Typography>
+
+
 
 
 
@@ -997,6 +1031,7 @@ spacing={3}
 mt={2}
 
 >
+
 
 
 {
@@ -1029,15 +1064,22 @@ key={index}
 >
 
 
+
 <Paper
 
+onClick={()=>setSelectedImage(image)}
+
 sx={{
+
+height:280,
 
 borderRadius:3,
 
 overflow:"hidden",
 
-border:"1px solid #eee3c5"
+border:"1px solid #eee3c5",
+
+cursor:"pointer"
 
 }}
 
@@ -1048,7 +1090,7 @@ border:"1px solid #eee3c5"
 
 sx={{
 
-height:170,
+height:210,
 
 background:"#111",
 
@@ -1058,7 +1100,7 @@ alignItems:"center",
 
 justifyContent:"center",
 
-fontSize:45,
+fontSize:70,
 
 color:"#fff"
 
@@ -1073,8 +1115,13 @@ color:"#fff"
 
 
 
+<Box
 
-<Box p={2}>
+p={2}
+
+textAlign="center"
+
+>
 
 
 <Typography
@@ -1086,7 +1133,6 @@ fontWeight={700}
 {image}
 
 </Typography>
-
 
 
 
@@ -1115,8 +1161,8 @@ fontWeight:700
 </Box>
 
 
-
 </Paper>
+
 
 
 </Grid>
@@ -1128,6 +1174,7 @@ fontWeight:700
 }
 
 
+
 </Grid>
 
 
@@ -1136,6 +1183,70 @@ fontWeight:700
 
 
 }
+
+
+
+
+
+
+
+
+{/* FULL SCREEN IMAGE */}
+
+
+
+<Dialog
+
+open={Boolean(selectedImage)}
+
+onClose={()=>setSelectedImage(null)}
+
+fullScreen
+
+>
+
+
+<Box
+
+onClick={()=>setSelectedImage(null)}
+
+sx={{
+
+height:"100vh",
+
+background:"#000",
+
+display:"flex",
+
+alignItems:"center",
+
+justifyContent:"center"
+
+}}
+
+>
+
+
+<Typography
+
+fontSize={160}
+
+color="#fff"
+
+>
+
+🦷
+
+</Typography>
+
+
+</Box>
+
+
+</Dialog>
+
+
+
 
 
 
@@ -1159,15 +1270,16 @@ function CardBox({children}){
 
 return(
 
+
 <Paper
 
 sx={{
 
 p:3,
 
-width:"260px",
+width:"100%",
 
-height:"190px",
+height:200,
 
 borderRadius:4,
 
@@ -1193,14 +1305,14 @@ boxSizing:"border-box"
 
 {children}
 
+
 </Paper>
 
 
 )
 
+
 }
-
-
 
 
 
@@ -1212,6 +1324,7 @@ function Title({children}){
 
 
 return(
+
 
 <Typography
 
@@ -1230,13 +1343,5 @@ color="#092c57"
 
 )
 
+
 }
-
-
-
-
-
-
-
-
-

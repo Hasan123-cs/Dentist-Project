@@ -11,7 +11,6 @@ import {
 
 import {
     MoreHoriz,
-    Email,
     Phone,
     CalendarMonth,
     Payments,
@@ -27,6 +26,8 @@ import {
 
 
 
+
+
 export default function PatientCard({patient}){
 
 
@@ -34,7 +35,8 @@ const navigate = useNavigate();
 
 
 
-return (
+
+return(
 
 
 <Paper
@@ -49,31 +51,21 @@ height:520,
 
 boxSizing:"border-box",
 
-
 p:3,
-
 
 borderRadius:4,
 
-
 border:"1px solid #eee3c5",
-
 
 background:"#fff",
 
-
 display:"flex",
-
 
 flexDirection:"column",
 
-
 justifyContent:"space-between",
 
-
-
 cursor:"pointer",
-
 
 
 transition:"0.25s",
@@ -97,15 +89,10 @@ transform:"translateY(-4px)"
 
 
 
-
-
-
-{/* TOP SECTION */}
-
-
-
 <Box>
 
+
+{/* HEADER */}
 
 
 <Box
@@ -159,20 +146,13 @@ patient.name
 
 
 
-
 <IconButton
 
 onClick={(e)=>e.stopPropagation()}
 
 >
 
-
-<MoreHoriz
-
-color="action"
-
-/>
-
+<MoreHoriz color="action"/>
 
 </IconButton>
 
@@ -195,7 +175,6 @@ mt={2}
 >
 
 
-
 <Typography
 
 fontSize={18}
@@ -214,7 +193,6 @@ color="#092c57"
 
 
 
-
 <Chip
 
 label={patient.status || "Active"}
@@ -224,7 +202,6 @@ size="small"
 sx={{
 
 mt:1,
-
 
 background:
 
@@ -245,7 +222,6 @@ fontWeight:700
 
 }}
 
-
 />
 
 
@@ -256,8 +232,11 @@ fontWeight:700
 
 
 
-{/* CONTACT */}
 
+
+
+
+{/* PHONE */}
 
 
 <Box
@@ -269,8 +248,7 @@ textAlign="center"
 >
 
 
-
-<Email
+<Phone
 
 sx={{
 
@@ -292,40 +270,7 @@ mt={1}
 
 >
 
-{patient.email}
-
-</Typography>
-
-
-
-
-
-
-
-<Phone
-
-sx={{
-
-color:"#C9A227",
-
-fontSize:22,
-
-mt:2
-
-}}
-
-/>
-
-
-
-
-<Typography
-
-fontSize={14}
-
->
-
-{patient.phone}
+{patient.phone || "No phone"}
 
 </Typography>
 
@@ -339,8 +284,9 @@ fontSize={14}
 
 
 
-{/* INFO */}
 
+
+{/* INFO */}
 
 
 <Box
@@ -350,7 +296,6 @@ mt={3}
 textAlign="center"
 
 >
-
 
 
 <CalendarMonth
@@ -396,6 +341,7 @@ fontWeight={700}
 
 
 
+
 <Payments
 
 sx={{
@@ -423,6 +369,7 @@ color="#718096"
 Balance
 
 </Typography>
+
 
 
 
@@ -464,8 +411,6 @@ patient.balance !== "$0.00"
 
 
 
-{/* BUTTON */}
-
 
 
 <Button
@@ -480,7 +425,6 @@ variant="contained"
 endIcon={<ArrowForward/>}
 
 
-
 onClick={()=>navigate(`/patients/${patient.id}`)}
 
 
@@ -490,18 +434,13 @@ sx={{
 
 background:"#C9A227",
 
-
 borderRadius:3,
-
 
 py:1.3,
 
-
 fontWeight:800,
 
-
 fontSize:13,
-
 
 
 "&:hover":{
@@ -527,9 +466,11 @@ VIEW PATIENT PROFILE
 
 
 
+
 </Paper>
 
 
 )
+
 
 }

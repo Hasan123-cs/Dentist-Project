@@ -13,11 +13,6 @@ const conditions = [
     },
 
     {
-        label:"Caries",
-        color:"#d6b08c"
-    },
-
-    {
         label:"Filling",
         color:"#93c5fd"
     },
@@ -48,6 +43,7 @@ const conditions = [
     }
 
 ];
+
 
 
 
@@ -92,6 +88,7 @@ mb={2}
 Condition Legend
 
 </Typography>
+
 
 
 
@@ -146,6 +143,8 @@ border:"1px solid #ccc"
 
 
 
+
+
 <Typography
 
 fontSize={13}
@@ -159,6 +158,7 @@ color="#092c57"
 </Typography>
 
 
+
 </Box>
 
 
@@ -169,6 +169,7 @@ color="#092c57"
 
 
 </Box>
+
 
 
 

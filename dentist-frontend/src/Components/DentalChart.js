@@ -23,6 +23,7 @@ const [selectedSurface,setSelectedSurface]=useState(null);
 
 
 
+
 const upperRight=[18,17,16,15,14,13,12,11];
 
 const upperLeft=[21,22,23,24,25,26,27,28];
@@ -38,6 +39,8 @@ const lowerLeft=[31,32,33,34,35,36,37,38];
 
 
 
+
+
 const updateCondition=(surface,value)=>{
 
 
@@ -46,30 +49,64 @@ const updateCondition=(surface,value)=>{
 
 
 
-    // ROOT CANAL WITHOUT SURFACE
 
-    if(value==="rootCanal"){
+
+
+
+    // ROOT CANAL + MISSING WITHOUT SURFACE
+
+    if(
+
+        value==="rootCanal" ||
+
+        value==="missing"
+
+    ){
+
 
 
         setConditions(prev=>({
+
 
             ...prev,
 
 
             [selectedTooth]:{
 
-                rootCanal:"Root Canal"
+
+                [value]:
+
+                value==="rootCanal"
+
+                ?
+
+                "Root Canal"
+
+                :
+
+                "missing"
+
+
 
             }
+
+
 
         }));
 
 
+
+
+
         setSelectedSurface(null);
+
 
         return;
 
+
     }
+
+
 
 
 
@@ -79,7 +116,10 @@ const updateCondition=(surface,value)=>{
     // OTHER CONDITIONS NEED SURFACE
 
     if(!surface)
+
         return;
+
+
 
 
 
@@ -87,7 +127,9 @@ const updateCondition=(surface,value)=>{
     setConditions(prev=>({
 
 
+
         ...prev,
+
 
 
         [selectedTooth]:{
@@ -99,14 +141,21 @@ const updateCondition=(surface,value)=>{
             [surface]:value
 
 
+
         }
+
 
 
     }));
 
 
 
+
+
 };
+
+
+
 
 
 
@@ -124,41 +173,63 @@ return list.map(number=>(
 
 <Tooth
 
+
 key={number}
+
 
 number={number}
 
+
 isUpper={isUpper}
 
+
+
 selected={selectedTooth===number}
+
+
 
 conditions={conditions[number] || {}}
 
 
 
 
+
 onClick={()=>{
+
 
     setSelectedTooth(number);
 
+
     setSelectedSurface(null);
 
+
+
 }}
+
+
+
 
 
 
 
 onSurfaceClick={(surface)=>{
 
+
     setSelectedTooth(number);
 
+
     setSelectedSurface(surface);
+
+
 
 }}
 
 
 
+
+
 />
+
 
 
 ));
@@ -174,34 +245,54 @@ onSurfaceClick={(surface)=>{
 
 
 
+
+
+
 const ToothRow=({right,left,isUpper})=>(
+
 
 
 <Box
 
 sx={{
 
+
 width:"100%",
+
 
 display:"flex",
 
+
 flexDirection:"row",
+
 
 justifyContent:"center",
 
+
 alignItems:"flex-start",
+
 
 flexWrap:"nowrap",
 
+
 overflowX:"auto",
+
 
 gap:1,
 
+
 py:2
+
+
 
 }}
 
+
+
 >
+
+
+
 
 
 
@@ -213,23 +304,33 @@ py:2
 
 sx={{
 
+
 display:"flex",
+
 
 flexDirection:"row",
 
-flexWrap:"nowrap",
 
 gap:0.5,
 
+
 flexShrink:0
+
+
 
 }}
 
 >
 
+
 {renderTeeth(right,isUpper)}
 
+
+
 </Box>
+
+
+
 
 
 
@@ -240,23 +341,34 @@ flexShrink:0
 {/* MID LINE */}
 
 
+
 <Box
 
 sx={{
 
+
 height:150,
+
 
 width:"2px",
 
+
 background:"#ddd",
+
 
 mx:1,
 
+
 flexShrink:0
+
+
 
 }}
 
+
 />
+
+
 
 
 
@@ -267,33 +379,44 @@ flexShrink:0
 {/* LEFT SIDE */}
 
 
+
 <Box
 
 sx={{
 
+
 display:"flex",
+
 
 flexDirection:"row",
 
-flexWrap:"nowrap",
 
 gap:0.5,
 
+
 flexShrink:0
+
+
 
 }}
 
 >
 
+
 {renderTeeth(left,isUpper)}
 
-</Box>
-
-
-
 
 
 </Box>
+
+
+
+
+
+
+
+</Box>
+
 
 
 );
@@ -306,47 +429,78 @@ flexShrink:0
 
 
 
+
+
+
+
+
 return (
 
 
+
 <Box
 
+
 sx={{
+
 
 width:"100%",
 
+
 background:"#fff",
+
 
 borderRadius:3,
 
+
 p:3,
+
 
 boxSizing:"border-box",
 
+
 overflow:"hidden"
+
+
 
 }}
 
+
+
 >
+
+
+
 
 
 
 
 <Typography
 
+
 textAlign="center"
+
 
 fontSize={22}
 
+
 fontWeight={800}
+
 
 color="#092c57"
 
+
+
 >
+
 
 Dental Chart
 
+
 </Typography>
+
+
+
 
 
 
@@ -355,23 +509,37 @@ Dental Chart
 
 <Typography
 
+
 textAlign="center"
+
 
 fontSize={13}
 
+
 color="#718096"
+
 
 mb={3}
 
+
+
 >
+
 
 Clinical Odontogram
 
+
 <br/>
+
 
 Patient Dental Chart
 
+
+
 </Typography>
+
+
+
 
 
 
@@ -383,19 +551,30 @@ Patient Dental Chart
 
 <Typography
 
+
 textAlign="center"
+
 
 fontWeight={800}
 
+
 color="#092c57"
+
 
 mb={2}
 
+
+
 >
+
 
 MAXILLARY (UPPER)
 
+
+
 </Typography>
+
+
 
 
 
@@ -405,13 +584,19 @@ MAXILLARY (UPPER)
 
 <ToothRow
 
+
 right={upperRight}
+
 
 left={upperLeft}
 
+
 isUpper={true}
 
+
 />
+
+
 
 
 
@@ -426,11 +611,16 @@ isUpper={true}
 
 sx={{
 
+
 borderTop:"1px solid #ddd",
+
 
 my:4
 
+
+
 }}
+
 
 />
 
@@ -444,17 +634,26 @@ my:4
 
 <Typography
 
+
 textAlign="center"
+
 
 fontWeight={800}
 
+
 color="#092c57"
+
 
 mb={2}
 
+
+
 >
 
+
 MANDIBULAR (LOWER)
+
+
 
 </Typography>
 
@@ -465,15 +664,25 @@ MANDIBULAR (LOWER)
 
 
 
+
+
+
+
 <ToothRow
+
 
 right={lowerRight}
 
+
 left={lowerLeft}
+
 
 isUpper={false}
 
+
 />
+
+
 
 
 
@@ -487,21 +696,33 @@ isUpper={false}
 
 <ToothPanel
 
+
 tooth={selectedTooth}
+
 
 selectedSurface={selectedSurface}
 
+
 setSelectedSurface={setSelectedSurface}
+
 
 setCondition={updateCondition}
 
+
+
 getCondition={(tooth,surface)=>{
 
-return conditions[tooth]?.[surface]
+
+return conditions[tooth]?.[surface];
+
 
 }}
 
+
+
 />
+
+
 
 
 
@@ -512,7 +733,9 @@ return conditions[tooth]?.[surface]
 </Box>
 
 
+
 );
+
 
 
 }

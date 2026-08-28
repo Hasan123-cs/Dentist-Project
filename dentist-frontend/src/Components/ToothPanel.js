@@ -17,12 +17,6 @@ const conditions = [
 },
 
 {
-    name:"caries",
-    label:"Caries",
-    color:"#e53935"
-},
-
-{
     name:"filling",
     label:"Filling",
     color:"#42a5f5"
@@ -64,6 +58,8 @@ const conditions = [
 
 
 
+
+
 const surfaces=[
 
 {
@@ -98,6 +94,9 @@ const surfaces=[
 
 
 
+
+
+
 export default function ToothPanel({
 
 tooth,
@@ -113,9 +112,13 @@ getCondition
 }){
 
 
+
 if(!tooth)
 
 return null;
+
+
+
 
 
 
@@ -138,23 +141,37 @@ null;
 
 
 
+
+
+
+
 const handleConditionClick=(condition)=>{
 
 
-// Root Canal does not need surface
 
-if(condition==="rootCanal"){
+// Root Canal + Missing do not need surface
+
+if(
+    condition==="rootCanal" ||
+    condition==="missing"
+){
+
 
     setCondition(
         null,
-        "rootCanal"
+        condition
     );
 
+
     setSelectedSurface(null);
+
 
     return;
 
 }
+
+
+
 
 
 
@@ -163,6 +180,8 @@ if(condition==="rootCanal"){
 if(!selectedSurface)
 
 return;
+
+
 
 
 
@@ -175,6 +194,7 @@ setCondition(
 );
 
 
+
 };
 
 
@@ -183,7 +203,13 @@ setCondition(
 
 
 
+
+
+
+
+
 return (
+
 
 <Box
 
@@ -202,6 +228,12 @@ background:"#faf8f2"
 }}
 
 >
+
+
+
+
+
+
 
 
 <Typography
@@ -225,7 +257,8 @@ Selected Tooth: {tooth}
 
 
 
-{/* SURFACES */}
+
+
 
 <Typography
 
@@ -242,6 +275,11 @@ mb={1}
 Select Surface
 
 </Typography>
+
+
+
+
+
 
 
 
@@ -283,6 +321,8 @@ fontWeight:800,
 
 border:"1px solid #d5d5d5",
 
+
+
 background:
 
 selectedSurface===surface.name
@@ -294,6 +334,8 @@ selectedSurface===surface.name
 :
 
 "#ffffff",
+
+
 
 
 color:
@@ -322,7 +364,9 @@ selectedSurface===surface.name
 }
 
 
+
 </Box>
+
 
 
 
@@ -334,6 +378,7 @@ selectedSurface===surface.name
 {
 
 selectedSurface &&
+
 
 <Box mb={3}>
 
@@ -352,6 +397,9 @@ Selected Surface: <b>{selectedSurface}</b>
 
 
 
+
+
+
 <Typography
 
 fontSize={13}
@@ -367,6 +415,7 @@ Current: <b>{currentCondition || "Healthy"}</b>
 </Typography>
 
 
+
 </Box>
 
 }
@@ -378,7 +427,6 @@ Current: <b>{currentCondition || "Healthy"}</b>
 
 
 
-{/* CONDITIONS */}
 
 <Typography
 
@@ -395,6 +443,10 @@ mb={1}
 Treatment / Condition
 
 </Typography>
+
+
+
+
 
 
 
@@ -425,6 +477,7 @@ onClick={()=>handleConditionClick(item.name)}
 
 sx={{
 
+
 background:item.color,
 
 color:"#092c57",
@@ -442,11 +495,13 @@ py:1,
 border:"1px solid rgba(0,0,0,.1)",
 
 
+
 "&:hover":{
 
 background:item.color
 
 }
+
 
 }}
 
@@ -460,6 +515,7 @@ background:item.color
 ))
 
 
+
 }
 
 
@@ -471,9 +527,13 @@ background:item.color
 
 
 
+
+
+
 {
 
 !selectedSurface &&
+
 
 <Typography
 
@@ -485,15 +545,22 @@ color="#888"
 
 >
 
-Select a tooth surface first (except Root Canal).
+Select a tooth surface first (except Root Canal and Missing).
 
 </Typography>
+
 
 }
 
 
 
+
+
+
+
+
 </Box>
+
 
 );
 
