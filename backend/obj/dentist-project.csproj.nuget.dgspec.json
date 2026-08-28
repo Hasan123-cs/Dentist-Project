@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Dentist-Project\\Dentist-Project\\backend\\dentist-project.csproj": {}
+    "C:\\Dentist-project\\backend\\dentist-project.csproj": {}
   },
   "projects": {
-    "C:\\Dentist-Project\\Dentist-Project\\backend\\dentist-project.csproj": {
+    "C:\\Dentist-project\\backend\\dentist-project.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Dentist-Project\\Dentist-Project\\backend\\dentist-project.csproj",
+        "projectUniqueName": "C:\\Dentist-project\\backend\\dentist-project.csproj",
         "projectName": "dentist-project",
-        "projectPath": "C:\\Dentist-Project\\Dentist-Project\\backend\\dentist-project.csproj",
-        "packagesPath": "C:\\Users\\SADEK-COMPUTER\\.nuget\\packages\\",
-        "outputPath": "C:\\Dentist-Project\\Dentist-Project\\backend\\obj\\",
+        "projectPath": "C:\\Dentist-project\\backend\\dentist-project.csproj",
+        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+        "outputPath": "C:\\Dentist-project\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\SADEK-COMPUTER\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Users\\USER\\source\\repos\\Lab1\\examasp\\I3332_Exam_2025_2026_SI_Template\\Packages": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -103,19 +104,19 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.29, 8.0.29]"
+              "version": "[8.0.28, 8.0.28]"
             },
             {
               "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[8.0.29, 8.0.29]"
+              "version": "[8.0.28, 8.0.28]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.29, 8.0.29]"
+              "version": "[8.0.28, 8.0.28]"
             },
             {
               "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.29, 8.0.29]"
+              "version": "[8.0.28, 8.0.28]"
             }
           ],
           "frameworkReferences": {
@@ -126,7 +127,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -45,6 +45,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // services injected 
 builder.Services.AddScoped<AppointmentsService>();
 builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddScoped<PatientService>();
 builder.Services.AddScoped<DashboardService>();
 // identity 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
