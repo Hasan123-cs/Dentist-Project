@@ -3,6 +3,7 @@ using dentist_project.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace dentist_project.Controllers
 {
@@ -44,6 +45,25 @@ namespace dentist_project.Controllers
             return Ok(new
             {
                 message = "Appointment updated successfully."
+            });
+        }
+
+        [HttpPut("{id}/cancel")]
+        public async Task<IActionResult> CancelAppointment(int id)
+        {
+            var result = await _appointmentService.CancelAppointmentAsync(id);
+
+            if (!result.success)
+            {
+                return BadRequest(new
+                {
+                    message = result.message
+                });
+            }
+
+            return Ok(new
+            {
+                message = "Appointment cancelled successfully."
             });
         }
     }

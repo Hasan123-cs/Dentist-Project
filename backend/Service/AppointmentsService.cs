@@ -2,6 +2,7 @@
 using dentist_project.Data;
 using dentist_project.DTO;
 using dentist_project.Enums;
+using dentist_project.Models;
 using Microsoft.EntityFrameworkCore;
 namespace dentist_project.Service
 {
@@ -18,8 +19,15 @@ namespace dentist_project.Service
             DateTime start,
             DateTime end)
         {
+            Console.WriteLine($"START RECEIVED: {start}");
+            Console.WriteLine($"START KIND: {start.Kind}");
+
+            Console.WriteLine($"END RECEIVED: {end}");
+            Console.WriteLine($"END KIND: {end.Kind}");
             var startUtc = DateTime.SpecifyKind(start, DateTimeKind.Utc);
             var endUtc = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+            Console.WriteLine($"START UTC: {startUtc}");
+            Console.WriteLine($"END UTC: {endUtc}");
 
             var nowUtc = DateTime.UtcNow;
             var todayUtcStart = DateTime.UtcNow.Date;
@@ -38,7 +46,13 @@ namespace dentist_project.Service
                 a.StartDateTime <= nowUtc &&
                 a.EndDateTime >= nowUtc &&
                 !a.Status.ToString().Equals("Cancelled", StringComparison.OrdinalIgnoreCase));
+            var test = await _db.Appointments
+    .Where(a => a.StartDateTime < endUtc &&
+                a.EndDateTime > startUtc)
+    .Select(a => a.Id)
+    .ToListAsync();
 
+            Console.WriteLine("IDS FOUND: " + string.Join(", ", test));
             var rawData = await _db.Appointments
                 .AsNoTracking()
                 .Where(a =>
@@ -140,6 +154,27 @@ namespace dentist_project.Service
             return (true, "data Updated Successfuly.");
         }
 
+            if (appointment == null)
+            {
+                return (false, "Appointment not found.");
+            }
+
+            if (appointment.Status == AppointmentStatus.Cancelled)
+            {
+                return (false, "Appointment is already cancelled.");
+            }
+
+            if (appointment.Status == AppointmentStatus.Completed)
+            {
+                return (false, "Completed appointment cannot be cancelled.");
+            }
+
+            appointment.Status = AppointmentStatus.Cancelled;
+
+            await _db.SaveChangesAsync();
+
+            return (true, "Appointment cancelled successfully.");
+        }
     }
 }
 
