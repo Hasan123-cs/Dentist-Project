@@ -1,5 +1,7 @@
 ﻿[Bb]in/
 [Oo]bj/
+bin/
+obj/
 .vs/
 *.suo
 *.user
