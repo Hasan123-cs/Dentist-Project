@@ -153,6 +153,10 @@ namespace dentist_project.Service
             await _db.SaveChangesAsync();
             return (true, "data Updated Successfuly.");
         }
+        public async Task<(bool success, string message)> CancelAppointmentAsync(int id)
+        {
+            var appointment = await _db.Appointments
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (appointment == null)
             {
@@ -175,6 +179,89 @@ namespace dentist_project.Service
 
             return (true, "Appointment cancelled successfully.");
         }
+        // add the new appointment by default scheduled 
+        public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
+      CreateAppointmentDto dto,
+      string userId)
+        {
+            // Find patient by full name
+            var patient = await _db.Patients
+                .FirstOrDefaultAsync(p =>
+                    (p.FirstName + " " + p.LastName).ToLower()
+                    == dto.PatientName.Trim().ToLower());
+
+            if (patient == null)
+            {
+                return (false, "Patient not found.");
+            }
+
+            // Find treatment by name
+            var treatment = await _db.Treatments
+                .FirstOrDefaultAsync(t =>
+                    t.Name.ToLower()
+                    == dto.TreatmentName.Trim().ToLower());
+
+            if (treatment == null)
+            {
+                return (false, "Treatment not found.");
+
+            }
+
+            // Create start date/time to lebanon time 
+            var localDateTime = dto.Date.ToDateTime(dto.Time);
+            // FOR BOTH WIN AND LUNIX
+            var lebanonTimeZone = OperatingSystem.IsWindows()
+                ? TimeZoneInfo.FindSystemTimeZoneById("Middle East Standard Time")
+                : TimeZoneInfo.FindSystemTimeZoneById("Asia/Beirut");
+
+            var startDateTime = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(localDateTime, DateTimeKind.Unspecified),
+                lebanonTimeZone
+            );
+
+            // Calculate end time using treatment duration
+            var endDateTime = startDateTime.AddMinutes(
+     treatment.EstimatedMinutes
+ );
+
+            // Create appointment
+            var appointment = new Appointment
+            {
+                PatientId = patient.Id,
+
+                // Get employee from JWT
+                CreatedById = userId,
+
+                StartDateTime = startDateTime,
+                EndDateTime = endDateTime,
+
+                Status = AppointmentStatus.Scheduled,
+
+                TotalCost = treatment.DefaultPrice,
+                AmountPaid = 0,
+
+                PaymentStatus = Enums.PaymentStatus.Pending
+            };
+
+            // Add treatment to appointment
+            var appointmentTreatment = new AppointmentTreatment
+            {
+                Appointment = appointment,
+                TreatmentId = treatment.Id,
+                Price = treatment.DefaultPrice
+            };
+
+            appointment.AppointmentTreatments.Add(
+                appointmentTreatment
+            );
+
+            _db.Appointments.Add(appointment);
+
+            await _db.SaveChangesAsync();
+
+            return (true, "Add Succsess ");
+        }
     }
 }
+
 
