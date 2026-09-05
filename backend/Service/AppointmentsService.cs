@@ -242,6 +242,7 @@ namespace dentist_project.Service
 
                 PaymentStatus = Enums.PaymentStatus.Pending
             };
+          
 
             // Add treatment to appointment
             var appointmentTreatment = new AppointmentTreatment

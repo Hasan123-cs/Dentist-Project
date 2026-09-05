@@ -1,12 +1,12 @@
 using dentist_project.Data;
 using dentist_project.Models;
 using dentist_project.Service;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using DotNetEnv;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +47,7 @@ builder.Services.AddScoped<AppointmentsService>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<PatientService>();
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<TreatmentService>();
 // identity 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -108,10 +109,36 @@ var app = builder.Build();
 // configure the seeding data 
 using (var scope = app.Services.CreateScope())
 {
-    var x  = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
-    var userManager =scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager =scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await  x.SeedUsersAsync(userManager,roleManager);
+    var x = scope.ServiceProvider
+        .GetRequiredService<AuthenticationService>();
+
+    var userManager =
+        scope.ServiceProvider
+        .GetRequiredService<UserManager<ApplicationUser>>();
+
+    var roleManager =
+        scope.ServiceProvider
+        .GetRequiredService<RoleManager<IdentityRole>>();
+
+
+    await x.SeedUsersAsync(
+        userManager,
+        roleManager
+    );
+
+
+    var db =
+        scope.ServiceProvider
+        .GetRequiredService<AppDbContext>();
+
+
+    await TeethSeeder.SeedAsync(db);
+
+
+    await DentalSeeder.SeedAsync(
+        db,
+        userManager
+    );
 }
 
 // Configure the HTTP request pipeline.

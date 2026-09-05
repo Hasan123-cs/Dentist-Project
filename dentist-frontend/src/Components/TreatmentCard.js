@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
+
 export default function TreatmentCard({ treatment }) {
 
 
@@ -32,9 +33,13 @@ export default function TreatmentCard({ treatment }) {
 
     Completed:"#16a34a",
 
+    Scheduled:"#2563eb",
+
     "In Progress":"#f59e0b",
 
-    Pending:"#ef4444"
+    Pending:"#ef4444",
+
+    Cancelled:"#9ca3af"
 
   };
 
@@ -86,12 +91,14 @@ export default function TreatmentCard({ treatment }) {
 
 
 
+
         "&:hover":{
 
 
           transform:"translateY(-4px)",
 
           boxShadow:"0 10px 25px rgba(0,0,0,.1)"
+
 
         }
 
@@ -105,7 +112,9 @@ export default function TreatmentCard({ treatment }) {
 
 
 
+
       {/* HEADER */}
+
 
 
       <Box>
@@ -173,7 +182,7 @@ export default function TreatmentCard({ treatment }) {
           <Chip
 
 
-            label={treatment.status}
+            label={treatment.status || "Pending"}
 
 
             size="small"
@@ -183,6 +192,7 @@ export default function TreatmentCard({ treatment }) {
 
 
               background:
+
               statusColor[treatment.status] || "#999",
 
 
@@ -226,6 +236,8 @@ export default function TreatmentCard({ treatment }) {
 
 
 
+
+
         <Typography
 
           fontSize={14}
@@ -257,6 +269,8 @@ export default function TreatmentCard({ treatment }) {
       <Box mt={2}>
 
 
+
+
         <Box
 
           display="flex"
@@ -269,22 +283,29 @@ export default function TreatmentCard({ treatment }) {
 
         >
 
+
           <MedicalServices
 
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
 
 
+
           <Typography fontSize={14}>
 
-            Tooth: <b>{treatment.tooth}</b>
+
+            Tooth: <b>{treatment.tooth || "N/A"}</b>
+
 
           </Typography>
+
 
 
         </Box>
@@ -294,6 +315,9 @@ export default function TreatmentCard({ treatment }) {
 
 
 
+
+
+
         <Box
 
           display="flex"
@@ -305,6 +329,7 @@ export default function TreatmentCard({ treatment }) {
           mb={1}
 
         >
+
 
 
           <CalendarMonth
@@ -312,20 +337,28 @@ export default function TreatmentCard({ treatment }) {
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
 
 
+
           <Typography fontSize={14}>
 
+
             {treatment.date}
+
 
           </Typography>
 
 
+
         </Box>
+
+
 
 
 
@@ -346,25 +379,34 @@ export default function TreatmentCard({ treatment }) {
         >
 
 
+
           <AccessTime
 
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
 
 
+
           <Typography fontSize={14}>
 
+
             {treatment.duration}
+
 
           </Typography>
 
 
+
         </Box>
+
+
 
 
 
@@ -383,15 +425,19 @@ export default function TreatmentCard({ treatment }) {
         >
 
 
+
           <AttachMoney
 
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
+
 
 
           <Typography
@@ -402,12 +448,17 @@ export default function TreatmentCard({ treatment }) {
 
           >
 
+
             {treatment.price}
+
 
           </Typography>
 
 
+
         </Box>
+
+
 
 
       </Box>
@@ -430,22 +481,28 @@ export default function TreatmentCard({ treatment }) {
         sx={{
 
 
+
           background:"#faf8f2",
+
 
 
           borderRadius:2,
 
 
+
           p:1.5,
 
 
+
           mt:2
+
 
 
         }}
 
 
       >
+
 
 
         <Typography
@@ -456,9 +513,12 @@ export default function TreatmentCard({ treatment }) {
 
         >
 
-          {treatment.notes}
+
+          {treatment.notes || "No notes"}
+
 
         </Typography>
+
 
 
       </Box>
@@ -475,16 +535,21 @@ export default function TreatmentCard({ treatment }) {
 
 
 
+
       <Button
+
 
 
         fullWidth
 
 
+
         variant="contained"
 
 
+
         endIcon={<ArrowForward/>}
+
 
 
 
@@ -502,37 +567,51 @@ export default function TreatmentCard({ treatment }) {
 
 
 
+
         sx={{
+
 
 
           mt:2,
 
+
+
           height:42,
+
 
 
           background:"#C9A227",
 
 
+
           borderRadius:3,
+
 
 
           fontWeight:700,
 
 
+
           "&:hover":{
+
 
             background:"#b18c1f"
 
+
           }
+
 
 
         }}
 
 
+
       >
 
 
+
         VIEW DETAILS
+
 
 
       </Button>
@@ -542,7 +621,9 @@ export default function TreatmentCard({ treatment }) {
 
 
 
+
     </Paper>
+
 
 
   );

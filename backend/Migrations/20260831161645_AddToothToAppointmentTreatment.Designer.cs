@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using dentist_project.Data;
@@ -11,9 +12,11 @@ using dentist_project.Data;
 namespace dentist_project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831161645_AddToothToAppointmentTreatment")]
+    partial class AddToothToAppointmentTreatment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -300,17 +303,12 @@ namespace dentist_project.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<int?>("ToothId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("TreatmentId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
-
-                    b.HasIndex("ToothId");
 
                     b.HasIndex("TreatmentId");
 
@@ -631,11 +629,6 @@ namespace dentist_project.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("dentist_project.Models.Tooth", "Tooth")
-                        .WithMany()
-                        .HasForeignKey("ToothId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("dentist_project.Models.Treatment", "Treatment")
                         .WithMany("AppointmentTreatments")
                         .HasForeignKey("TreatmentId")
@@ -643,8 +636,6 @@ namespace dentist_project.Migrations
                         .IsRequired();
 
                     b.Navigation("Appointment");
-
-                    b.Navigation("Tooth");
 
                     b.Navigation("Treatment");
                 });

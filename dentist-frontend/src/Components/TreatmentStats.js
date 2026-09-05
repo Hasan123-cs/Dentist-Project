@@ -14,13 +14,27 @@ import {
 } from "@mui/icons-material";
 
 
+import {
+    useEffect,
+    useState
+} from "react";
 
-const stats=[
 
+import axios from "axios";
+
+
+
+
+
+export default function TreatmentStats(){
+
+
+
+const [stats,setStats] = useState([
 
 {
     title:"Total Treatments",
-    value:24,
+    value:0,
     icon:<MedicalServices />,
     color:"#C9A227"
 },
@@ -28,7 +42,7 @@ const stats=[
 
 {
     title:"Completed",
-    value:15,
+    value:0,
     icon:<CheckCircle />,
     color:"#16a34a"
 },
@@ -36,7 +50,7 @@ const stats=[
 
 {
     title:"Pending",
-    value:6,
+    value:0,
     icon:<Pending />,
     color:"#f59e0b"
 },
@@ -44,20 +58,139 @@ const stats=[
 
 {
     title:"Total Revenue",
-    value:"$8,450",
+    value:"$0",
+    icon:<AttachMoney />,
+    color:"#2563eb"
+}
+
+]);
+
+
+
+
+
+
+useEffect(()=>{
+
+
+const getStats = async()=>{
+
+
+try{
+
+
+const res = await axios.get(
+"https://localhost:7166/api/treatments/all"
+);
+
+
+
+const treatments = res.data;
+
+
+
+const total = treatments.length;
+
+
+
+const completed =
+treatments.filter(
+t=>t.status === "Completed"
+).length;
+
+
+
+const pending =
+treatments.filter(
+t=>
+t.status === "Scheduled" ||
+t.status === "Pending"
+).length;
+
+
+
+const revenue =
+treatments.reduce(
+(sum,t)=>sum + t.price,
+0
+);
+
+
+
+
+
+
+
+setStats([
+
+
+{
+    title:"Total Treatments",
+    value:total,
+    icon:<MedicalServices />,
+    color:"#C9A227"
+},
+
+
+
+{
+    title:"Completed",
+    value:completed,
+    icon:<CheckCircle />,
+    color:"#16a34a"
+},
+
+
+
+{
+    title:"Pending",
+    value:pending,
+    icon:<Pending />,
+    color:"#f59e0b"
+},
+
+
+
+{
+    title:"Total Revenue",
+    value:`$${revenue}`,
     icon:<AttachMoney />,
     color:"#2563eb"
 }
 
 
 
-];
+]);
+
+
+
+}
+
+catch(error){
+
+console.log(
+"Error loading treatment stats",
+error
+);
+
+}
+
+
+
+};
+
+
+
+getStats();
+
+
+},[]);
 
 
 
 
 
-export default function TreatmentStats(){
+
 
 
 
@@ -95,6 +228,7 @@ key={item.title}
 >
 
 
+
 <Paper
 
 
@@ -128,11 +262,13 @@ gap:2,
 
 boxShadow:"0 3px 10px rgba(0,0,0,.05)"
 
+
 }}
 
 
 
 >
+
 
 
 <Box
@@ -165,6 +301,7 @@ justifyContent:"center"
 }}
 
 
+
 >
 
 
@@ -192,6 +329,7 @@ display:"flex"
 
 
 
+
 <Box>
 
 
@@ -206,6 +344,7 @@ color="#718096"
 {item.title}
 
 </Typography>
+
 
 
 
@@ -235,7 +374,9 @@ color="#092c57"
 </Paper>
 
 
+
 </Grid>
+
 
 
 ))

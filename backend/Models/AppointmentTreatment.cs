@@ -7,6 +7,9 @@ public class AppointmentTreatment
     public Appointment Appointment { get; set; } = null!;
     public int TreatmentId { get; set; }
     public Treatment Treatment { get; set; } = null!;
+    public int? ToothId { get; set; }
+
+    public Tooth? Tooth { get; set; }
     public decimal Price { get; set; }
     public string? Notes { get; set; }
 }

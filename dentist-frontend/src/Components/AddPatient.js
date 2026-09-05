@@ -7,13 +7,19 @@ import {
   MenuItem
 } from "@mui/material";
 
+
 import {
   useNavigate
 } from "react-router-dom";
 
+
 import {
   useState
 } from "react";
+
+
+import axios from "axios";
+
 
 
 
@@ -27,7 +33,6 @@ const navigate = useNavigate();
 const [form,setForm] = useState({
 
   name:"",
-  email:"",
   phone:"",
   gender:"",
   birthDate:"",
@@ -36,10 +41,15 @@ const [form,setForm] = useState({
 });
 
 
+const [error,setError] = useState("");
+
+
+
 
 
 
 const handleChange = (e)=>{
+
 
 setForm({
 
@@ -49,6 +59,7 @@ setForm({
 
 });
 
+
 };
 
 
@@ -57,24 +68,76 @@ setForm({
 
 
 
-const handleSubmit = (e)=>{
+
+
+const handleSubmit = async (e)=>{
+
 
 e.preventDefault();
 
 
-console.log(
-"New Patient:",
-form
+
+try{
+
+
+await axios.post(
+
+"https://localhost:7166/api/Patients",
+
+{
+
+
+fullName:form.name,
+
+
+phone:form.phone,
+
+
+gender:form.gender,
+
+
+dateOfBirth:form.birthDate,
+
+
+allergies:"None",
+
+
+medicalHistory:form.notes
+
+
+}
+
 );
 
-
-// backend later
 
 
 navigate("/patients");
 
 
+
+}
+
+catch(err){
+
+
+console.log(
+"Error creating patient:",
+err
+);
+
+
+setError(
+"Failed to create patient"
+);
+
+
+}
+
+
+
 };
+
+
 
 
 
@@ -103,8 +166,6 @@ p:4
 
 
 
-
-
 <Paper
 
 sx={{
@@ -128,7 +189,6 @@ border:"1px solid #eee3c5"
 
 
 
-
 <Typography
 
 fontSize={28}
@@ -148,6 +208,25 @@ Add New Patient
 </Typography>
 
 
+
+
+
+{
+error &&
+
+<Typography
+
+color="error"
+
+mb={2}
+
+>
+
+{error}
+
+</Typography>
+
+}
 
 
 
@@ -199,25 +278,6 @@ fullWidth
 
 
 
-<TextField
-
-label="Email"
-
-name="email"
-
-value={form.email}
-
-onChange={handleChange}
-
-fullWidth
-
-/>
-
-
-
-
-
-
 
 <TextField
 
@@ -232,6 +292,7 @@ onChange={handleChange}
 fullWidth
 
 />
+
 
 
 
@@ -263,7 +324,6 @@ Male
 </MenuItem>
 
 
-
 <MenuItem value="Female">
 
 Female
@@ -281,12 +341,9 @@ Female
 
 
 
-{/* DATE OF BIRTH */}
-
-
 <TextField
 
-placeholder="Date of Birth"
+label="Date of Birth"
 
 name="birthDate"
 
@@ -298,21 +355,11 @@ type="date"
 
 InputLabelProps={{
 
-shrink:false
+shrink:true
 
 }}
 
 fullWidth
-
-sx={{
-
-"& input":{
-
-fontSize:16
-
-}
-
-}}
 
 />
 
@@ -364,9 +411,6 @@ mt={2}
 
 
 
-
-
-
 <Button
 
 variant="outlined"
@@ -409,8 +453,6 @@ sx={{
 
 background:"#C9A227",
 
-color:"#fff",
-
 fontWeight:700,
 
 borderRadius:3,
@@ -435,9 +477,7 @@ SAVE PATIENT
 
 
 
-
 </Box>
-
 
 
 
@@ -450,7 +490,6 @@ SAVE PATIENT
 
 
 </Paper>
-
 
 
 

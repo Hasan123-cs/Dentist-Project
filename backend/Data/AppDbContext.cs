@@ -103,6 +103,11 @@ namespace dentist_project.Data
             builder.Entity<Tooth>()
                 .HasIndex(t => t.Number)
                 .IsUnique();
+            builder.Entity<AppointmentTreatment>()
+    .HasOne(at => at.Tooth)
+    .WithMany()
+    .HasForeignKey(at => at.ToothId)
+    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

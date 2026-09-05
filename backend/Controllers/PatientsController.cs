@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using dentist_project.Data;
-using dentist_project.Models;
+﻿using dentist_project.Data;
+using dentist_project.DTO;
 using dentist_project.DTOs;
+using dentist_project.Models;
 using dentist_project.Service;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace dentist_project.Controllers;
@@ -86,6 +87,29 @@ public class PatientsController : ControllerBase
 
 
         return Ok(patient);
+
+    }
+    [HttpPost]
+    public async Task<IActionResult> CreatePatient(
+    CreatePatientDto dto)
+    {
+
+        var result =
+            await _service.CreatePatientAsync(dto);
+
+
+
+        if (!result.success)
+        {
+            return BadRequest(result.message);
+        }
+
+
+
+        return Ok(new
+        {
+            message = result.message
+        });
 
     }
 

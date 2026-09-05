@@ -4,67 +4,127 @@ import {
   Grid
 } from "@mui/material";
 
+
+import {
+  useEffect,
+  useState
+} from "react";
+
+
+import axios from "axios";
+
+
 import TreatmentCard from "./TreatmentCard";
 
 
-const treatments=[
-
-{
-  id:1,
-  patient:"John Smith",
-  treatment:"Root Canal",
-  tooth:"36",
-  status:"Completed",
-  price:"$450",
-  duration:"90 min",
-  date:"12 Aug 2026",
-  notes:"Completed successfully"
-},
-
-{
-  id:2,
-  patient:"Sarah Johnson",
-  treatment:"Dental Crown",
-  tooth:"14",
-  status:"In Progress",
-  price:"$800",
-  duration:"60 min",
-  date:"15 Aug 2026",
-  notes:"Temporary crown placed"
-},
-
-{
-  id:3,
-  patient:"Michael Brown",
-  treatment:"Filling",
-  tooth:"25",
-  status:"Pending",
-  price:"$150",
-  duration:"30 min",
-  date:"18 Aug 2026",
-  notes:"Waiting for appointment"
-},
-
-{
-  id:4,
-  patient:"Anna White",
-  treatment:"Implant",
-  tooth:"46",
-  status:"Completed",
-  price:"$1200",
-  duration:"120 min",
-  date:"20 Aug 2026",
-  notes:"Implant completed"
-}
-
-];
 
 
 
 export default function TreatmentList(){
 
 
+const [treatments,setTreatments] = useState([]);
+
+
+
+
+
+
+useEffect(()=>{
+
+
+const getTreatments = async()=>{
+
+
+try{
+
+
+const response = await axios.get(
+"https://localhost:7166/api/treatments/all"
+);
+
+
+
+const data = response.data.map(t => ({
+
+
+id:t.id,
+
+
+patientId:t.patientId,
+
+
+patient:t.patient,
+
+
+treatment:t.treatment,
+
+
+tooth:t.tooth || "N/A",
+
+
+status:t.status,
+
+
+price:`$${t.price}`,
+
+
+duration:t.duration,
+
+
+date:new Date(
+t.date
+).toLocaleDateString(),
+
+
+notes:t.notes || "No notes"
+
+
+
+}));
+
+
+
+
+setTreatments(data);
+
+
+
+}
+
+catch(error){
+
+
+console.log(
+"Error loading treatments:",
+error
+);
+
+
+}
+
+
+
+};
+
+
+
+getTreatments();
+
+
+
+},[]);
+
+
+
+
+
+
+
+
+
 return (
+
 
 <Box
 
@@ -77,6 +137,7 @@ mt:3
 }}
 
 >
+
 
 
 <Typography
@@ -98,6 +159,9 @@ All Treatments ({treatments.length})
 
 
 
+
+
+
 <Grid
 
 container
@@ -115,8 +179,11 @@ margin:0
 >
 
 
+
 {
+
 treatments.map(item=>(
+
 
 
 <Grid
@@ -160,22 +227,33 @@ treatment={item}
 />
 
 
+
 </Box>
 
 
+
 </Grid>
+
 
 
 ))
 
+
 }
+
 
 
 </Grid>
 
 
+
+
+
 </Box>
 
+
+
 );
+
 
 }
