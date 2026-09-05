@@ -33,11 +33,10 @@ namespace dentist_project.Service
                     CreatedAt = p.CreatedAt
                 })
                 .ToListAsync();
-
-
             return patients;
 
         }
+
         public async Task<(bool success, string message)> CreatePatientAsync(
     CreatePatientDto dto)
         {
@@ -105,7 +104,26 @@ namespace dentist_project.Service
                 true,
                 "Patient created successfully"
             );
+        }
 
+
+        // DENTAL CHART 
+        public async Task<List<DentalChartItemDto>> GetPatientDentalChartAsync(
+       int patientId)
+        {
+            return await _context.ToothTreatments
+                .Include(tt => tt.Tooth)
+                .Where(tt => tt.MedicalRecord.PatientId == patientId)
+                .Select(tt => new DentalChartItemDto
+                {
+                    ToothNumber = tt.Tooth.Number,
+                    Surface = tt.Surface,
+                    Condition = tt.Condition,
+                    Status = tt.Status,
+                    TreatmentId = tt.TreatmentId,
+                    Notes = tt.Notes
+                })
+                .ToListAsync();
 
         }
     }

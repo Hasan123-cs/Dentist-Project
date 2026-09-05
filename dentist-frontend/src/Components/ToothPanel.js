@@ -1,60 +1,58 @@
 import React from "react";
 
 import {
-    Box,
-    Typography,
-    Button
+  Box,
+  Typography,
+  Button
 } from "@mui/material";
 
 
 
 const conditions = [
 
-{
+  {
     name:"healthy",
     label:"Healthy",
     color:"#e8f7ee"
-},
+  },
 
-{
+  {
     name:"filling",
     label:"Filling",
     color:"#42a5f5"
-},
+  },
 
-{
+  {
     name:"crown",
     label:"Crown",
     color:"#fdd835"
-},
+  },
 
-{
+  {
     name:"missing",
     label:"Missing",
     color:"#bdbdbd"
-},
+  },
 
-{
+  {
     name:"implant",
     label:"Implant",
     color:"#8e7dff"
-},
+  },
 
-{
+  {
     name:"rootCanal",
     label:"Root Canal",
     color:"#8e24aa"
-},
+  },
 
-{
+  {
     name:"bridge",
     label:"Bridge",
     color:"#ffb15c"
-}
+  }
 
 ];
-
-
 
 
 
@@ -62,35 +60,32 @@ const conditions = [
 
 const surfaces=[
 
-{
+  {
     name:"M",
     label:"Mesial"
-},
+  },
 
-{
+  {
     name:"O",
     label:"Occlusal"
-},
+  },
 
-{
+  {
     name:"D",
     label:"Distal"
-},
+  },
 
-{
+  {
     name:"B",
     label:"Buccal"
-},
+  },
 
-{
+  {
     name:"L",
     label:"Lingual"
-}
+  }
 
 ];
-
-
-
 
 
 
@@ -99,25 +94,28 @@ const surfaces=[
 
 export default function ToothPanel({
 
-tooth,
+  tooth,
 
-selectedSurface,
+  selectedTeeth,
 
-setSelectedSurface,
+  bridgeMode,
 
-setCondition,
+  setBridgeMode,
 
-getCondition
+  selectedSurface,
 
-}){
+  setSelectedSurface,
+
+  setCondition,
+
+  getCondition
+
+}) {
 
 
 
-if(!tooth)
-
-return null;
-
-
+if(!tooth && !bridgeMode)
+  return null;
 
 
 
@@ -125,13 +123,13 @@ return null;
 
 const currentCondition =
 
-selectedSurface
+selectedSurface && tooth
 
 ?
 
 getCondition(
-    tooth,
-    selectedSurface
+  tooth,
+  selectedSurface
 )
 
 :
@@ -145,28 +143,21 @@ null;
 
 
 
+
 const handleConditionClick=(condition)=>{
 
 
 
-// Root Canal + Missing do not need surface
+// Start bridge selection
 
-if(
-    condition==="rootCanal" ||
-    condition==="missing"
-){
+if(condition==="bridge"){
 
 
-    setCondition(
-        null,
-        condition
-    );
+  setBridgeMode(true);
 
+  setSelectedSurface(null);
 
-    setSelectedSurface(null);
-
-
-    return;
+  return;
 
 }
 
@@ -175,21 +166,46 @@ if(
 
 
 
-// Other treatments need surface
+
+// Apply root canal / missing
+
+if(
+condition==="rootCanal" ||
+condition==="missing"
+){
+
+
+  setCondition(
+    null,
+    condition
+  );
+
+
+  setSelectedSurface(null);
+
+
+  return;
+
+}
+
+
+
+
+
+
+
+// Normal treatments
 
 if(!selectedSurface)
-
 return;
-
-
 
 
 
 setCondition(
 
-    selectedSurface,
+selectedSurface,
 
-    condition
+condition
 
 );
 
@@ -199,6 +215,28 @@ setCondition(
 
 
 
+
+
+
+
+
+
+const applyBridge=()=>{
+
+
+if(!selectedTeeth || selectedTeeth.length===0)
+  return;
+
+
+
+setCondition(
+  null,
+  "bridge"
+);
+
+
+
+};
 
 
 
@@ -232,10 +270,6 @@ background:"#faf8f2"
 
 
 
-
-
-
-
 <Typography
 
 fontSize={20}
@@ -248,7 +282,19 @@ mb={2}
 
 >
 
-Selected Tooth: {tooth}
+{
+
+bridgeMode
+
+?
+
+`Selected Teeth: ${selectedTeeth.length}`
+
+:
+
+`Selected Tooth: ${tooth}`
+
+}
 
 </Typography>
 
@@ -258,7 +304,77 @@ Selected Tooth: {tooth}
 
 
 
+{
 
+bridgeMode &&
+
+
+<Box mb={3}>
+
+
+<Typography
+
+fontSize={14}
+
+color="#555"
+
+mb={2}
+
+>
+
+Click on teeth to add them to the bridge.
+
+</Typography>
+
+
+
+<Button
+
+variant="contained"
+
+onClick={applyBridge}
+
+disabled={
+!selectedTeeth ||
+selectedTeeth.length===0
+}
+
+sx={{
+
+background:"#ffb15c",
+
+color:"#092c57",
+
+fontWeight:800
+
+}}
+
+>
+
+Apply Bridge
+
+</Button>
+
+
+
+</Box>
+
+}
+
+
+
+
+
+
+
+
+
+
+{
+
+!bridgeMode &&
+
+<>
 
 <Typography
 
@@ -275,10 +391,6 @@ mb={1}
 Select Surface
 
 </Typography>
-
-
-
-
 
 
 
@@ -319,10 +431,6 @@ borderRadius:2,
 
 fontWeight:800,
 
-border:"1px solid #d5d5d5",
-
-
-
 background:
 
 selectedSurface===surface.name
@@ -333,10 +441,7 @@ selectedSurface===surface.name
 
 :
 
-"#ffffff",
-
-
-
+"#fff",
 
 color:
 
@@ -344,7 +449,7 @@ selectedSurface===surface.name
 
 ?
 
-"#ffffff"
+"#fff"
 
 :
 
@@ -364,9 +469,7 @@ selectedSurface===surface.name
 }
 
 
-
 </Box>
-
 
 
 
@@ -380,45 +483,37 @@ selectedSurface===surface.name
 selectedSurface &&
 
 
-<Box mb={3}>
-
-
 <Typography
 
 fontSize={13}
 
 color="#718096"
 
->
-
-Selected Surface: <b>{selectedSurface}</b>
-
-</Typography>
-
-
-
-
-
-
-<Typography
-
-fontSize={13}
-
-color="#718096"
-
-mt={1}
+mb={2}
 
 >
 
-Current: <b>{currentCondition || "Healthy"}</b>
+Current:
+
+<b>
+
+{" "}
+
+{currentCondition || "Healthy"}
+
+</b>
 
 </Typography>
 
-
-
-</Box>
 
 }
+
+
+
+</>
+
+}
+
 
 
 
@@ -450,8 +545,6 @@ Treatment / Condition
 
 
 
-
-
 <Box
 
 display="flex"
@@ -474,9 +567,7 @@ key={item.name}
 
 onClick={()=>handleConditionClick(item.name)}
 
-
 sx={{
-
 
 background:item.color,
 
@@ -492,16 +583,7 @@ px:2,
 
 py:1,
 
-border:"1px solid rgba(0,0,0,.1)",
-
-
-
-"&:hover":{
-
-background:item.color
-
-}
-
+border:"1px solid rgba(0,0,0,.1)"
 
 }}
 
@@ -514,10 +596,7 @@ background:item.color
 
 ))
 
-
-
 }
-
 
 
 </Box>
@@ -532,7 +611,7 @@ background:item.color
 
 {
 
-!selectedSurface &&
+!selectedSurface && !bridgeMode &&
 
 
 <Typography
@@ -555,13 +634,10 @@ Select a tooth surface first (except Root Canal and Missing).
 
 
 
-
-
-
-
 </Box>
 
 
 );
+
 
 }

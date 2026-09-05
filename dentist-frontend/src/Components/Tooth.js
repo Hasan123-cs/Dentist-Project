@@ -2,46 +2,43 @@ import { Box, Typography } from "@mui/material";
 import ToothCircle from "./ToothCircle";
 
 
-
 const molars = [
-    16, 17, 18,
-    26, 27, 28,
-    36, 37, 38,
-    46, 47, 48
+  16,17,18,
+  26,27,28,
+  36,37,38,
+  46,47,48
 ];
 
 
 const premolars = [
-    14, 15,
-    24, 25,
-    34, 35,
-    44, 45
+  14,15,
+  24,25,
+  34,35,
+  44,45
 ];
 
 
 const canines = [
-    13, 23, 33, 43
+  13,23,33,43
 ];
 
 
 
+function getType(number){
+
+  if(molars.includes(number))
+    return "molar";
 
 
-function getType(number) {
-
-    if (molars.includes(number))
-        return "molar";
+  if(premolars.includes(number))
+    return "premolar";
 
 
-    if (premolars.includes(number))
-        return "premolar";
+  if(canines.includes(number))
+    return "canine";
 
 
-    if (canines.includes(number))
-        return "canine";
-
-
-    return "incisor";
+  return "incisor";
 
 }
 
@@ -51,157 +48,155 @@ function getType(number) {
 
 
 
-
-
 export default function Tooth({
 
-    number,
+  number,
 
-    conditions = {},
+  conditions={},
 
-    selected,
+  selected,
 
-    onClick,
+  onClick,
 
-    onSurfaceClick,
+  onSurfaceClick,
 
-    isUpper
+  isUpper
 
-}) {
+}){
 
 
-    const type = getType(number);
+const type=getType(number);
 
 
 
-    return (
+return (
 
-        <Box
+<Box
 
-            onClick={onClick}
+onClick={onClick}
 
-            sx={{
+sx={{
 
-                width: 60,
+width:60,
 
-                minWidth: 60,
+minWidth:60,
 
-                maxWidth: 60,
+maxWidth:60,
 
-                flexShrink: 0,
+flexShrink:0,
 
-                display: "flex",
+display:"flex",
 
-                flexDirection: "column",
+flexDirection:"column",
 
-                alignItems: "center",
+alignItems:"center",
 
-                cursor: "pointer",
+cursor:"pointer",
 
-                borderRadius: 3,
+borderRadius:3,
 
-                background: selected
 
-                    ?
+background:selected
 
-                    "rgba(201,162,39,.15)"
+?
 
-                    :
+"rgba(201,162,39,.15)"
 
-                    "transparent",
+:
 
-                py: 1
+"transparent",
 
-            }}
 
-        >
+py:1
 
+}}
 
+>
 
-            <Typography
 
-                fontSize={12}
 
-                fontWeight={800}
+<Typography
 
-                color="#092c57"
+fontSize={12}
 
-                mb={1}
+fontWeight={800}
 
-            >
+color="#092c57"
 
-                {number}
+mb={1}
 
-            </Typography>
+>
 
+{number}
 
+</Typography>
 
 
 
 
-            <Box
 
-                sx={{
 
-                    width: 55,
+<Box
 
-                    height: 120,
+sx={{
 
-                    flexShrink: 0,
+width:55,
 
-                    transform:
+height:120,
 
-                        isUpper
+transform:
 
-                            ?
+isUpper
 
-                            "none"
+?
 
-                            :
+"none"
 
-                            "rotate(180deg)"
+:
 
-                }}
+"rotate(180deg)"
 
-            >
+}}
 
+>
 
-                <ToothSVG
 
-                    type={type}
+<ToothSVG
 
-                    conditions={conditions}
+type={type}
 
-                />
+conditions={conditions}
 
+/>
 
-            </Box>
 
+</Box>
 
 
 
 
 
+<Box mt={1}>
 
-            <Box mt={1}>
+<ToothCircle
 
+condition={conditions}
 
-                <ToothCircle
+onSurfaceClick={onSurfaceClick}
 
-                    condition={conditions}
+/>
 
-                    onSurfaceClick={onSurfaceClick}
+</Box>
 
-                />
 
 
-            </Box>
 
 
+</Box>
 
-        </Box>
 
-    )
+);
+
 
 }
 
@@ -215,108 +210,118 @@ export default function Tooth({
 
 function ToothSVG({
 
-    type,
+type,
 
-    conditions
+conditions
 
-}) {
-
-
-
-    const missing =
-
-        Object.values(conditions)
-
-            .includes("missing");
+}){
 
 
 
-    const rootCanal =
+const missing =
 
-        conditions.rootCanal === "Root Canal";
+Object.values(conditions)
 
-
-
-    const filling =
-
-        Object.values(conditions)
-
-            .includes("filling");
+.includes("missing");
 
 
 
-    const crown =
+const rootCanal =
 
-        Object.values(conditions)
-
-            .includes("crown");
+conditions.rootCanal==="Root Canal";
 
 
 
+const filling =
+
+Object.values(conditions)
+
+.includes("filling");
 
 
 
-    if (missing) {
+const crown =
+
+Object.values(conditions)
+
+.includes("crown");
 
 
-        return (
 
-            <Box
+const bridge =
 
-                sx={{
+Object.values(conditions)
 
-                    height: "100%",
-
-                    display: "flex",
-
-                    alignItems: "center",
-
-                    justifyContent: "center",
-
-                    fontSize: 45,
-
-                    color: "#bdbdbd"
-
-                }}
-
-            >
-
-                ×
-
-            </Box>
-
-        )
-
-    }
+.includes("bridge");
 
 
 
 
 
-    return (
+if(missing){
 
-        <svg
+return (
 
-            width="55"
+<Box
 
-            height="120"
+sx={{
 
-            viewBox="0 0 100 240"
+height:"100%",
 
-        >
+display:"flex",
+
+alignItems:"center",
+
+justifyContent:"center",
+
+fontSize:45,
+
+color:"#bdbdbd"
+
+}}
+
+>
+
+×
+
+</Box>
+
+);
+
+}
 
 
-            {drawRoots(type, rootCanal)}
 
 
 
-            {drawCrown(type, crown, filling)}
+return (
+
+<svg
+
+width="55"
+
+height="120"
+
+viewBox="0 0 100 240"
+
+>
+
+
+{drawRoots(type,rootCanal)}
+
+
+{drawCrown(
+type,
+crown,
+filling,
+bridge
+)}
 
 
 
-        </svg>
+</svg>
 
-    )
+);
 
 
 }
@@ -329,230 +334,221 @@ function ToothSVG({
 
 
 
+function drawRoots(type,rootCanal){
 
-function drawRoots(type, rootCanal) {
 
 
+if(type==="molar"){
 
-    if (type === "molar") {
 
+return (
 
-        return (
+<>
 
-            <>
 
+<path
 
-                <path
+d="M32 90 L20 200 Q25 220 40 195 L45 90"
 
-                    d="M32 90 L20 200 Q25 220 40 195 L45 90"
+fill="#edf2f5"
 
-                    fill="#edf2f5"
+stroke="#9aa9b5"
 
-                    stroke="#9aa9b5"
+/>
 
-                />
 
+<path
 
+d="M45 90 L45 205 Q50 225 55 205 L55 90"
 
-                <path
+fill="#edf2f5"
 
-                    d="M45 90 L45 205 Q50 225 55 205 L55 90"
+stroke="#9aa9b5"
 
-                    fill="#edf2f5"
+/>
 
-                    stroke="#9aa9b5"
 
-                />
+<path
 
+d="M58 90 L75 200 Q78 220 85 195 L68 90"
 
+fill="#edf2f5"
 
-                <path
+stroke="#9aa9b5"
 
-                    d="M58 90 L75 200 Q78 220 85 195 L68 90"
+/>
 
-                    fill="#edf2f5"
 
-                    stroke="#9aa9b5"
 
-                />
+{
 
+rootCanal &&
 
+<>
 
+<path
 
+d="M32 110 L30 195"
 
-                {
+stroke="#8e24aa"
 
-                    rootCanal &&
+strokeWidth="4"
 
-                    <>
+/>
 
-                        <path
 
-                            d="M32 110 L30 195"
+<path
 
-                            stroke="#8e24aa"
+d="M50 110 L50 205"
 
-                            strokeWidth="4"
+stroke="#8e24aa"
 
-                        />
+strokeWidth="4"
 
+/>
 
-                        <path
 
-                            d="M50 110 L50 205"
+<path
 
-                            stroke="#8e24aa"
+d="M68 110 L75 195"
 
-                            strokeWidth="4"
+stroke="#8e24aa"
 
-                        />
+strokeWidth="4"
 
+/>
 
-                        <path
 
-                            d="M68 110 L75 195"
+</>
 
-                            stroke="#8e24aa"
+}
 
-                            strokeWidth="4"
 
-                        />
+</>
 
-                    </>
+)
 
-                }
+}
 
 
 
-            </>
 
-        )
 
-    }
-    if (type === "premolar") {
 
+if(type==="premolar"){
 
-        return (
 
-            <>
+return (
 
+<>
 
-                <path
 
-                    d="M38 90 L30 200 Q35 220 45 195 L48 90"
+<path
 
-                    fill="#edf2f5"
+d="M38 90 L30 200 Q35 220 45 195 L48 90"
 
-                    stroke="#9aa9b5"
+fill="#edf2f5"
 
-                />
+stroke="#9aa9b5"
 
+/>
 
 
 
-                <path
+<path
 
-                    d="M52 90 L55 195 Q65 220 70 200 L62 90"
+d="M52 90 L55 195 Q65 220 70 200 L62 90"
 
-                    fill="#edf2f5"
+fill="#edf2f5"
 
-                    stroke="#9aa9b5"
+stroke="#9aa9b5"
 
-                />
+/>
 
 
 
+{
 
+rootCanal &&
 
+<>
 
-                {
+<path
 
-                    rootCanal &&
+d="M42 110 L40 195"
 
-                    <>
+stroke="#8e24aa"
 
-                        <path
+strokeWidth="4"
 
-                            d="M42 110 L40 195"
+/>
 
-                            stroke="#8e24aa"
 
-                            strokeWidth="4"
 
-                        />
+<path
 
+d="M58 110 L60 195"
 
+stroke="#8e24aa"
 
-                        <path
+strokeWidth="4"
 
-                            d="M58 110 L60 195"
+/>
 
-                            stroke="#8e24aa"
+</>
 
-                            strokeWidth="4"
+}
 
-                        />
 
-                    </>
+</>
 
-                }
+)
 
+}
 
 
-            </>
 
-        )
 
-    }
 
 
 
+return (
 
+<>
 
+<path
 
+d="M45 80 L40 210 Q50 225 60 210 L55 80"
 
+fill="#edf2f5"
 
+stroke="#9aa9b5"
 
-    return (
+/>
 
-        <>
 
 
-            <path
+{
 
-                d="M45 80 L40 210 Q50 225 60 210 L55 80"
+rootCanal &&
 
-                fill="#edf2f5"
+<path
 
-                stroke="#9aa9b5"
+d="M50 100 L50 205"
 
-            />
+stroke="#8e24aa"
 
+strokeWidth="4"
 
+/>
 
+}
 
 
-            {
 
-                rootCanal &&
+</>
 
-                <path
-
-                    d="M50 100 L50 205"
-
-                    stroke="#8e24aa"
-
-                    strokeWidth="4"
-
-                />
-
-            }
-
-
-
-        </>
-
-    )
+)
 
 
 }
@@ -565,41 +561,49 @@ function drawRoots(type, rootCanal) {
 
 
 
+function drawCrown(
+type,
+crown,
+filling,
+bridge
+){
+
+
+
+const color = bridge
+
+?
+
+"#ffb15c"
+
+:
+
+crown
+
+?
+
+"#fdd835"
+
+:
+
+"#eaf5ef";
 
 
 
 
-function drawCrown(type, crown, filling) {
 
 
-
-    const color = crown
-
-        ?
-
-        "#fdd835"
-
-        :
-
-        "#eaf5ef";
+if(type==="molar"){
 
 
+return (
+
+<>
 
 
+<path
 
-
-
-    if (type === "molar") {
-
-
-        return (
-
-            <>
-
-
-                <path
-
-                    d="
+d="
 M18 25
 Q20 10 38 12
 Q50 5 62 12
@@ -609,127 +613,108 @@ Q50 90 22 65
 Z
 "
 
-                    fill={color}
+fill={color}
 
-                    stroke="#8799a8"
+stroke="#8799a8"
 
-                    strokeWidth="2"
+strokeWidth="2"
 
-                />
+/>
 
 
 
 
 
-                <circle
+<circle
 
-                    cx="35"
+cx="35"
 
-                    cy="35"
+cy="35"
 
-                    r="6"
+r="6"
 
-                    fill="#d9ebe2"
+fill="#d9ebe2"
 
-                />
+/>
 
 
 
-                <circle
+<circle
 
-                    cx="50"
+cx="50"
 
-                    cy="30"
+cy="30"
 
-                    r="6"
+r="6"
 
-                    fill="#d9ebe2"
+fill="#d9ebe2"
 
-                />
+/>
 
 
 
-                <circle
+<circle
 
-                    cx="65"
+cx="65"
 
-                    cy="35"
+cy="35"
 
-                    r="6"
+r="6"
 
-                    fill="#d9ebe2"
+fill="#d9ebe2"
 
-                />
+/>
 
 
 
 
 
+{
 
-                <path
+filling &&
 
-                    d="M50 18 L50 75"
+<ellipse
 
-                    stroke="#aab7c2"
+cx="50"
 
-                    strokeWidth="2"
+cy="55"
 
-                />
+rx="15"
 
+ry="10"
 
+fill="#42a5f5"
 
+/>
 
+}
 
 
 
-                {
+</>
 
-                    filling &&
+)
 
-                    <ellipse
+}
 
-                        cx="50"
 
-                        cy="55"
 
-                        rx="15"
 
-                        ry="10"
 
-                        fill="#42a5f5"
 
-                    />
 
-                }
 
+if(type==="premolar"){
 
 
+return (
 
-            </>
+<>
 
-        )
 
-    }
+<path
 
-
-
-
-
-
-
-
-
-    if (type === "premolar") {
-
-
-        return (
-
-            <>
-
-
-                <path
-
-                    d="
+d="
 M30 25
 Q50 5 70 25
 L65 70
@@ -737,57 +722,40 @@ Q50 90 35 70
 Z
 "
 
-                    fill={color}
+fill={color}
 
-                    stroke="#8799a8"
+stroke="#8799a8"
 
-                    strokeWidth="2"
+strokeWidth="2"
 
-                />
-
-
+/>
 
 
 
-                <path
+{
 
-                    d="M50 20 L50 70"
+filling &&
 
-                    stroke="#aab7c2"
+<circle
 
-                    strokeWidth="2"
+cx="50"
 
-                />
+cy="50"
 
+r="10"
 
+fill="#42a5f5"
 
+/>
 
-
-                {
-
-                    filling &&
-
-                    <circle
-
-                        cx="50"
-
-                        cy="50"
-
-                        r="10"
-
-                        fill="#42a5f5"
-
-                    />
-
-                }
+}
 
 
+</>
 
-            </>
+)
 
-        )
-
-    }
+}
 
 
 
@@ -796,18 +764,17 @@ Z
 
 
 
-
-    if (type === "canine") {
-
-
-        return (
-
-            <>
+if(type==="canine"){
 
 
-                <path
+return (
 
-                    d="
+<>
+
+
+<path
+
+d="
 M50 8
 L70 30
 L60 75
@@ -816,33 +783,21 @@ L30 30
 Z
 "
 
-                    fill={color}
+fill={color}
 
-                    stroke="#8799a8"
+stroke="#8799a8"
 
-                    strokeWidth="2"
+strokeWidth="2"
 
-                />
-
-
+/>
 
 
 
-                <path
+</>
 
-                    d="M50 20 L50 70"
+)
 
-                    stroke="#aab7c2"
-
-                />
-
-
-
-            </>
-
-        )
-
-    }
+}
 
 
 
@@ -851,15 +806,11 @@ Z
 
 
 
+return (
 
-    return (
+<path
 
-        <>
-
-
-            <path
-
-                d="
+d="
 M32 18
 Q50 8 68 18
 L66 75
@@ -867,29 +818,15 @@ Q50 90 34 75
 Z
 "
 
-                fill={color}
+fill={color}
 
-                stroke="#8799a8"
+stroke="#8799a8"
 
-                strokeWidth="2"
+strokeWidth="2"
 
-            />
+/>
 
+);
 
-
-
-            <path
-
-                d="M50 20 L50 75"
-
-                stroke="#aab7c2"
-
-            />
-
-
-
-        </>
-
-    )
 
 }

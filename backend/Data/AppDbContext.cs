@@ -84,6 +84,7 @@ namespace dentist_project.Data
                 .HasOne(tt => tt.Treatment)
                 .WithMany(t => t.ToothTreatments)
                 .HasForeignKey(tt => tt.TreatmentId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<Notification>()
                 .HasOne(n => n.Patient)

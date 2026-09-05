@@ -1,39 +1,170 @@
 import { Box, Typography } from "@mui/material";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 import Tooth from "./Tooth";
 import ToothPanel from "./ToothPanel";
 
 
 
 export default function DentalChart({
-
-    conditions,
-
-    setConditions
-
-}){
+  patientId,
+  conditions,
+  setConditions
+}) {
 
 
+  const [selectedTooth,setSelectedTooth]=useState(null);
 
-const [selectedTooth,setSelectedTooth]=useState(null);
+  const [selectedTeeth,setSelectedTeeth]=useState([]);
 
-const [selectedSurface,setSelectedSurface]=useState(null);
+  const [bridgeMode,setBridgeMode]=useState(false);
 
-
-
-
-
-const upperRight=[18,17,16,15,14,13,12,11];
-
-const upperLeft=[21,22,23,24,25,26,27,28];
+  const [selectedSurface,setSelectedSurface]=useState(null);
 
 
-const lowerRight=[48,47,46,45,44,43,42,41];
 
-const lowerLeft=[31,32,33,34,35,36,37,38];
+  const upperRight=[18,17,16,15,14,13,12,11];
+
+  const upperLeft=[21,22,23,24,25,26,27,28];
+
+  const lowerRight=[48,47,46,45,44,43,42,41];
+
+  const lowerLeft=[31,32,33,34,35,36,37,38];
 
 
+
+
+
+
+useEffect(()=>{
+
+
+if(!patientId)
+return;
+
+
+
+const fetchDentalChart=async()=>{
+
+
+try{
+
+
+const token=localStorage.getItem("token");
+
+
+
+const response=await axios.get(
+
+`https://localhost:7166/api/DentalChart/patient/${patientId}`,
+
+{
+
+headers:{
+
+Authorization:`Bearer ${token}`
+
+}
+
+}
+
+);
+
+
+
+
+
+const chartData={};
+
+
+
+
+
+response.data.forEach(item=>{
+
+
+const tooth=item.toothNumber;
+
+
+
+if(!chartData[tooth])
+chartData[tooth]={};
+
+
+
+
+
+if(!item.surface){
+
+
+if(item.condition==="RootCanal")
+
+chartData[tooth].rootCanal="Root Canal";
+
+
+
+if(item.condition==="Missing")
+
+chartData[tooth].missing="missing";
+
+
+
+if(item.condition==="Bridge")
+
+chartData[tooth].bridge="bridge";
+
+
+
+return;
+
+}
+
+
+
+
+
+const condition=
+
+item.condition.charAt(0).toLowerCase()
++
+item.condition.slice(1);
+
+
+
+
+chartData[tooth][item.surface]=condition;
+
+
+
+});
+
+
+
+
+setConditions(chartData);
+
+
+
+}
+
+catch(error){
+
+console.error(error);
+
+}
+
+
+};
+
+
+
+fetchDentalChart();
+
+
+
+},[patientId,setConditions]);
 
 
 
@@ -44,387 +175,350 @@ const lowerLeft=[31,32,33,34,35,36,37,38];
 const updateCondition=(surface,value)=>{
 
 
-    if(!selectedTooth)
-        return;
+if(value==="bridge"){
 
 
+setConditions(prev=>{
 
 
+const updated={...prev};
 
 
 
-    // ROOT CANAL + MISSING WITHOUT SURFACE
+selectedTeeth.forEach(tooth=>{
 
-    if(
 
-        value==="rootCanal" ||
+updated[tooth]={
 
-        value==="missing"
+...(updated[tooth]||{}),
 
-    ){
+bridge:"bridge"
 
+};
 
 
-        setConditions(prev=>({
+});
 
 
-            ...prev,
 
+return updated;
 
-            [selectedTooth]:{
 
+});
 
-                [value]:
 
-                value==="rootCanal"
 
-                ?
+setSelectedTeeth([]);
 
-                "Root Canal"
+setBridgeMode(false);
 
-                :
 
-                "missing"
+return;
 
 
+}
 
-            }
 
 
 
-        }));
 
 
 
+if(!selectedTooth)
+return;
 
 
-        setSelectedSurface(null);
 
 
-        return;
 
+if(value==="rootCanal" || value==="missing"){
 
-    }
 
+setConditions(prev=>({
 
+...prev,
 
 
+[selectedTooth]:{
 
 
+[value]:
 
+value==="rootCanal"
 
-    // OTHER CONDITIONS NEED SURFACE
+?
 
-    if(!surface)
+"Root Canal"
 
-        return;
+:
 
+"missing"
 
 
+}
 
 
+}));
 
-    setConditions(prev=>({
 
+setSelectedSurface(null);
 
 
-        ...prev,
+return;
 
 
+}
 
-        [selectedTooth]:{
 
 
-            ...(prev[selectedTooth] || {}),
 
 
-            [surface]:value
 
+if(!surface)
+return;
 
+
+
+
+
+setConditions(prev=>({
+
+
+...prev,
+
+
+[selectedTooth]:{
+
+
+...(prev[selectedTooth]||{}),
+
+
+[surface]:value
+
+
+}
+
+
+
+}));
+
+
+
+};
+
+
+
+
+  const renderTeeth = (list, isUpper) => {
+
+    return list.map((number)=>(
+
+      <Tooth
+
+        key={number}
+
+        number={number}
+
+        isUpper={isUpper}
+
+
+        selected={
+
+          bridgeMode
+
+          ?
+
+          selectedTeeth.includes(number)
+
+          :
+
+          selectedTooth === number
 
         }
 
 
+        conditions={conditions[number] || {}}
 
-    }));
 
 
+        onClick={()=>{
 
 
+          if(bridgeMode){
 
-};
 
+            setSelectedTeeth(prev=>
 
 
+              prev.includes(number)
 
+              ?
 
+              prev.filter(t=>t!==number)
 
+              :
 
+              [...prev,number]
 
+            );
 
 
+          }
 
+          else{
 
-const renderTeeth=(list,isUpper)=>{
 
+            setSelectedTooth(number);
 
-return list.map(number=>(
 
+          }
 
-<Tooth
 
+          setSelectedSurface(null);
 
-key={number}
 
+        }}
 
-number={number}
 
 
-isUpper={isUpper}
+        onSurfaceClick={(surface)=>{
 
 
+          if(!bridgeMode){
 
-selected={selectedTooth===number}
 
+            setSelectedTooth(number);
 
+            setSelectedSurface(surface);
 
-conditions={conditions[number] || {}}
 
+          }
 
 
+        }}
 
 
-onClick={()=>{
 
+      />
 
-    setSelectedTooth(number);
+    ));
 
+  };
 
-    setSelectedSurface(null);
 
 
 
-}}
 
 
 
 
+  const ToothRow = ({right,left,isUpper}) => (
 
+    <Box
 
+      sx={{
 
-onSurfaceClick={(surface)=>{
+        width:"100%",
 
+        display:"flex",
 
-    setSelectedTooth(number);
+        flexDirection:"row",
 
+        justifyContent:"center",
 
-    setSelectedSurface(surface);
+        alignItems:"flex-start",
 
+        flexWrap:"nowrap",
 
+        overflowX:"auto",
 
-}}
+        gap:1,
 
+        py:2
 
+      }}
 
+    >
 
 
-/>
 
+      {/* RIGHT */}
 
+      <Box
 
-));
+        sx={{
 
+          display:"flex",
 
-};
+          flexDirection:"row",
 
+          gap:0.5,
 
+          flexShrink:0
 
+        }}
 
+      >
 
+        {renderTeeth(right,isUpper)}
 
+      </Box>
 
 
 
 
 
+      {/* CENTER LINE */}
 
-const ToothRow=({right,left,isUpper})=>(
+      <Box
 
+        sx={{
 
+          height:150,
 
-<Box
+          width:"2px",
 
-sx={{
+          background:"#ddd",
 
+          mx:1,
 
-width:"100%",
+          flexShrink:0
 
+        }}
 
-display:"flex",
+      />
 
 
-flexDirection:"row",
 
 
-justifyContent:"center",
 
+      {/* LEFT */}
 
-alignItems:"flex-start",
+      <Box
 
+        sx={{
 
-flexWrap:"nowrap",
+          display:"flex",
 
+          flexDirection:"row",
 
-overflowX:"auto",
+          gap:0.5,
 
+          flexShrink:0
 
-gap:1,
+        }}
 
+      >
 
-py:2
+        {renderTeeth(left,isUpper)}
 
+      </Box>
 
 
-}}
 
+    </Box>
 
-
->
-
-
-
-
-
-
-
-{/* RIGHT SIDE */}
-
-
-<Box
-
-sx={{
-
-
-display:"flex",
-
-
-flexDirection:"row",
-
-
-gap:0.5,
-
-
-flexShrink:0
-
-
-
-}}
-
->
-
-
-{renderTeeth(right,isUpper)}
-
-
-
-</Box>
-
-
-
-
-
-
-
-
-
-
-{/* MID LINE */}
-
-
-
-<Box
-
-sx={{
-
-
-height:150,
-
-
-width:"2px",
-
-
-background:"#ddd",
-
-
-mx:1,
-
-
-flexShrink:0
-
-
-
-}}
-
-
-/>
-
-
-
-
-
-
-
-
-
-{/* LEFT SIDE */}
-
-
-
-<Box
-
-sx={{
-
-
-display:"flex",
-
-
-flexDirection:"row",
-
-
-gap:0.5,
-
-
-flexShrink:0
-
-
-
-}}
-
->
-
-
-{renderTeeth(left,isUpper)}
-
-
-
-</Box>
-
-
-
-
-
-
-
-</Box>
-
-
-
-);
-
-
-
-
-
+  );
 
 
 
@@ -436,71 +530,43 @@ flexShrink:0
 
 return (
 
-
-
 <Box
 
-
 sx={{
-
 
 width:"100%",
 
-
 background:"#fff",
-
 
 borderRadius:3,
 
-
 p:3,
-
 
 boxSizing:"border-box",
 
-
 overflow:"hidden"
-
-
 
 }}
 
-
-
 >
-
-
-
-
 
 
 
 <Typography
 
-
 textAlign="center"
-
 
 fontSize={22}
 
-
 fontWeight={800}
-
 
 color="#092c57"
 
-
-
 >
-
 
 Dental Chart
 
-
 </Typography>
-
-
-
 
 
 
@@ -509,97 +575,32 @@ Dental Chart
 
 <Typography
 
-
 textAlign="center"
-
-
-fontSize={13}
-
-
-color="#718096"
-
-
-mb={3}
-
-
-
->
-
-
-Clinical Odontogram
-
-
-<br/>
-
-
-Patient Dental Chart
-
-
-
-</Typography>
-
-
-
-
-
-
-
-
-
-
-
-
-<Typography
-
-
-textAlign="center"
-
 
 fontWeight={800}
 
-
 color="#092c57"
-
 
 mb={2}
 
-
-
 >
-
 
 MAXILLARY (UPPER)
 
-
-
 </Typography>
-
-
-
-
-
 
 
 
 
 <ToothRow
 
-
 right={upperRight}
-
 
 left={upperLeft}
 
-
 isUpper={true}
 
-
 />
-
-
-
-
-
 
 
 
@@ -611,20 +612,13 @@ isUpper={true}
 
 sx={{
 
-
 borderTop:"1px solid #ddd",
-
 
 my:4
 
-
-
 }}
 
-
 />
-
-
 
 
 
@@ -634,26 +628,17 @@ my:4
 
 <Typography
 
-
 textAlign="center"
-
 
 fontWeight={800}
 
-
 color="#092c57"
-
 
 mb={2}
 
-
-
 >
 
-
 MANDIBULAR (LOWER)
-
-
 
 </Typography>
 
@@ -663,28 +648,15 @@ MANDIBULAR (LOWER)
 
 
 
-
-
-
-
-
 <ToothRow
-
 
 right={lowerRight}
 
-
 left={lowerLeft}
-
 
 isUpper={false}
 
-
 />
-
-
-
-
 
 
 
@@ -700,24 +672,32 @@ isUpper={false}
 tooth={selectedTooth}
 
 
+selectedTeeth={selectedTeeth}
+
+
+bridgeMode={bridgeMode}
+
+
+setBridgeMode={setBridgeMode}
+
+
+
 selectedSurface={selectedSurface}
 
 
 setSelectedSurface={setSelectedSurface}
 
 
+
 setCondition={updateCondition}
 
 
 
-getCondition={(tooth,surface)=>{
+getCondition={(tooth,surface)=>
 
+conditions[tooth]?.[surface]
 
-return conditions[tooth]?.[surface];
-
-
-}}
-
+}
 
 
 />
@@ -728,14 +708,8 @@ return conditions[tooth]?.[surface];
 
 
 
-
-
 </Box>
 
-
-
 );
-
-
 
 }
