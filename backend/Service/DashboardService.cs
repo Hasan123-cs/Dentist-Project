@@ -2,6 +2,7 @@
 using dentist_project.Enums;
 using dentist_project.DTO;
 using Microsoft.EntityFrameworkCore;
+using dentist_project.Models;
 
 namespace dentist_project.Service
 {
@@ -209,5 +210,62 @@ namespace dentist_project.Service
                 .Take(5)
                 .ToListAsync();
         }
+        // seeding the teeth for no not found error only 
+        public  async Task SeedTeethAsync()
+        {
+            var teeth = new List<Tooth>
+        {
+            new() { Number = 11, Name = "Upper Right Central Incisor" },
+            new() { Number = 12, Name = "Upper Right Lateral Incisor" },
+            new() { Number = 13, Name = "Upper Right Canine" },
+            new() { Number = 14, Name = "Upper Right First Premolar" },
+            new() { Number = 15, Name = "Upper Right Second Premolar" },
+            new() { Number = 16, Name = "Upper Right First Molar" },
+            new() { Number = 17, Name = "Upper Right Second Molar" },
+            new() { Number = 18, Name = "Upper Right Third Molar" },
+
+            new() { Number = 21, Name = "Upper Left Central Incisor" },
+            new() { Number = 22, Name = "Upper Left Lateral Incisor" },
+            new() { Number = 23, Name = "Upper Left Canine" },
+            new() { Number = 24, Name = "Upper Left First Premolar" },
+            new() { Number = 25, Name = "Upper Left Second Premolar" },
+            new() { Number = 26, Name = "Upper Left First Molar" },
+            new() { Number = 27, Name = "Upper Left Second Molar" },
+            new() { Number = 28, Name = "Upper Left Third Molar" },
+
+            new() { Number = 31, Name = "Lower Left Central Incisor" },
+            new() { Number = 32, Name = "Lower Left Lateral Incisor" },
+            new() { Number = 33, Name = "Lower Left Canine" },
+            new() { Number = 34, Name = "Lower Left First Premolar" },
+            new() { Number = 35, Name = "Lower Left Second Premolar" },
+            new() { Number = 36, Name = "Lower Left First Molar" },
+            new() { Number = 37, Name = "Lower Left Second Molar" },
+            new() { Number = 38, Name = "Lower Left Third Molar" },
+
+            new() { Number = 41, Name = "Lower Right Central Incisor" },
+            new() { Number = 42, Name = "Lower Right Lateral Incisor" },
+            new() { Number = 43, Name = "Lower Right Canine" },
+            new() { Number = 44, Name = "Lower Right First Premolar" },
+            new() { Number = 45, Name = "Lower Right Second Premolar" },
+            new() { Number = 46, Name = "Lower Right First Molar" },
+            new() { Number = 47, Name = "Lower Right Second Molar" },
+            new() { Number = 48, Name = "Lower Right Third Molar" }
+        };
+
+            foreach (var tooth in teeth)
+            {
+                var exists = await _db.Teeth
+                    .AnyAsync(t => t.Number == tooth.Number);
+
+                if (!exists)
+                {
+                    _db.Teeth.Add(tooth);
+                }
+            }
+
+            await _db.SaveChangesAsync();
+        }
+        // === seeding the teeth for no not found error only ===
+
     }
 }

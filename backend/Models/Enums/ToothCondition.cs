@@ -7,6 +7,8 @@
         RootCanal,
         Missing,
         Crown,
-        Fracture
+        Fracture,
+        Implant,
+        Bridge
     }
 }

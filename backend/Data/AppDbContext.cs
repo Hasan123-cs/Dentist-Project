@@ -35,6 +35,9 @@ namespace dentist_project.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            // add the 32 tooth to prevent not found tooth in ui 
+
+
             builder.Entity<Appointment>()
                 .HasOne(a => a.CreatedBy)
                 .WithMany(u => u.AppointmentsCreated)

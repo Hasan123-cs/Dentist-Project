@@ -26,5 +26,40 @@ namespace dentist_project.Controllers
 
             return Ok(chart);
         }
+
+        [HttpPut("tooth")]
+        public async Task<IActionResult> UpdateToothStatus(
+            UpdateToothStatusDto dto)
+        {
+            var result = await _dentalChartService
+                .UpdateToothStatusAsync(dto);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
+
+        [HttpPut("bridge")]
+        public async Task<IActionResult> UpdateBridge(
+    [FromBody] List<UpdateToothStatusDto> dtos)
+        {
+            var result = await _dentalChartService.UpdateBridgeAsync(dtos);
+
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    message = result.Message
+                });
+            }
+
+            return Ok(new
+            {
+                message = result.Message
+            });
+        }
     }
 }

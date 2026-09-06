@@ -105,6 +105,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 var app = builder.Build();
+// seeding the teeth data 
+using (var scope = app.Services.CreateScope())
+{
+    var x = scope.ServiceProvider.GetRequiredService<DashboardService>();
+    await x.SeedTeethAsync();
+}
 // configure the seeding data 
 using (var scope = app.Services.CreateScope())
 {

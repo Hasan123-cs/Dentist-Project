@@ -256,6 +256,14 @@ namespace dentist_project.Service
             );
 
             _db.Appointments.Add(appointment);
+            //var medicalRecord = new MedicalRecord 
+            //{ PatientId = patient.Id,
+            //    AppointmentId = appointment.Id,
+            //    CreatedById = userId, Diagnosis = null,
+            //    TreatmentPlan = null,
+            //    Prescription = null,
+            //    ClinicalNotes = null };
+            //_db.MedicalRecords.Add(medicalRecord);
 
             await _db.SaveChangesAsync();
 
