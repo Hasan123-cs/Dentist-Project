@@ -38,6 +38,7 @@ const CONDITION_ENUM = {
   3: "missing",
   4: "crown",
   5: "fracture",
+  6: "bridge",
 };
 
 // ToothStatus
@@ -58,6 +59,8 @@ const STATUS_ENUM = {
 export default function DentalChart({ patientId, conditions, setConditions }) {
   const [selectedTooth, setSelectedTooth] = useState(null);
   const [selectedSurface, setSelectedSurface] = useState(null);
+  const [bridgeMode, setBridgeMode] = useState(false);
+  const [bridgeTeeth, setBridgeTeeth] = useState([]);
 
   // =====================================================
   // FDI TOOTH NUMBERING
@@ -225,7 +228,9 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
             if (condition === "missing") {
               chartData[toothNumber].missing = "Missing";
             }
-
+            if (condition === "bridge") {
+              chartData[toothNumber].bridge = "Bridge";
+            }
             // Store status too
             chartData[toothNumber].status = status;
 
@@ -262,6 +267,159 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
 
     fetchDentalChart();
   }, [patientId, setConditions]);
+
+  // =====================================================
+  // UPDATE MULTIPLE TEETH FOR BRIDGE
+  // Sends all teeth in bridge together
+  // =====================================================
+
+  const updateBridgeTeeth = async (toothNumbers) => {
+    if (!patientId || toothNumbers.length < 3) {
+      alert("❌ Bridge requires at least 3 teeth!");
+      return;
+    }
+
+    // Sort teeth
+    const sorted = [...toothNumbers].sort((a, b) => a - b);
+
+    // Identify bridge structure
+    const abutments = [sorted[0], sorted[sorted.length - 1]];
+    const pontics = sorted.slice(1, -1);
+
+    // Confirmation
+    const bridgeStructure = `
+🌉 BRIDGE CONFIRMATION
+
+Bridge Type: ${sorted.length}-unit bridge
+
+Teeth: ${sorted.join(" - ")}
+
+Abutments:
+• ${abutments.join(", ")}
+
+Pontics:
+• ${pontics.join(", ")}
+
+Proceed?
+  `;
+
+    if (!window.confirm(bridgeStructure)) {
+      return;
+    }
+
+    // ============================================
+    // CREATE LIST FOR BACKEND
+    // ============================================
+
+    const bridgeData = sorted.map((toothNum) => ({
+      patientId: Number(patientId),
+      toothNumber: Number(toothNum),
+      surface: null,
+      condition: "Bridge",
+      status: "Completed",
+      treatmentId: null,
+      notes: null,
+    }));
+
+    console.log("Sending bridge update:", bridgeData);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      // ============================================
+      // ONE API REQUEST
+      // ============================================
+
+      const response = await axios.put(
+        "https://localhost:7166/api/DentalChart/bridge",
+        bridgeData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      console.log("Bridge updated successfully:", response.data);
+
+      alert(`✓ Bridge saved successfully for teeth ${sorted.join(", ")}`);
+
+      // ============================================
+      // REFETCH DENTAL CHART
+      // ============================================
+
+      const refetchResponse = await axios.get(
+        `https://localhost:7166/api/DentalChart/patient/${patientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const chartData = {};
+
+      refetchResponse.data.forEach((item) => {
+        const toothNumber = item.toothNumber;
+
+        if (!chartData[toothNumber]) {
+          chartData[toothNumber] = {};
+        }
+
+        const condition = conditionFromBackend(item.condition);
+        const status = statusFromBackend(item.status);
+        const surface = surfaceFromBackend(item.surface);
+
+        // Whole tooth condition
+        if (!surface) {
+          if (condition === "rootCanal") {
+            chartData[toothNumber].rootCanal = "Root Canal";
+          }
+
+          if (condition === "missing") {
+            chartData[toothNumber].missing = "Missing";
+          }
+
+          if (condition === "bridge") {
+            chartData[toothNumber].bridge = "Bridge";
+          }
+
+          chartData[toothNumber].status = status;
+
+          return;
+        }
+
+        // Surface condition
+        chartData[toothNumber][surface] = condition;
+        chartData[toothNumber].status = status;
+      });
+
+      console.log("Updated dental chart:", chartData);
+
+      setConditions(chartData);
+
+      // ============================================
+      // EXIT BRIDGE MODE
+      // ============================================
+
+      setBridgeMode(false);
+      setBridgeTeeth([]);
+      setSelectedTooth(null);
+      setSelectedSurface(null);
+    } catch (error) {
+      console.error("Error updating bridge:", error);
+
+      if (error.response) {
+        console.error("Backend status:", error.response.status);
+        console.error("Backend response:", error.response.data);
+
+        alert(error.response.data?.message || "❌ Failed to save bridge.");
+      } else {
+        alert("❌ Failed to connect to the server.");
+      }
+    }
+  };
 
   // =====================================================
   // UPDATE TOOTH IN BACKEND
@@ -348,59 +506,97 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
       console.log("Tooth updated successfully:", response.data);
 
       // =====================================================
-      // UPDATE UI IMMEDIATELY
+      // REFETCH UPDATED DATA FROM BACKEND
+      // Ensures UI matches backend state exactly
       // =====================================================
 
-      setConditions((prev) => {
-        const currentTooth = prev[toothNumber] || {};
+      try {
+        const token = localStorage.getItem("token");
 
-        // ===================================================
-        // ROOT CANAL
-        // ===================================================
-
-        if (condition === "rootCanal") {
-          return {
-            ...prev,
-            [toothNumber]: {
-              ...currentTooth,
-              rootCanal: "Root Canal",
-              status: status,
+        const refetchResponse = await axios.get(
+          `https://localhost:7166/api/DentalChart/patient/${patientId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
             },
-          };
-        }
-
-        // ===================================================
-        // MISSING
-        // ===================================================
-
-        if (condition === "missing") {
-          return {
-            ...prev,
-            [toothNumber]: {
-              ...currentTooth,
-              missing: "Missing",
-              status: status,
-            },
-          };
-        }
-
-        // ===================================================
-        // SURFACE CONDITION
-        // ===================================================
-
-        if (!surface) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          [toothNumber]: {
-            ...currentTooth,
-            [surface]: condition,
-            status: status,
           },
-        };
-      });
+        );
+
+        console.log("Refetched dental chart:", refetchResponse.data);
+
+        const chartData = {};
+
+        refetchResponse.data.forEach((item) => {
+          const tNumber = item.toothNumber;
+
+          if (!chartData[tNumber]) {
+            chartData[tNumber] = {};
+          }
+
+          const cond = conditionFromBackend(item.condition);
+          const stat = statusFromBackend(item.status);
+          const surf = surfaceFromBackend(item.surface);
+
+          if (!surf) {
+            if (cond === "rootCanal") {
+              chartData[tNumber].rootCanal = "Root Canal";
+            }
+            if (cond === "missing") {
+              chartData[tNumber].missing = "Missing";
+            }
+            chartData[tNumber].status = stat;
+            return;
+          }
+
+          chartData[tNumber][surf] = cond;
+          chartData[tNumber].status = stat;
+        });
+
+        console.log("UI Updated with backend data:", chartData);
+        setConditions(chartData);
+      } catch (refetchError) {
+        console.error("Error refetching dental chart:", refetchError);
+
+        // Fallback: Update UI with local state
+        setConditions((prev) => {
+          const currentTooth = prev[toothNumber] || {};
+
+          if (condition === "rootCanal") {
+            return {
+              ...prev,
+              [toothNumber]: {
+                ...currentTooth,
+                rootCanal: "Root Canal",
+                status: status,
+              },
+            };
+          }
+
+          if (condition === "missing") {
+            return {
+              ...prev,
+              [toothNumber]: {
+                ...currentTooth,
+                missing: "Missing",
+                status: status,
+              },
+            };
+          }
+
+          if (!surface) {
+            return prev;
+          }
+
+          return {
+            ...prev,
+            [toothNumber]: {
+              ...currentTooth,
+              [surface]: condition,
+              status: status,
+            },
+          };
+        });
+      }
     } catch (error) {
       console.error("Error updating tooth:", error);
 
@@ -463,9 +659,27 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
         number={number}
         isUpper={isUpper}
         selected={selectedTooth === number}
+        bridgeSelected={bridgeTeeth.includes(number)}
+        bridgeMode={bridgeMode}
         conditions={conditions?.[number] || {}}
         onClick={() => {
           console.log("Selected tooth:", number);
+
+          // ===================================================
+          // BRIDGE MODE
+          // Add/remove tooth from bridge selection
+          // ===================================================
+
+          if (bridgeMode) {
+            setBridgeTeeth((prev) => {
+              if (prev.includes(number)) {
+                return prev.filter((t) => t !== number);
+              } else {
+                return [...prev, number];
+              }
+            });
+            return;
+          }
 
           setSelectedTooth(number);
           setSelectedSurface(null);
@@ -613,6 +827,12 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
         getCondition={(tooth, surface) => {
           return conditions?.[tooth]?.[surface];
         }}
+        allConditions={conditions}
+        bridgeMode={bridgeMode}
+        setBridgeMode={setBridgeMode}
+        bridgeTeeth={bridgeTeeth}
+        setBridgeTeeth={setBridgeTeeth}
+        updateBridgeTeeth={updateBridgeTeeth}
       />
     </Box>
   );
