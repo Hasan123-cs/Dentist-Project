@@ -38,7 +38,8 @@ const CONDITION_ENUM = {
   3: "missing",
   4: "crown",
   5: "fracture",
-  6: "bridge",
+  6: "implant",
+  7: "bridge",
 };
 
 // ToothStatus
@@ -420,6 +421,103 @@ Proceed?
       }
     }
   };
+  // =====================================================
+  // clear a tooth from backend
+  // =====================================================
+
+  // const clearTooth = async (toothNumber) => {
+  //   if (!patientId || !toothNumber) return;
+
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const resp = await axios.delete(
+  //       `http://localhost:7166/api/DentalChart/tooth/${patientId}/${toothNumber}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       },
+  //     );
+  //     console.log(resp.data.message);
+
+  //     // Remove the tooth from the current UI immediately
+  //     setConditions((prev) => {
+  //       const updated = { ...prev };
+  //       delete updated[toothNumber];
+  //       return updated;
+  //     });
+
+  //     setSelectedTooth(null);
+  //     setSelectedSurface(null);
+
+  //     console.log(`Tooth ${toothNumber} cleared successfully.`);
+  //   } catch (error) {
+  //     console.error("Error clearing tooth:", error);
+  //   }
+  // };
+
+  const clearTooth = async (toothNumber) => {
+    console.log("========== CLEAR TOOTH START ==========");
+    console.log("Patient ID:", patientId);
+    console.log("Tooth Number:", toothNumber);
+
+    if (!patientId || !toothNumber) {
+      console.log("❌ Missing patientId or toothNumber");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      console.log("Token exists:", !!token);
+      console.log(
+        "Token preview:",
+        token ? `${token.substring(0, 20)}...` : "NO TOKEN",
+      );
+
+      const url = `https://localhost:7166/api/DentalChart/tooth/${patientId}/${toothNumber}`;
+
+      console.log("DELETE URL:", url);
+      console.log("Sending DELETE request...");
+
+      const response = await axios.delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("✅ DELETE SUCCESS");
+      console.log("Status:", response.status);
+      console.log("Response:", response.data);
+
+      setConditions((prev) => {
+        const updated = { ...prev };
+        delete updated[toothNumber];
+        return updated;
+      });
+
+      setSelectedTooth(null);
+      setSelectedSurface(null);
+
+      console.log("✅ UI updated");
+      console.log("========== CLEAR TOOTH END ==========");
+    } catch (error) {
+      console.log("========== CLEAR TOOTH ERROR ==========");
+
+      console.log("❌ Full error:", error);
+      console.log("Error message:", error.message);
+      console.log("Error code:", error.code);
+      console.log("Error response:", error.response);
+      console.log("Error response status:", error.response?.status);
+      console.log("Error response data:", error.response?.data);
+      console.log("Error request:", error.request);
+      console.log("Request URL:", error.config?.url);
+      console.log("Request method:", error.config?.method);
+      console.log("Request headers:", error.config?.headers);
+
+      console.log("========== END ERROR ==========");
+    }
+  };
 
   // =====================================================
   // UPDATE TOOTH IN BACKEND
@@ -458,6 +556,9 @@ Proceed?
       missing: "Missing",
       crown: "Crown",
       fracture: "Fracture",
+      implant: "Implant",
+      bridge: "Bridge",
+      healthy: "Healthy",
     };
 
     const backendCondition = conditionMap[condition] || condition;
@@ -541,9 +642,15 @@ Proceed?
             if (cond === "rootCanal") {
               chartData[tNumber].rootCanal = "Root Canal";
             }
+
             if (cond === "missing") {
               chartData[tNumber].missing = "Missing";
             }
+
+            if (cond === "bridge") {
+              chartData[tNumber].bridge = "Bridge";
+            }
+
             chartData[tNumber].status = stat;
             return;
           }
@@ -662,6 +769,7 @@ Proceed?
         bridgeSelected={bridgeTeeth.includes(number)}
         bridgeMode={bridgeMode}
         conditions={conditions?.[number] || {}}
+        status={conditions?.[number]?.status}
         onClick={() => {
           console.log("Selected tooth:", number);
 
@@ -824,6 +932,7 @@ Proceed?
         selectedSurface={selectedSurface}
         setSelectedSurface={setSelectedSurface}
         setCondition={updateCondition}
+        onClearTooth={clearTooth}
         getCondition={(tooth, surface) => {
           return conditions?.[tooth]?.[surface];
         }}

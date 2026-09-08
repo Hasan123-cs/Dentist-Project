@@ -137,6 +137,7 @@ export default function ToothPanel({
   setCondition,
 
   getCondition,
+  onClearTooth,
 
   allConditions = {},
   bridgeMode = false,
@@ -456,7 +457,6 @@ export default function ToothPanel({
               </Button>
             ))}
           </Box>
-
           {!selectedSurface && (
             <Typography mt={2} fontSize={12} color="#888">
               Select a tooth surface first (except Root Canal and Missing).
@@ -471,6 +471,15 @@ export default function ToothPanel({
           )}
         </>
       )}
+      <Button
+        variant="outlined"
+        color="error"
+        fullWidth
+        onClick={() => onClearTooth(tooth)}
+        disabled={!tooth}
+      >
+        Clear Tooth
+      </Button>
     </Box>
   );
 }

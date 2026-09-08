@@ -21,7 +21,7 @@ export default function Tooth({
   number,
 
   conditions = {},
-
+  status,
   selected,
 
   onClick,
@@ -87,7 +87,11 @@ export default function Tooth({
       </Box>
 
       <Box mt={1}>
-        <ToothCircle condition={conditions} onSurfaceClick={onSurfaceClick} />
+        <ToothCircle
+          condition={conditions}
+          status={status}
+          onSurfaceClick={onSurfaceClick}
+        />
       </Box>
     </Box>
   );
@@ -223,8 +227,7 @@ function drawRoots(type, rootCanal) {
 }
 
 function drawCrown(type, crown, filling) {
-  const color = crown ? "#fdd835" : "#eaf5ef";
-
+  const color = crown ? "#fdd835" : "#e8f7ee";
   if (type === "molar") {
     return (
       <>
