@@ -402,5 +402,28 @@ namespace dentist_project.Service
                 $"Bridge saved successfully for teeth {string.Join(", ", toothNumbers)}."
             );
         }
+        // clear a tooth 
+        public async Task<(bool Success, string Message)> ClearToothAsync(
+     int patientId,
+     int toothNumber)
+        {
+            var treatments = await _context.ToothTreatments
+                .Include(tt => tt.Tooth)
+                .Include(tt => tt.MedicalRecord)
+                .Where(tt =>
+                    tt.MedicalRecord != null &&
+                    tt.MedicalRecord.PatientId == patientId &&
+                    tt.Tooth != null &&
+                    tt.Tooth.Number == toothNumber)
+                .ToListAsync();
+
+            if (treatments.Count > 0)
+            {
+                _context.ToothTreatments.RemoveRange(treatments);
+                await _context.SaveChangesAsync();
+            }
+
+            return (true, "Tooth cleared successfully.");
+        }
     }
 }

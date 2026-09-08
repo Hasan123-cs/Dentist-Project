@@ -9,6 +9,8 @@
         Crown,
         Fracture,
         Implant,
-        Bridge
+        Bridge,
+        Healthy
+
     }
 }

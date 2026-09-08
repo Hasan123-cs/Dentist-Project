@@ -61,5 +61,21 @@ namespace dentist_project.Controllers
                 message = result.Message
             });
         }
+        // clear each tooth 
+        [HttpDelete("tooth/{patientId}/{toothNumber}")]
+        public async Task<IActionResult> ClearTooth(
+    int patientId,
+    int toothNumber)
+        {
+            var result = await _dentalChartService.ClearToothAsync(
+                patientId,
+                toothNumber
+            );
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = "Tooth cleared successfully." });
+        }
     }
 }
