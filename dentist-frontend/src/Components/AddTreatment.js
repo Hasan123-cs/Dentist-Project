@@ -5,10 +5,13 @@ import {
   TextField,
   Button,
   MenuItem,
+  IconButton,
 } from "@mui/material";
 
-import { useNavigate, useParams } from "react-router-dom";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 
+import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 
 export default function AddTreatment() {
@@ -18,11 +21,14 @@ export default function AddTreatment() {
   const [form, setForm] = useState({
     treatment: "",
     tooth: "",
+    surface: "",
     status: "Pending",
     price: "",
-    duration: "",
     notes: "",
   });
+
+  const [showTooth, setShowTooth] = useState(false);
+  const [showSurface, setShowSurface] = useState(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,31 +36,55 @@ export default function AddTreatment() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
 
     setError("");
   };
 
+  /*
+   * Valid FDI tooth numbers
+   */
+  const validTeeth = [
+    11, 12, 13, 14, 15, 16, 17, 18,
+
+    21, 22, 23, 24, 25, 26, 27, 28,
+
+    31, 32, 33, 34, 35, 36, 37, 38,
+
+    41, 42, 43, 44, 45, 46, 47, 48,
+  ];
+
+  /*
+   * Detect Bridge only because Bridge can
+   * contain multiple teeth.
+   *
+   * We are NOT using treatment name to decide
+   * whether tooth/surface is required.
+   */
   const treatmentName = form.treatment.trim().toLowerCase();
-
-  const isCleaning = treatmentName.includes("cleaning");
-
-  const isLaser =
-    treatmentName.includes("laser") ||
-    treatmentName.includes("whitening") ||
-    treatmentName.includes("تبييض");
 
   const isBridge = treatmentName.includes("bridge");
 
-  // Cleaning and Laser don't need a tooth
-  const toothNotRequired = isCleaning || isLaser;
-
+  /*
+   * Validate tooth number
+   */
   const validateTooth = () => {
-    if (toothNotRequired) {
+    /*
+     * Tooth is completely optional.
+     *
+     * If doctor didn't click "Add Tooth",
+     * no validation is necessary.
+     */
+    if (!showTooth) {
       return true;
+    }
+
+    if (!form.tooth.trim()) {
+      setError("Please enter a tooth number.");
+      return false;
     }
 
     const toothNumbers = form.tooth
@@ -62,42 +92,113 @@ export default function AddTreatment() {
       .map((tooth) => tooth.trim())
       .filter((tooth) => tooth !== "");
 
+    /*
+     * Bridge can have multiple teeth.
+     */
     if (isBridge) {
       if (toothNumbers.length < 3) {
         setError("Bridge requires at least 3 teeth. Example: 11, 12, 13");
-
         return false;
       }
     } else {
-      if (toothNumbers.length < 1) {
-        setError("Tooth number is required.");
-
-        return false;
-      }
-
+      /*
+       * Normal treatment = exactly one tooth.
+       */
       if (toothNumbers.length > 1) {
         setError("Please enter only one tooth number for this treatment.");
-
         return false;
       }
     }
 
-    const validTeeth = [
-      11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32,
-      33, 34, 35, 36, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48,
-    ];
-
+    /*
+     * Validate FDI numbers.
+     */
     const invalidTeeth = toothNumbers.filter(
       (tooth) => !validTeeth.includes(Number(tooth)),
     );
 
     if (invalidTeeth.length > 0) {
       setError(`Invalid tooth number: ${invalidTeeth.join(", ")}`);
-
       return false;
     }
 
     return true;
+  };
+
+  /*
+   * Validate surface
+   */
+  const validateSurface = () => {
+    /*
+     * Surface is optional.
+     *
+     * If doctor didn't click "Add Surface",
+     * surface is allowed to be null.
+     */
+    if (!showSurface) {
+      return true;
+    }
+
+    /*
+     * Surface cannot exist without a tooth.
+     */
+    if (!showTooth) {
+      setError("You must add a tooth number before adding a surface.");
+      return false;
+    }
+
+    if (!form.surface) {
+      setError("Please select a tooth surface.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleAddTooth = () => {
+    setShowTooth(true);
+    setError("");
+  };
+
+  const handleRemoveTooth = () => {
+    setShowTooth(false);
+
+    /*
+     * Removing tooth also removes surface.
+     */
+    setShowSurface(false);
+
+    setForm((prev) => ({
+      ...prev,
+      tooth: "",
+      surface: "",
+    }));
+
+    setError("");
+  };
+
+  const handleAddSurface = () => {
+    /*
+     * Surface requires a tooth.
+     */
+    if (!showTooth) {
+      setError("Please add a tooth number before adding a surface.");
+      return;
+    }
+
+    setShowSurface(true);
+    setError("");
+  };
+
+  const handleRemoveSurface = () => {
+    setShowSurface(false);
+
+    setForm((prev) => ({
+      ...prev,
+      surface: "",
+    }));
+
+    setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -105,37 +206,68 @@ export default function AddTreatment() {
 
     setError("");
 
-    // Treatment required
+    /*
+     * Treatment name required.
+     */
     if (!form.treatment.trim()) {
       setError("Treatment name is required.");
-
       return;
     }
 
+    /*
+     * Validate tooth if doctor selected it.
+     */
     if (!validateTooth()) {
       return;
     }
 
-    const toothNumbers = toothNotRequired
+    /*
+     * Validate surface if doctor selected it.
+     */
+    if (!validateSurface()) {
+      return;
+    }
+
+    /*
+     * Convert tooth input into numbers.
+     *
+     * If tooth was not added:
+     * []
+     *
+     * If tooth was added:
+     * [16]
+     *
+     * Bridge:
+     * [11, 12, 13]
+     */
+    const toothNumbers = !showTooth
       ? []
       : form.tooth
           .split(",")
           .map((tooth) => Number(tooth.trim()))
           .filter((tooth) => !Number.isNaN(tooth));
 
+    /*
+     * Surface:
+     *
+     * If doctor selected a surface:
+     * "O"
+     *
+     * Otherwise:
+     * null
+     */
+    const surface = showSurface ? form.surface : null;
+
+    /*
+     * Final payload
+     */
     const treatmentData = {
       patientId: Number(id),
-
       treatment: form.treatment.trim(),
-
       toothNumbers: toothNumbers,
-
+      surface: surface,
       status: form.status,
-
       price: form.price === "" ? null : Number(form.price),
-
-      duration: form.duration.trim() === "" ? null : form.duration.trim(),
-
       notes: form.notes.trim() === "" ? null : form.notes.trim(),
     };
 
@@ -143,26 +275,30 @@ export default function AddTreatment() {
 
     try {
       setLoading(true);
+
       const token = localStorage.getItem("token");
+
       const response = await fetch(
         `https://localhost:7166/api/patients/${id}/treatments`,
         {
           method: "POST",
+
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify(treatmentData),
         },
       );
 
       const responseText = await response.text();
+
       const data = responseText ? JSON.parse(responseText) : null;
 
-      // Backend returned an error
       if (!response.ok) {
         throw new Error(
-          data.message || data.error || "Failed to save treatment.",
+          data?.message || data?.error || "Failed to save treatment.",
         );
       }
 
@@ -218,6 +354,7 @@ export default function AddTreatment() {
             {error}
           </Typography>
         )}
+
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -227,6 +364,10 @@ export default function AddTreatment() {
             gap: 2,
           }}
         >
+          {/* =========================
+              TREATMENT NAME
+          ========================== */}
+
           <TextField
             label="Treatment Name"
             name="treatment"
@@ -234,25 +375,120 @@ export default function AddTreatment() {
             onChange={handleChange}
             fullWidth
             required
+            placeholder="Example: Cleaning / Filling / Root Canal"
           />
 
-          {!toothNotRequired && (
-            <TextField
-              label={isBridge ? "Tooth Numbers" : "Tooth Number"}
-              name="tooth"
-              value={form.tooth}
-              onChange={handleChange}
-              fullWidth
-              placeholder={isBridge ? "Example: 11, 12, 13" : "Example: 16"}
-              helperText={
-                isBridge
-                  ? "Bridge requires at least 3 teeth. Separate teeth with commas."
-                  : "Enter one tooth number."
-              }
-            />
+          {/* =========================
+              TOOTH NUMBER
+          ========================== */}
+
+          {!showTooth ? (
+            <Button
+              type="button"
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={handleAddTooth}
+              sx={{
+                alignSelf: "flex-start",
+                borderColor: "#C9A227",
+                color: "#C9A227",
+                fontWeight: 700,
+                textTransform: "none",
+              }}
+            >
+              Add Tooth Number
+            </Button>
+          ) : (
+            <Box>
+              <Box display="flex" alignItems="center" gap={1}>
+                <TextField
+                  label={isBridge ? "Tooth Numbers" : "Tooth Number"}
+                  name="tooth"
+                  value={form.tooth}
+                  onChange={handleChange}
+                  fullWidth
+                  autoFocus
+                  placeholder={isBridge ? "Example: 11, 12, 13" : "Example: 16"}
+                  helperText={
+                    isBridge
+                      ? "Bridge requires at least 3 teeth."
+                      : "Enter one FDI tooth number."
+                  }
+                />
+
+                <IconButton
+                  type="button"
+                  onClick={handleRemoveTooth}
+                  sx={{
+                    color: "#d32f2f",
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+
+              {/* =========================
+                  SURFACE
+              ========================== */}
+
+              {!showSurface ? (
+                <Button
+                  type="button"
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={handleAddSurface}
+                  sx={{
+                    mt: 1.5,
+                    borderColor: "#C9A227",
+                    color: "#C9A227",
+                    fontWeight: 700,
+                    textTransform: "none",
+                  }}
+                >
+                  Add Surface
+                </Button>
+              ) : (
+                <Box display="flex" alignItems="center" gap={1} mt={2}>
+                  <TextField
+                    select
+                    label="Surface"
+                    name="surface"
+                    value={form.surface}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    helperText="Select the affected tooth surface."
+                  >
+                    <MenuItem value="M">M - Mesial</MenuItem>
+
+                    <MenuItem value="O">O - Occlusal</MenuItem>
+
+                    <MenuItem value="D">D - Distal</MenuItem>
+
+                    <MenuItem value="B">B - Buccal</MenuItem>
+
+                    <MenuItem value="L">L - Lingual</MenuItem>
+                  </TextField>
+
+                  <IconButton
+                    type="button"
+                    onClick={handleRemoveSurface}
+                    sx={{
+                      color: "#d32f2f",
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              )}
+            </Box>
           )}
 
-          {isCleaning && (
+          {/* =========================
+              INFO
+          ========================== */}
+
+          {!showTooth && (
             <Typography
               sx={{
                 fontSize: 14,
@@ -262,11 +498,12 @@ export default function AddTreatment() {
                 borderRadius: 2,
               }}
             >
-              Cleaning does not require a tooth number.
+              Tooth number is optional. Add it only if this treatment is related
+              to a specific tooth.
             </Typography>
           )}
 
-          {isLaser && (
+          {showTooth && !showSurface && (
             <Typography
               sx={{
                 fontSize: 14,
@@ -276,9 +513,13 @@ export default function AddTreatment() {
                 borderRadius: 2,
               }}
             >
-              Laser / Whitening does not require a tooth number.
+              No surface selected. This treatment will apply to the whole tooth.
             </Typography>
           )}
+
+          {/* =========================
+              STATUS
+          ========================== */}
 
           <TextField
             select
@@ -295,6 +536,10 @@ export default function AddTreatment() {
             <MenuItem value="Completed">Completed</MenuItem>
           </TextField>
 
+          {/* =========================
+              PRICE
+          ========================== */}
+
           <TextField
             label="Price"
             name="price"
@@ -308,14 +553,9 @@ export default function AddTreatment() {
             }}
           />
 
-          <TextField
-            label="Duration"
-            name="duration"
-            placeholder="Example: 60 min"
-            value={form.duration}
-            onChange={handleChange}
-            fullWidth
-          />
+          {/* =========================
+              NOTES
+          ========================== */}
 
           <TextField
             label="Notes"
@@ -326,6 +566,10 @@ export default function AddTreatment() {
             onChange={handleChange}
             fullWidth
           />
+
+          {/* =========================
+              BUTTONS
+          ========================== */}
 
           <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
             <Button
