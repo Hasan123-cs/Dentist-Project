@@ -33,7 +33,7 @@ public class NotificationBackgroundService : BackgroundService
                 var notificationService =
                     scope.ServiceProvider
                         .GetRequiredService<
-                            INotificationService
+                            NotificationService
                         >();
 
 

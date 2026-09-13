@@ -2,6 +2,5 @@
 
 public enum NotificationType
 {
-    WhatsApp,
-    SMS
+    WhatsApp
 }

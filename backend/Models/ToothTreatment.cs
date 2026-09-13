@@ -10,8 +10,8 @@ public class ToothTreatment
     public int MedicalRecordId { get; set; }
     public MedicalRecord MedicalRecord { get; set; } = null!;
 
-    public int ToothId { get; set; }
-    public Tooth Tooth { get; set; } = null!;
+    public int? ToothId { get; set; }
+    public Tooth? Tooth { get; set; }
 
     public int? TreatmentId { get; set; }
     public Treatment? Treatment { get; set; }

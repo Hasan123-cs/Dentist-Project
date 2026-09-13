@@ -59,10 +59,11 @@ namespace dentist_project.Data
                 .HasForeignKey(m => m.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<MedicalRecord>()
-                .HasOne(m => m.Appointment)
-                .WithMany()
-                .HasForeignKey(m => m.AppointmentId)
-                .OnDelete(DeleteBehavior.Restrict);
+             .HasOne(m => m.Appointment)
+             .WithMany()
+             .HasForeignKey(m => m.AppointmentId)
+             .IsRequired(false)
+             .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<AppointmentTreatment>()
                 .HasOne(at => at.Appointment)
                 .WithMany(a => a.AppointmentTreatments)
@@ -73,16 +74,20 @@ namespace dentist_project.Data
                 .WithMany(t => t.AppointmentTreatments)
                 .HasForeignKey(at => at.TreatmentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<ToothTreatment>()
                 .HasOne(tt => tt.MedicalRecord)
                 .WithMany(m => m.ToothTreatments)
                 .HasForeignKey(tt => tt.MedicalRecordId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+
             builder.Entity<ToothTreatment>()
-                .HasOne(tt => tt.Tooth)
-                .WithMany(t => t.ToothTreatments)
-                .HasForeignKey(tt => tt.ToothId)
-                .OnDelete(DeleteBehavior.Restrict);
+    .HasOne(tt => tt.Tooth)
+    .WithMany(t => t.ToothTreatments)
+    .HasForeignKey(tt => tt.ToothId)
+    .IsRequired(false)
+    .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<ToothTreatment>()
                 .HasOne(tt => tt.Treatment)
                 .WithMany(t => t.ToothTreatments)

@@ -5,8 +5,8 @@ public class MedicalRecord
     public int Id { get; set; }
     public int PatientId { get; set; }
     public Patient Patient { get; set; } = null!;
-    public int AppointmentId { get; set; }
-    public Appointment Appointment { get; set; } = null!;
+    public int? AppointmentId { get; set; }
+    public Appointment? Appointment { get; set; }
     public string? Diagnosis { get; set; }
     public string? TreatmentPlan { get; set; }
     // Doctor/Assistant who created the record

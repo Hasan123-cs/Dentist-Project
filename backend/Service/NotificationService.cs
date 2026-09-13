@@ -41,7 +41,7 @@ public class NotificationService
                 continue;
 
             // -----------------------------------------
-            // WhatsApp will be sent here later
+            // WhatsApp will be sent here 
             // -----------------------------------------
 
             var notification = new Notification

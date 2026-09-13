@@ -1,10 +1,10 @@
-﻿namespace dentist_project.Enums;
+﻿    namespace dentist_project.Enums;
 
-public enum ToothStatus
-{
-    Healthy,
-    NeedsTreatment,
-    InProgress,
-    Completed,
-    Extracted
-}
+    public enum ToothStatus
+    {
+        Healthy,
+        NeedsTreatment,
+        InProgress,
+        Completed,
+        Extracted
+    }
