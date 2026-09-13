@@ -44,6 +44,17 @@ export default function AddTreatment() {
     setError("");
   };
 
+  const treatmentsRequireTooth = [
+    "filling",
+    "root canal",
+    "crown",
+    "implant",
+    "missing",
+    "fracture",
+    "bridge",
+    "cavity",
+  ];
+
   /*
    * Valid FDI tooth numbers
    */
@@ -66,6 +77,15 @@ export default function AddTreatment() {
    */
   const treatmentName = form.treatment.trim().toLowerCase();
 
+  const requiresTooth = treatmentsRequireTooth.includes(treatmentName);
+
+  const isToothMissing = requiresTooth && form.tooth.trim() === "";
+
+  const canSubmit =
+    form.treatment.trim() !== "" &&
+    !isToothMissing &&
+    (!showSurface || form.surface !== "") &&
+    !loading;
   const isBridge = treatmentName.includes("bridge");
 
   /*
@@ -587,7 +607,7 @@ export default function AddTreatment() {
             <Button
               type="submit"
               variant="contained"
-              disabled={loading}
+              disabled={!canSubmit}
               sx={{
                 background: "#C9A227",
                 fontWeight: 700,
