@@ -914,5 +914,80 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
         // ===creating the tratments===
+
+
+        // create an patient 
+        public async Task<(bool Success, string Message, PatientDto? Data)> CreatePatient(
+    CreatePatientDto dto)
+        {
+            // Validate name
+            if (string.IsNullOrWhiteSpace(dto.Name))
+            {
+                return (false, "Patient name is required.", null);
+            }
+
+            // Validate phone
+            if (string.IsNullOrWhiteSpace(dto.Phone))
+            {
+                return (false, "Phone number is required.", null);
+            }
+
+            // Split full name
+            var nameParts = dto.Name
+                .Trim()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (nameParts.Length == 0)
+            {
+                return (false, "Patient name is required.", null);
+            }
+
+            var firstName = nameParts[0];
+
+            var lastName = nameParts.Length > 1
+                ? string.Join(" ", nameParts.Skip(1))
+                : "";
+
+            // Create patient
+            var patient = new Patient
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Phone = dto.Phone.Trim(),
+                Gender = string.IsNullOrWhiteSpace(dto.Gender)
+                    ? null
+                    : dto.Gender.Trim(),
+                DateOfBirth = dto.BirthDate,
+                MedicalHistory = string.IsNullOrWhiteSpace(dto.Notes)
+                    ? null
+                    : dto.Notes.Trim(),
+                Allergies = null,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Patients.Add(patient);
+
+            await _context.SaveChangesAsync();
+
+            // Return created patient
+            var patientDto = new PatientDto
+            {
+                FirstName = patient.FirstName,
+                LastName = patient.LastName,
+                DateOfBirth = patient.DateOfBirth,
+                Gender = patient.Gender,
+                Phone = patient.Phone,
+                Allergies = patient.Allergies,
+                MedicalHistory = patient.MedicalHistory,
+                CreatedAt = patient.CreatedAt
+            };
+
+            return (
+                true,
+                "Patient created successfully.",
+                patientDto
+            );
+        }
+        // === create an patient ===
     }
 }

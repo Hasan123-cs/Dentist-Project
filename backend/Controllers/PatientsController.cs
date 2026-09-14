@@ -93,6 +93,42 @@
 
         }
 
+    // create patient 
+    [HttpPost]
+    public async Task<IActionResult> CreatePatient(
+    [FromBody] CreatePatientDto dto)
+    {
+        try
+        {
+            var result = await _service.CreatePatient(dto);
+
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    message = result.Message
+                });
+            }
+
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("========== CREATE PATIENT ERROR ==========");
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("==========================================");
+
+            return StatusCode(500, new
+            {
+                message = "Error creating patient.",
+                error = ex.Message
+            });
+        }
+    }
 
     [HttpPost("{id:int}/treatments")]
     public async Task<IActionResult> CreateTreatment(
