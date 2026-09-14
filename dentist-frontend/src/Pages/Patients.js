@@ -6,196 +6,66 @@ import PatientList from "../Components/PatientList";
 
 import { useEffect, useState } from "react";
 
-
-
 export default function Patients() {
+  const [patients, setPatients] = useState([]);
 
+  const [filteredPatients, setFilteredPatients] = useState([]);
 
-const [patients,setPatients]=useState([]);
+  const [search, setSearch] = useState("");
 
-const [filteredPatients,setFilteredPatients]=useState([]);
+  const [error, setError] = useState("");
 
-const [search,setSearch]=useState("");
+  useEffect(() => {
+    const getPatients = async () => {
+      try {
+        const fetchApi = await fetch("https://localhost:7166/api/patients");
 
-const [error,setError]=useState("");
+        if (!fetchApi.ok) {
+          setError("Data not Found");
 
+          return;
+        }
 
+        const response = await fetchApi.json();
 
+        setPatients(response);
 
+        setFilteredPatients(response);
+      } catch (error) {
+        console.log(error);
 
-useEffect(()=>{
+        setError("Connection Error");
+      }
+    };
 
+    getPatients();
+  }, []);
 
-const getPatients=async()=>{
+  useEffect(() => {
+    const value = search.toLowerCase();
 
+    const result = patients.filter((p) => {
+      const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
 
-try{
+      return fullName.includes(value) || p.phone?.includes(value);
+    });
 
+    setFilteredPatients(result);
+  }, [search, patients]);
 
-const fetchApi = await fetch(
-"https://localhost:7166/api/patients"
-);
+  return (
+    <Box
+      sx={{
+        width: "100%",
+      }}
+    >
+      {error && <h3>{error}</h3>}
 
+      <PatientHeader />
 
+      <PatientSearch search={search} setSearch={setSearch} />
 
-if(!fetchApi.ok){
-
-setError("Data not Found");
-
-return;
-
-}
-
-
-
-const response = await fetchApi.json();
-
-
-
-setPatients(response);
-
-setFilteredPatients(response);
-
-
-
-}
-
-catch(error){
-
-
-console.log(error);
-
-setError("Connection Error");
-
-
-}
-
-
-
-};
-
-
-
-getPatients();
-
-
-},[]);
-
-
-
-
-
-
-
-
-useEffect(()=>{
-
-
-const value = search.toLowerCase();
-
-
-
-const result = patients.filter((p)=>{
-
-
-const fullName =
-
-`${p.firstName} ${p.lastName}`
-
-.toLowerCase();
-
-
-
-return (
-
-fullName.includes(value)
-
-||
-
-p.phone?.includes(value)
-
-);
-
-
-
-});
-
-
-
-setFilteredPatients(result);
-
-
-
-},[search,patients]);
-
-
-
-
-
-
-
-
-
-
-return(
-
-
-<Box
-
-sx={{
-
-width:"100%"
-
-}}
-
->
-
-
-{
-
-error &&
-
-<h3>
-
-{error}
-
-</h3>
-
-}
-
-
-
-<PatientHeader />
-
-
-
-
-<PatientSearch
-
-search={search}
-
-setSearch={setSearch}
-
-/>
-
-
-
-
-
-<PatientList
-
-patients={filteredPatients}
-
-/>
-
-
-
-
-
-</Box>
-
-
-);
-
-
+      <PatientList patients={filteredPatients} />
+    </Box>
+  );
 }

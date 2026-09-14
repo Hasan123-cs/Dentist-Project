@@ -16,7 +16,6 @@ export default function AddPatient() {
 
   const [form, setForm] = useState({
     name: "",
-    email: "",
     phone: "",
     gender: "",
     birthDate: "",
@@ -31,14 +30,39 @@ export default function AddPatient() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("New Patient:", form);
+    try {
+      const token = localStorage.getItem("token");
 
-    // backend later
+      if (!token) {
+        alert("You are not authenticated.");
+        return;
+      }
 
-    navigate("/patients");
+      const response = await fetch("https://localhost:7166/api/Patients", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create patient.");
+      }
+
+      console.log("Patient created:", data);
+
+      navigate("/patients");
+    } catch (error) {
+      console.error("Error creating patient:", error);
+      alert(error.message);
+    }
   };
 
   return (
@@ -93,14 +117,6 @@ export default function AddPatient() {
             label="Full Name"
             name="name"
             value={form.name}
-            onChange={handleChange}
-            fullWidth
-          />
-
-          <TextField
-            label="Email"
-            name="email"
-            value={form.email}
             onChange={handleChange}
             fullWidth
           />
