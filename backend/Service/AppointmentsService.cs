@@ -180,11 +180,12 @@ namespace dentist_project.Service
             return (true, "Appointment cancelled successfully.");
         }
         // add the new appointment by default scheduled 
-        public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
-      CreateAppointmentDto dto,
-      string userId)
+// Add a new appointment with Scheduled status
+public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
+    CreateAppointmentDto dto,
+    string userId)
         {
-            // Find patient by full name
+           
             var patient = await _db.Patients
                 .FirstOrDefaultAsync(p =>
                     (p.FirstName + " " + p.LastName).ToLower()
@@ -195,7 +196,7 @@ namespace dentist_project.Service
                 return (false, "Patient not found.");
             }
 
-            // Find treatment by name
+
             var treatment = await _db.Treatments
                 .FirstOrDefaultAsync(t =>
                     t.Name.ToLower()
@@ -204,50 +205,135 @@ namespace dentist_project.Service
             if (treatment == null)
             {
                 return (false, "Treatment not found.");
-
             }
 
-            // Create start date/time to lebanon time 
-            var localDateTime = dto.Date.ToDateTime(dto.Time);
-            // FOR BOTH WIN AND LUNIX
+
+
+            if (dto.EndTime <= dto.StartTime)
+            {
+                return (false, "End time must be after start time.");
+            }
+
+
+            var clinicStart = new TimeOnly(9, 0);
+            var clinicEnd = new TimeOnly(20, 0);
+
+            if (dto.StartTime < clinicStart)
+            {
+                return (false, "Appointment cannot start before 09:00.");
+            }
+
+            if (dto.EndTime > clinicEnd)
+            {
+                return (false, "Appointment cannot end after 20:00.");
+            }
+
+
+            
             var lebanonTimeZone = OperatingSystem.IsWindows()
-                ? TimeZoneInfo.FindSystemTimeZoneById("Middle East Standard Time")
-                : TimeZoneInfo.FindSystemTimeZoneById("Asia/Beirut");
+                ? TimeZoneInfo.FindSystemTimeZoneById(
+                    "Middle East Standard Time")
+                : TimeZoneInfo.FindSystemTimeZoneById(
+                    "Asia/Beirut");
 
+
+            var localStartDateTime =
+                dto.Date.ToDateTime(dto.StartTime);
+
+            localStartDateTime = DateTime.SpecifyKind(
+                localStartDateTime,
+                DateTimeKind.Unspecified);
+
+
+
+            var localEndDateTime =
+                dto.Date.ToDateTime(dto.EndTime);
+
+            localEndDateTime = DateTime.SpecifyKind(
+                localEndDateTime,
+                DateTimeKind.Unspecified);
+
+
+          
             var startDateTime = TimeZoneInfo.ConvertTimeToUtc(
-                DateTime.SpecifyKind(localDateTime, DateTimeKind.Unspecified),
-                lebanonTimeZone
-            );
+                localStartDateTime,
+                lebanonTimeZone);
 
-            // Calculate end time using treatment duration
-            var endDateTime = startDateTime.AddMinutes(
-     treatment.EstimatedMinutes
- );
+            var endDateTime = TimeZoneInfo.ConvertTimeToUtc(
+                localEndDateTime,
+                lebanonTimeZone);
 
-            // Create appointment
+
+            // ==========================================
+            // 9. Check appointment overlap
+            // ==========================================
+            //
+            // Existing:
+            //
+            //       10:00 -------- 10:30
+            //
+            // New:
+            //
+            //       10:20 -------- 11:00
+            //
+            // This is NOT allowed.
+            //
+            // But:
+            //
+            //       10:00 -------- 10:30
+            //                         10:30 -------- 11:00
+            //
+            // This IS allowed.
+            //
+
+            var hasOverlap = await _db.Appointments
+                .AnyAsync(a =>
+                    a.Status != AppointmentStatus.Cancelled
+                    &&
+                    a.StartDateTime < endDateTime
+                    &&
+                    a.EndDateTime > startDateTime
+                );
+
+            if (hasOverlap)
+            {
+                return (
+                    false,
+                    "The selected time overlaps with another appointment."
+                );
+            }
+
+
+            // 10. Create appointment
+
             var appointment = new Appointment
             {
                 PatientId = patient.Id,
 
-                // Get employee from JWT
+                //   doctor / assistant from JWT
                 CreatedById = userId,
 
                 StartDateTime = startDateTime,
                 EndDateTime = endDateTime,
 
-                Status = AppointmentStatus.Scheduled,
+                Status = AppointmentStatus.Pending,
 
                 TotalCost = treatment.DefaultPrice,
-                AmountPaid = 0,
+                // its represent the remaining 
+                AmountPaid = treatment.DefaultPrice,
 
-                PaymentStatus = Enums.PaymentStatus.Pending
+                PaymentStatus = Enums.PaymentStatus.Unpaid
             };
 
-            // Add treatment to appointment
+
+            // 11. Attach treatment to appointment
+
             var appointmentTreatment = new AppointmentTreatment
             {
                 Appointment = appointment,
+
                 TreatmentId = treatment.Id,
+
                 Price = treatment.DefaultPrice
             };
 
@@ -256,19 +342,170 @@ namespace dentist_project.Service
             );
 
             _db.Appointments.Add(appointment);
-            //var medicalRecord = new MedicalRecord 
-            //{ PatientId = patient.Id,
-            //    AppointmentId = appointment.Id,
-            //    CreatedById = userId, Diagnosis = null,
-            //    TreatmentPlan = null,
-            //    Prescription = null,
-            //    ClinicalNotes = null };
-            //_db.MedicalRecords.Add(medicalRecord);
 
             await _db.SaveChangesAsync();
 
-            return (true, "Add Succsess ");
+
+            return (
+                true,
+                "Appointment added successfully."
+            );
         }
+public async Task<(bool Success, string Message, object? Data)>
+    CompleteAppointmentAsync(
+        int appointmentId,
+        CompleteAppointmentDto dto)
+        {
+            var appointment = await _db.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.AppointmentTreatments)
+                    .ThenInclude(at => at.Treatment)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (appointment == null)
+                return (false, "Appointment not found.", null);
+
+            if (appointment.Status == AppointmentStatus.Cancelled)
+                return (false, "Cancelled appointment cannot be completed.", null);
+
+            if (appointment.Status == AppointmentStatus.Completed)
+                return (false, "Appointment is already completed.", null);
+
+            if (dto.PaymentStatus != "Unpaid" &&
+                dto.PaymentStatus != "Paid")
+            {
+                return (false, "Invalid payment status.", null);
+            }
+
+            if (dto.PaidAmount < 0)
+                return (false, "Paid amount cannot be negative.", null);
+
+            if (dto.PaymentStatus == "Unpaid")
+            {
+                dto.PaidAmount = 0;
+            }
+
+            if (dto.PaymentStatus == "Paid" &&
+                dto.PaidAmount <= 0)
+            {
+                return (false, "Enter the amount paid.", null);
+            }
+
+            if (dto.PaidAmount > appointment.TotalCost)
+            {
+                return (false,
+                    "Paid amount cannot be greater than the treatment price.",
+                    null);
+            }
+
+            var totalCost = appointment.TotalCost;
+            var remaining = appointment.TotalCost - dto.PaidAmount;
+            // AmountPaid stores the REMAINING amount
+            appointment.AmountPaid = remaining;
+            appointment.PaymentStatus =
+                dto.PaymentStatus == "Paid"
+                    ? Enums.PaymentStatus.Paid
+                    : Enums.PaymentStatus.Unpaid;
+
+            // --------------------------------
+            // IMPORTANT
+            // --------------------------------
+            // We only change the price when
+            // payment is Paid.
+            //
+            // Example:
+            // TotalCost = 100
+            // PaidAmount = 10
+            // New TotalCost = 90
+            //
+            // If Unpaid:
+            // TotalCost stays 100.
+            // --------------------------------
+
+           
+
+            appointment.Status = AppointmentStatus.Completed;
+
+            await _db.SaveChangesAsync();
+
+
+            return (
+                true,
+                "Appointment completed successfully.",
+                new
+                {
+                    appointment.Id,
+                    appointment.Status,
+                    appointment.TotalCost,
+                    appointment.AmountPaid,
+                    appointment.PaymentStatus,
+                    Remaining = remaining
+                }
+            );
+        }
+public async Task<(bool Success, string Message, object? Data)>
+    GetAppointmentByIdAsync(int id)
+        {
+            var appointment = await _db.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.AppointmentTreatments)
+                    .ThenInclude(at => at.Treatment)
+                .Include(a => a.CreatedBy)
+
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (appointment == null)
+            {
+                return (
+                    false,
+                    "Appointment not found.",
+                    null
+                );
+            }
+
+            var treatment = appointment.AppointmentTreatments
+                .FirstOrDefault();
+
+            return (
+                true,
+                "Appointment loaded successfully.",
+                new
+                {
+                    id = appointment.Id,
+
+                    patientName = appointment.Patient.FirstName
+                                 + " "
+                                 + appointment.Patient.LastName,
+
+                    treatmentName = treatment?.Treatment?.Name,
+
+                    date = appointment.StartDateTime
+                        .ToLocalTime()
+                        .ToString("yyyy-MM-dd"),
+
+                    startDateTime = appointment.StartDateTime,
+
+                    endDateTime = appointment.EndDateTime,
+
+                    status = appointment.Status.ToString(),
+
+                    totalCost = appointment.TotalCost,
+
+                    amountPaid = appointment.TotalCost - appointment.AmountPaid,
+
+                    paymentStatus = appointment.PaymentStatus.ToString(),
+
+                    notes = appointment.Notes,
+
+                    createdBy = appointment.CreatedBy != null
+    ? $"{appointment.CreatedBy.FirstName} {appointment.CreatedBy.LastName}"
+    : "-",
+                    remaining = appointment.AmountPaid
+                }
+            );
+        }
+
+
     }
 }
 

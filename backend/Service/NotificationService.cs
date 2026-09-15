@@ -23,7 +23,7 @@ public class NotificationService
         var appointments = await _context.Appointments
             .Include(a => a.Patient)
             .Where(a =>
-                a.Status == AppointmentStatus.Scheduled &&
+                a.Status == AppointmentStatus.Pending &&
                 !a.ReminderSent &&
                 a.Patient.Phone != null
             )
@@ -73,7 +73,7 @@ public class NotificationService
                 .ThenInclude(a => a.Patient)
             .Include(at => at.Treatment)
             .Where(at =>
-                at.Appointment.Status == AppointmentStatus.Scheduled &&
+                at.Appointment.Status == AppointmentStatus.Pending &&
                 at.Treatment.Name == "Cleaning"
             )
             .ToListAsync();

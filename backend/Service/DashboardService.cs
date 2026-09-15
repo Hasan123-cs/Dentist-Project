@@ -32,21 +32,14 @@ namespace dentist_project.Service
             .CountAsync(x =>
                 x.StartDateTime.Date == today
             );
-            // confirmed 
-            dashboard.ConfirmedAppointments =
-           await _db.Appointments
-           .CountAsync(x =>
-               x.StartDateTime.Date == today
-               &&
-               x.Status == AppointmentStatus.Confirmed
-           );
+           
             // pending 
             dashboard.PendingAppointments =
             await _db.Appointments
             .CountAsync(x =>
                 x.StartDateTime.Date == today
                 &&
-                x.Status == AppointmentStatus.Scheduled
+                x.Status == AppointmentStatus.Pending
             );
             dashboard.TotalPatients =await _db.Patients.CountAsync();
             var firstDayOfMonth = new DateTime(

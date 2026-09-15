@@ -69,33 +69,53 @@ namespace dentist_project.Controllers
                 message = "Appointment cancelled successfully."
             });
         }
-
-[HttpPost]
-public async Task<IActionResult> CreateAppointment(
-    [FromBody] CreateAppointmentDto dto)
+        [HttpPost]
+        public async Task<IActionResult> CreateAppointment(
+            [FromBody] CreateAppointmentDto dto)
         {
             try
             {
-                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userId = User.FindFirst(
+                    System.Security.Claims.ClaimTypes.NameIdentifier
+                )?.Value;
 
-                if (string.IsNullOrEmpty(userId))
+                Console.WriteLine(
+                    "===================================================="
+                );
+                Console.WriteLine(
+                    "User ID: " + userId
+                );
+
+                if (string.IsNullOrWhiteSpace(userId))
                 {
                     return Unauthorized(new
                     {
                         message = "User not authenticated."
                     });
                 }
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user == null) 
-                { return Unauthorized(new { message = "User not found." }); }
 
-                // Call the service
-                var result = await _appointmentService.CreateAppointmentAsync(
-                    dto,
-                    userId
+
+                var user = await _userManager.FindByIdAsync(userId);
+
+                Console.WriteLine(
+                    "User: " + user
                 );
 
-                // If creation failed
+
+                if (user == null)
+                {
+                    return Unauthorized(new
+                    {
+                        message = "User not found."
+                    });
+                }
+
+                var result =
+                    await _appointmentService.CreateAppointmentAsync(
+                        dto,
+                        userId
+                    );
+
                 if (!result.sucsess)
                 {
                     return BadRequest(new
@@ -104,23 +124,100 @@ public async Task<IActionResult> CreateAppointment(
                     });
                 }
 
-                // If creation succeeded
                 return Ok(new
                 {
-                    message = result.message + "name of creater is  : " + user.UserName!
+                    message = result.message,
+                    createdBy = user.UserName
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    "========== CREATE APPOINTMENT ERROR =========="
+                );
+
+                Console.WriteLine(ex.ToString());
+
+                Console.WriteLine(
+                    "=============================================="
+                );
+
+
+                return StatusCode(500, new
+                {
+                    message =
+                        "An error occurred while creating the appointment.",
+
+                    error = ex.Message
+                });
+            }
+        }
+       [HttpPut("{id}/complete")]
+    public async Task<IActionResult> CompleteAppointment(
+    int id,
+    [FromBody] CompleteAppointmentDto dto)
+        {
+            try
+            {
+                var result =
+                    await _appointmentService.CompleteAppointmentAsync(
+                        id,
+                        dto);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new
+                    {
+                        message = result.Message
+                    });
+                }
+
+                return Ok(new
+                {
+                    message = result.Message,
+                    data = result.Data
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
-                    message = "An error occurred while creating the appointment.",
+                    message = "An error occurred while completing the appointment.",
+                    error = ex.Message
+                });
+            }
+        }
+[HttpGet("{id}")]
+public async Task<IActionResult> GetAppointment(int id)
+        {
+            try
+            {
+                var result =
+                    await _appointmentService.GetAppointmentByIdAsync(id);
+
+                if (!result.Success)
+                {
+                    return NotFound(new
+                    {
+                        message = result.Message
+                    });
+                }
+
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while loading the appointment.",
                     error = ex.Message
                 });
             }
         }
 
 
-    }
+        }
+
+
 }
     
