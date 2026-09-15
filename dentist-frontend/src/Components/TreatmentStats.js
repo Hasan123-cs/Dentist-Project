@@ -14,241 +14,411 @@ import {
 } from "@mui/icons-material";
 
 
-
-const stats=[
-
-
-{
-    title:"Total Treatments",
-    value:24,
-    icon:<MedicalServices />,
-    color:"#C9A227"
-},
-
-
-{
-    title:"Completed",
-    value:15,
-    icon:<CheckCircle />,
-    color:"#16a34a"
-},
-
-
-{
-    title:"Pending",
-    value:6,
-    icon:<Pending />,
-    color:"#f59e0b"
-},
-
-
-{
-    title:"Total Revenue",
-    value:"$8,450",
-    icon:<AttachMoney />,
-    color:"#2563eb"
-}
-
-
-
-];
-
-
+import { useEffect, useState } from "react";
 
 
 
 export default function TreatmentStats(){
 
 
+    const [treatments, setTreatments] = useState([]);
 
-return (
+    const [loading, setLoading] = useState(true);
 
 
-<Grid
 
-container
+    useEffect(() => {
 
-spacing={3}
 
-mb={4}
+        const loadTreatments = async () => {
 
->
 
+            try {
 
-{
 
-stats.map((item)=>(
+                const token = localStorage.getItem("token");
 
 
-<Grid
+                if (!token) {
 
-item
+                    console.error("No authentication token found.");
 
-xs={12}
+                    return;
 
-sm={6}
+                }
 
-lg={3}
 
-key={item.title}
 
->
+                const response = await fetch(
+                    "https://localhost:7166/api/patients/all-treatments",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
 
 
-<Paper
 
+                if (!response.ok) {
 
-sx={{
+                    throw new Error(
+                        `Failed to load treatments: ${response.status}`
+                    );
 
+                }
 
-p:3,
 
 
-height:140,
+                const data = await response.json();
 
 
-borderRadius:4,
+                console.log("Treatment stats data:", data);
 
 
-border:"1px solid #eee3c5",
+                setTreatments(
+                    Array.isArray(data)
+                        ? data
+                        : []
+                );
 
 
-background:"#fff",
+            } catch (error) {
 
 
-display:"flex",
+                console.error(
+                    "Error loading treatment statistics:",
+                    error
+                );
 
 
-alignItems:"center",
+            } finally {
 
 
-gap:2,
+                setLoading(false);
 
+            }
 
 
-boxShadow:"0 3px 10px rgba(0,0,0,.05)"
+        };
 
-}}
 
+        loadTreatments();
 
 
->
+    }, []);
 
 
-<Box
 
 
-sx={{
 
+    // =========================
+    // CALCULATE STATISTICS
+    // =========================
 
-width:55,
 
+    const totalTreatments =
+        treatments.length;
 
-height:55,
 
 
-borderRadius:"50%",
+    const completedTreatments =
+        treatments.filter(
+            (treatment) =>
+                treatment.status?.toLowerCase() === "completed"
+        ).length;
 
 
-background:"#faf7ed",
 
+    const pendingTreatments =
+        treatments.filter(
+            (treatment) =>
+                treatment.status?.toLowerCase() === "pending" ||
+                treatment.status?.toLowerCase() === "needstreatment"
+        ).length;
 
-display:"flex",
 
 
-alignItems:"center",
+    const totalRevenue =
+        treatments.reduce(
+            (total, treatment) => {
 
+                const price =
+                    Number(treatment.price) || 0;
 
-justifyContent:"center"
+                return total + price;
 
+            },
+            0
+        );
 
-}}
 
 
->
+    // =========================
+    // FORMAT REVENUE
+    // =========================
 
 
-<Box
+    const formattedRevenue =
+        totalRevenue.toLocaleString(
+            "en-US",
+            {
+                style: "currency",
+                currency: "USD",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }
+        );
 
-sx={{
 
-color:item.color,
 
-display:"flex"
 
-}}
 
->
+    // =========================
+    // STATS
+    // =========================
 
-{item.icon}
 
-</Box>
+    const stats = [
 
 
-</Box>
+        {
+            title:"Total Treatments",
 
+            value: loading
+                ? "..."
+                : totalTreatments,
 
+            icon:<MedicalServices />,
 
+            color:"#C9A227"
+        },
 
 
+        {
+            title:"Completed",
 
-<Box>
+            value: loading
+                ? "..."
+                : completedTreatments,
 
+            icon:<CheckCircle />,
 
-<Typography
+            color:"#16a34a"
+        },
 
-fontSize={13}
 
-color="#718096"
+        {
+            title:"Pending",
 
->
+            value: loading
+                ? "..."
+                : pendingTreatments,
 
-{item.title}
+            icon:<Pending />,
 
-</Typography>
+            color:"#f59e0b"
+        },
 
 
+        {
+            title:"Total Revenue",
 
+            value: loading
+                ? "..."
+                : formattedRevenue,
 
-<Typography
+            icon:<AttachMoney />,
 
-fontSize={28}
+            color:"#2563eb"
+        }
 
-fontWeight={800}
 
-color="#092c57"
+    ];
 
->
 
-{item.value}
 
-</Typography>
 
 
+    return (
 
-</Box>
 
+        <Grid
 
+            container
 
+            spacing={3}
 
+            mb={4}
 
-</Paper>
+        >
 
 
-</Grid>
+            {
 
+                stats.map((item)=>(
 
-))
 
+                    <Grid
 
-}
+                        item
 
+                        xs={12}
 
+                        sm={6}
 
-</Grid>
+                        lg={3}
 
+                        key={item.title}
 
-)
+                    >
 
+
+                        <Paper
+
+
+                            sx={{
+
+
+                                p:3,
+
+
+                                height:140,
+
+
+                                borderRadius:4,
+
+
+                                border:"1px solid #eee3c5",
+
+
+                                background:"#fff",
+
+
+                                display:"flex",
+
+
+                                alignItems:"center",
+
+
+                                gap:2,
+
+
+                                boxShadow:"0 3px 10px rgba(0,0,0,.05)"
+
+
+                            }}
+
+
+                        >
+
+
+                            <Box
+
+
+                                sx={{
+
+
+                                    width:55,
+
+
+                                    height:55,
+
+
+                                    borderRadius:"50%",
+
+
+                                    background:"#faf7ed",
+
+
+                                    display:"flex",
+
+
+                                    alignItems:"center",
+
+
+                                    justifyContent:"center"
+
+
+                                }}
+
+
+                            >
+
+
+                                <Box
+
+                                    sx={{
+
+                                        color:item.color,
+
+                                        display:"flex"
+
+                                    }}
+
+                                >
+
+                                    {item.icon}
+
+                                </Box>
+
+
+                            </Box>
+
+
+
+
+
+                            <Box>
+
+
+                                <Typography
+
+                                    fontSize={13}
+
+                                    color="#718096"
+
+                                >
+
+                                    {item.title}
+
+                                </Typography>
+
+
+
+
+                                <Typography
+
+                                    fontSize={28}
+
+                                    fontWeight={800}
+
+                                    color="#092c57"
+
+                                >
+
+                                    {item.value}
+
+                                </Typography>
+
+
+                            </Box>
+
+
+                        </Paper>
+
+
+                    </Grid>
+
+
+                ))
+
+            }
+
+
+        </Grid>
+
+
+    );
 
 }

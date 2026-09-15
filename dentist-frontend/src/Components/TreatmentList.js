@@ -6,62 +6,110 @@ import {
 
 import TreatmentCard from "./TreatmentCard";
 
-
-const treatments=[
-
-{
-  id:1,
-  patient:"John Smith",
-  treatment:"Root Canal",
-  tooth:"36",
-  status:"Completed",
-  price:"$450",
-  duration:"90 min",
-  date:"12 Aug 2026",
-  notes:"Completed successfully"
-},
-
-{
-  id:2,
-  patient:"Sarah Johnson",
-  treatment:"Dental Crown",
-  tooth:"14",
-  status:"In Progress",
-  price:"$800",
-  duration:"60 min",
-  date:"15 Aug 2026",
-  notes:"Temporary crown placed"
-},
-
-{
-  id:3,
-  patient:"Michael Brown",
-  treatment:"Filling",
-  tooth:"25",
-  status:"Pending",
-  price:"$150",
-  duration:"30 min",
-  date:"18 Aug 2026",
-  notes:"Waiting for appointment"
-},
-
-{
-  id:4,
-  patient:"Anna White",
-  treatment:"Implant",
-  tooth:"46",
-  status:"Completed",
-  price:"$1200",
-  duration:"120 min",
-  date:"20 Aug 2026",
-  notes:"Implant completed"
-}
-
-];
+import { useEffect, useState } from "react";
 
 
 
 export default function TreatmentList(){
+
+
+  const [treatments, setTreatments] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+
+
+  useEffect(() => {
+
+
+    const loadTreatments = async () => {
+
+
+      try {
+
+
+        const token = localStorage.getItem("token");
+
+
+        const response = await fetch(
+          "https://localhost:7166/api/patients/all-treatments",
+          {
+            headers:{
+              Authorization:`Bearer ${token}`
+            }
+          }
+        );
+
+
+
+        if(!response.ok){
+
+          throw new Error(
+            "Failed to load treatments"
+          );
+
+        }
+
+
+
+        const data = await response.json();
+
+
+
+        console.log(
+          "Treatments:",
+          data
+        );
+
+
+
+        setTreatments(data);
+
+
+
+      }catch(error){
+
+
+        console.error(
+          error
+        );
+
+
+      }finally{
+
+
+        setLoading(false);
+
+
+      }
+
+
+    };
+
+
+
+    loadTreatments();
+
+
+  }, []);
+
+
+
+
+  if(loading){
+
+    return (
+
+      <Typography>
+        Loading treatments...
+      </Typography>
+
+    );
+
+  }
+
+
+
 
 
 return (
@@ -94,6 +142,7 @@ mb={3}
 All Treatments ({treatments.length})
 
 </Typography>
+
 
 
 

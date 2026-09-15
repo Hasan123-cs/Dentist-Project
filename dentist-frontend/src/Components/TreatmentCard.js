@@ -3,53 +3,174 @@ import {
   Box,
   Typography,
   Chip,
-  Button
+  Button,
 } from "@mui/material";
-
 
 import {
   MedicalServices,
   AccessTime,
   CalendarMonth,
   AttachMoney,
-  ArrowForward
+  ArrowForward,
 } from "@mui/icons-material";
-
 
 import { useNavigate } from "react-router-dom";
 
 
-
-
 export default function TreatmentCard({ treatment }) {
-
 
   const navigate = useNavigate();
 
 
+  // =========================
+  // STATUS COLORS
+  // =========================
 
   const statusColor = {
+    Completed: "#16a34a",
+    "In Progress": "#f59e0b",
+    Pending: "#ef4444",
+  };
 
-    Completed:"#16a34a",
 
-    "In Progress":"#f59e0b",
+  // =========================
+  // FORMAT STATUS
+  // =========================
 
-    Pending:"#ef4444"
+  const statusMap = {
+    NeedsTreatment: "Pending",
+    InProgress: "In Progress",
+    Completed: "Completed",
+  };
+
+
+  const status =
+    statusMap[treatment.status] ||
+    treatment.status ||
+    "Pending";
+
+
+
+  // =========================
+  // FORMAT DATE
+  // =========================
+
+  const formatDate = (date) => {
+
+    if (!date) {
+      return "-";
+    }
+
+    const parsedDate = new Date(date);
+
+    if (isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
+    return parsedDate.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
   };
 
 
 
+  // =========================
+  // FORMAT TOOTH
+  // =========================
+
+  const formatTooth = (tooth) => {
+
+    if (
+      tooth === null ||
+      tooth === undefined ||
+      tooth === ""
+    ) {
+      return "-";
+    }
+
+
+    if (Array.isArray(tooth)) {
+
+      if (tooth.length === 0) {
+        return "-";
+      }
+
+      return tooth.join(", ");
+
+    }
+
+
+    return tooth;
+
+  };
+
+
+
+  // =========================
+  // FORMAT PRICE
+  // =========================
+
+  const formatPrice = (price) => {
+
+    if (
+      price === null ||
+      price === undefined ||
+      price === ""
+    ) {
+      return "-";
+    }
+
+
+    if (
+      typeof price === "string" &&
+      price.includes("$")
+    ) {
+      return price;
+    }
+
+
+    return `$${Number(price).toFixed(2)}`;
+
+  };
+
+
+
+  // =========================
+  // VIEW DETAILS
+  // =========================
+
+  const handleViewDetails = () => {
+
+
+    if (!treatment.patientId) {
+
+      console.error(
+        "Patient ID is missing for treatment:",
+        treatment
+      );
+
+      return;
+
+    }
+
+
+    navigate(
+      `/patients/${treatment.patientId}?tab=treatment`
+    );
+
+
+  };
+
 
 
   return (
 
-
     <Paper
 
-
       sx={{
-
 
         width:"100%",
 
@@ -72,9 +193,7 @@ export default function TreatmentCard({ treatment }) {
 
         display:"flex",
 
-
         flexDirection:"column",
-
 
         justifyContent:"space-between",
 
@@ -87,7 +206,6 @@ export default function TreatmentCard({ treatment }) {
 
 
         "&:hover":{
-
 
           transform:"translateY(-4px)",
 
@@ -102,14 +220,10 @@ export default function TreatmentCard({ treatment }) {
     >
 
 
-
-
-
       {/* HEADER */}
 
 
       <Box>
-
 
 
         <Box
@@ -128,7 +242,6 @@ export default function TreatmentCard({ treatment }) {
 
             sx={{
 
-
               width:55,
 
               height:55,
@@ -145,9 +258,7 @@ export default function TreatmentCard({ treatment }) {
 
               justifyContent:"center"
 
-
             }}
-
 
           >
 
@@ -169,12 +280,9 @@ export default function TreatmentCard({ treatment }) {
 
 
 
-
           <Chip
 
-
-            label={treatment.status}
-
+            label={status}
 
             size="small"
 
@@ -183,7 +291,7 @@ export default function TreatmentCard({ treatment }) {
 
 
               background:
-              statusColor[treatment.status] || "#999",
+              statusColor[status] || "#999",
 
 
               color:"#fff",
@@ -194,12 +302,10 @@ export default function TreatmentCard({ treatment }) {
 
             }}
 
-
           />
 
 
         </Box>
-
 
 
 
@@ -218,9 +324,10 @@ export default function TreatmentCard({ treatment }) {
 
         >
 
-          {treatment.patient}
+          {treatment.patient || "Unknown Patient"}
 
         </Typography>
+
 
 
 
@@ -234,7 +341,7 @@ export default function TreatmentCard({ treatment }) {
 
         >
 
-          {treatment.treatment}
+          {treatment.treatment || "-"}
 
         </Typography>
 
@@ -248,13 +355,11 @@ export default function TreatmentCard({ treatment }) {
 
 
 
-
-
       {/* DETAILS */}
 
 
-
       <Box mt={2}>
+
 
 
         <Box
@@ -274,7 +379,9 @@ export default function TreatmentCard({ treatment }) {
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
@@ -282,7 +389,11 @@ export default function TreatmentCard({ treatment }) {
 
           <Typography fontSize={14}>
 
-            Tooth: <b>{treatment.tooth}</b>
+            Tooth:{" "}
+
+            <b>
+              {formatTooth(treatment.tooth)}
+            </b>
 
           </Typography>
 
@@ -312,7 +423,9 @@ export default function TreatmentCard({ treatment }) {
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
@@ -320,13 +433,12 @@ export default function TreatmentCard({ treatment }) {
 
           <Typography fontSize={14}>
 
-            {treatment.date}
+            {formatDate(treatment.date)}
 
           </Typography>
 
 
         </Box>
-
 
 
 
@@ -351,7 +463,9 @@ export default function TreatmentCard({ treatment }) {
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
@@ -359,13 +473,16 @@ export default function TreatmentCard({ treatment }) {
 
           <Typography fontSize={14}>
 
-            {treatment.duration}
+            {
+              treatment.duration
+                ? `${treatment.duration} min`
+                : "-"
+            }
 
           </Typography>
 
 
         </Box>
-
 
 
 
@@ -388,7 +505,9 @@ export default function TreatmentCard({ treatment }) {
             fontSize="small"
 
             sx={{
+
               color:"#C9A227"
+
             }}
 
           />
@@ -402,12 +521,13 @@ export default function TreatmentCard({ treatment }) {
 
           >
 
-            {treatment.price}
+            {formatPrice(treatment.price)}
 
           </Typography>
 
 
         </Box>
+
 
 
       </Box>
@@ -418,10 +538,7 @@ export default function TreatmentCard({ treatment }) {
 
 
 
-
-
       {/* NOTES */}
-
 
 
       <Box
@@ -439,7 +556,15 @@ export default function TreatmentCard({ treatment }) {
           p:1.5,
 
 
-          mt:2
+          mt:2,
+
+
+          minHeight:45,
+
+
+          display:"flex",
+
+          alignItems:"center"
 
 
         }}
@@ -456,7 +581,7 @@ export default function TreatmentCard({ treatment }) {
 
         >
 
-          {treatment.notes}
+          {treatment.notes || "No notes"}
 
         </Typography>
 
@@ -470,9 +595,7 @@ export default function TreatmentCard({ treatment }) {
 
 
 
-
       {/* BUTTON */}
-
 
 
       <Button
@@ -487,25 +610,14 @@ export default function TreatmentCard({ treatment }) {
         endIcon={<ArrowForward/>}
 
 
-
-        onClick={()=>{
-
-
-          navigate(
-
-            `/patients/${treatment.patientId}?tab=treatment`
-
-          );
-
-
-        }}
-
+        onClick={handleViewDetails}
 
 
         sx={{
 
 
           mt:2,
+
 
           height:42,
 
@@ -541,9 +653,7 @@ export default function TreatmentCard({ treatment }) {
 
 
 
-
     </Paper>
-
 
   );
 

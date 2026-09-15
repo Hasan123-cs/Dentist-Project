@@ -191,6 +191,7 @@ export default function NewAppointment() {
 
         time: `${appointment.time}:00`,
       };
+     
 
       const response = await fetch("https://localhost:7166/api/Appointments", {
         method: "POST",

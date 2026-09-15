@@ -191,5 +191,72 @@
             });
         }
     }
+    [HttpGet("all-treatments")]
+   
+    public async Task<IActionResult> GetAllTreatments()
+    {
+        var treatments = await _context.MedicalRecords
+            .Include(m => m.Patient)
+            .Include(m => m.ToothTreatments)
+                .ThenInclude(t => t.Tooth)
+            .Include(m => m.ToothTreatments)
+                .ThenInclude(t => t.Treatment)
 
+            .OrderByDescending(m => m.CreatedAt)
+
+            .Select(m => new
+            {
+                id = m.Id,
+
+                patientId = m.PatientId,
+
+                patient =
+                    m.Patient.FirstName + " " + m.Patient.LastName,
+
+
+                treatment =
+                    m.ToothTreatments
+                        .Where(t => t.Treatment != null)
+                        .Select(t => t.Treatment!.Name)
+                        .FirstOrDefault(),
+
+
+                tooth =
+                    m.ToothTreatments
+                        .Where(t => t.Tooth != null)
+                        .Select(t => t.Tooth!.Number)
+                        .ToList(),
+
+
+                status =
+                    m.ToothTreatments
+                        .Select(t => t.Status.ToString())
+                        .FirstOrDefault(),
+
+
+                price =
+                    m.ToothTreatments
+                        .Where(t => t.Treatment != null)
+                        .Select(t => t.Treatment!.DefaultPrice)
+                        .FirstOrDefault(),
+
+
+                duration =
+                    m.ToothTreatments
+                        .Where(t => t.Treatment != null)
+                        .Select(t => t.Treatment!.EstimatedMinutes)
+                        .FirstOrDefault(),
+
+
+                notes = m.ClinicalNotes,
+
+
+                date = m.CreatedAt
+
+            })
+            .ToListAsync();
+
+
+        return Ok(treatments);
+    }
 }
