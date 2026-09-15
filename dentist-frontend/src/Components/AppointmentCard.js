@@ -1,125 +1,129 @@
 import { Box, Typography, Button } from "@mui/material";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 const colors = {
-  scheduled: {
+  pending: {
     bg: "#dbeafe",
     border: "#2563eb",
   },
-
-  confirmed: {
-    bg: "#dcfce7",
-    border: "#16a34a",
-  },
-
   completed: {
     bg: "#f8e8a5",
     border: "#C9A227",
   },
-
   cancelled: {
     bg: "#fee2e2",
     border: "#dc2626",
   },
 };
 
-export default function AppointmentCard({
-  appointment,
-  onDragStart,
-  cancelAppointment,
-}) {
-  const statusKey = appointment.status?.toLowerCase() || "scheduled";
+export default function AppointmentCard({ appointment, onDragStart }) {
+  const navigate = useNavigate();
 
-  const style = colors[statusKey] || colors.scheduled;
+  const statusKey =
+    appointment.status?.toLowerCase() === "completed"
+      ? "completed"
+      : appointment.status?.toLowerCase() === "cancelled"
+        ? "cancelled"
+        : "pending";
+
+  const style = colors[statusKey];
 
   const startTime = dayjs(appointment.startDateTime).format("HH:mm");
 
   const endTime = dayjs(appointment.endDateTime).format("HH:mm");
 
+  const duration =
+    dayjs(appointment.endDateTime).diff(
+      dayjs(appointment.startDateTime),
+      "minute",
+    ) || 30;
+
+  const isShort = duration <= 30;
+  const isMedium = duration <= 60;
+
+  const handleDetails = () => {
+    navigate(`/appointmentDetails/${appointment.id}`);
+  };
+
   return (
     <Box
       draggable
-      onDragStart={() => {
-        onDragStart(appointment);
-      }}
+      onDragStart={() => onDragStart(appointment)}
       sx={{
         width: "100%",
-
         height: "100%",
-
-        background: style.bg,
-
-        borderLeft: `4px solid ${style.border}`,
-
-        borderRadius: 2,
-
-        p: 0.5,
-
-        overflow: "hidden",
-
-        display: "flex",
-
-        flexDirection: "column",
-
-        justifyContent: "space-between",
-
         boxSizing: "border-box",
+        backgroundColor: style.bg,
+        borderLeft: `4px solid ${style.border}`,
+        borderRadius: "6px",
+        px: isShort ? 0.7 : 1,
+        py: isShort ? 0.5 : 0.8,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        overflow: "hidden",
+        cursor: "grab",
+        "&:active": {
+          cursor: "grabbing",
+        },
       }}
     >
-      <Typography fontSize={11} fontWeight={700} color="#1e293b" noWrap>
+      {/* PATIENT NAME */}
+      <Typography
+        sx={{
+          fontWeight: 700,
+          fontSize: isShort ? "11px" : "13px",
+          color: "#3f3528",
+          lineHeight: 1.2,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
         {appointment.patientName || "No Name"}
       </Typography>
 
-      <Typography fontSize={10} fontWeight={600} color={style.border} noWrap>
+      {/* TIME */}
+      <Typography
+        sx={{
+          fontSize: isShort ? "10px" : "11px",
+          color: "#5f5548",
+          lineHeight: 1.2,
+        }}
+      >
         {startTime} - {endTime}
       </Typography>
 
-      <Typography
-        fontSize={9}
-        fontWeight={700}
-        sx={{
-          color: style.border,
-
-          textTransform: "capitalize",
-        }}
-        noWrap
-      >
-        {appointment.status || "Scheduled"}
-      </Typography>
-
+      {/* DETAILS BUTTON */}
       <Button
-        size="small"
         variant="contained"
-        color="error"
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
+        size="small"
         onClick={(e) => {
-          e.preventDefault();
-
+          // Prevent the button click from interfering
+          // with dragging the appointment card.
           e.stopPropagation();
-
-          if (cancelAppointment) {
-            cancelAppointment(appointment.id);
-          }
+          handleDetails();
         }}
+        onMouseDown={(e) => e.stopPropagation()}
         sx={{
-          height: 14,
-
-          minHeight: 14,
-
-          fontSize: 7,
-
-          padding: "0 5px",
-
-          lineHeight: 1,
-
-          mt: 0.3,
-
+          minHeight: isShort ? "20px" : "24px",
+          height: isShort ? "20px" : "24px",
+          minWidth: 0,
+          px: isShort ? 0.5 : 1,
+          py: 0,
+          mt: 0.5,
+          fontSize: isShort ? "9px" : isMedium ? "10px" : "11px",
+          fontWeight: 700,
           textTransform: "none",
+          backgroundColor: "#6b5b3e",
+          color: "#fff",
+          "&:hover": {
+            backgroundColor: "#55472f",
+          },
         }}
       >
-        Cancel
+        Details
       </Button>
     </Box>
   );

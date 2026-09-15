@@ -276,7 +276,6 @@ export default function WeeklyCalendar({
                         onDragStart={(appointment) => {
                           setDraggedAppointment(appointment);
                         }}
-                        cancelAppointment={cancelAppointment}
                       />
                     </Box>
                   );
