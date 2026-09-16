@@ -302,15 +302,46 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
                     "The selected time overlaps with another appointment."
                 );
             }
+            // ==========================================
+            // 10. Get previous remaining balance
+            // ==========================================
+            //
+            // First appointment:
+            //     Remaining = treatment.DefaultPrice
+            //
+            // Later appointment:
+            //     Remaining = previous appointment's remaining
+            //
+            // AmountPaid stores the REMAINING amount.
+            //
+
+            var previousAppointment = await _db.Appointments
+                .Include(a => a.AppointmentTreatments)
+                .Where(a =>
+                    a.PatientId == patient.Id
+                    &&
+                    a.Status != AppointmentStatus.Cancelled
+                    &&
+                    a.AppointmentTreatments.Any(at =>
+                        at.TreatmentId == treatment.Id
+                    )
+                )
+                .OrderByDescending(a => a.StartDateTime)
+                .FirstOrDefaultAsync();
 
 
-            // 10. Create appointment
+            var remainingAmount = previousAppointment != null
+                ? previousAppointment.AmountPaid
+                : treatment.DefaultPrice;
+
+
+            // 11. Create appointment
 
             var appointment = new Appointment
             {
                 PatientId = patient.Id,
 
-                //   doctor / assistant from JWT
+                // Doctor / assistant from JWT
                 CreatedById = userId,
 
                 StartDateTime = startDateTime,
@@ -318,15 +349,18 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
 
                 Status = AppointmentStatus.Pending,
 
+                // Original treatment price
+                // NEVER change this when patient pays
                 TotalCost = treatment.DefaultPrice,
-                // its represent the remaining 
-                AmountPaid = treatment.DefaultPrice,
+
+                // AmountPaid represents the REMAINING amount
+                AmountPaid = remainingAmount,
 
                 PaymentStatus = Enums.PaymentStatus.Unpaid
             };
 
 
-            // 11. Attach treatment to appointment
+            // 12. Attach treatment to appointment
 
             var appointmentTreatment = new AppointmentTreatment
             {
@@ -334,6 +368,7 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
 
                 TreatmentId = treatment.Id,
 
+                // Keep original treatment price
                 Price = treatment.DefaultPrice
             };
 
@@ -344,7 +379,6 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
             _db.Appointments.Add(appointment);
 
             await _db.SaveChangesAsync();
-
 
             return (
                 true,
@@ -398,9 +432,19 @@ public async Task<(bool Success, string Message, object? Data)>
                     null);
             }
 
-            var totalCost = appointment.TotalCost;
-            var remaining = appointment.TotalCost - dto.PaidAmount;
-            // AmountPaid stores the REMAINING amount
+            var currentRemaining = appointment.AmountPaid;
+
+            if (dto.PaidAmount > currentRemaining)
+            {
+                return (
+                    false,
+                    $"Paid amount cannot be greater than the remaining amount of ${currentRemaining:F2}.",
+                    null
+                );
+            }
+
+            var remaining = currentRemaining - dto.PaidAmount;
+
             appointment.AmountPaid = remaining;
             appointment.PaymentStatus =
                 dto.PaymentStatus == "Paid"

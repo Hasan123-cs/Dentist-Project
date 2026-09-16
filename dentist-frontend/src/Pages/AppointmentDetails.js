@@ -13,6 +13,7 @@ import {
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -24,7 +25,6 @@ export default function AppointmentDetails() {
   const navigate = useNavigate();
 
   const [appointment, setAppointment] = useState(null);
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -33,7 +33,6 @@ export default function AppointmentDetails() {
 
   // Show payment form after clicking Complete Appointment
   const [showCompletionForm, setShowCompletionForm] = useState(false);
-
   const [paymentStatus, setPaymentStatus] = useState("Unpaid");
   const [paidAmount, setPaidAmount] = useState("");
 
@@ -69,18 +68,13 @@ export default function AppointmentDetails() {
         setPaymentStatus(data.paymentStatus);
       }
 
-      /*
-        IMPORTANT:
-
-        Backend:
-        amountPaid = REMAINING amount
-
-        Example:
-        totalCost = 19
-        amountPaid = 10
-
-        Actual paid = 19 - 10 = 9
-      */
+      // Backend returns amountPaid as the remaining amount.
+      //
+      // Example:
+      // totalCost = 19
+      // amountPaid = 9
+      //
+      // Actual paid = 19 - 9 = 10
 
       if (data.totalCost !== undefined && data.amountPaid !== undefined) {
         const total = Number(data.totalCost);
@@ -172,28 +166,8 @@ export default function AppointmentDetails() {
   // --------------------------------------------------
 
   const totalCost = Number(appointment?.totalCost || 0);
-
-  /*
-    IMPORTANT:
-
-    Backend stores the REMAINING amount
-    inside amountPaid.
-
-    Example:
-
-    DB:
-    TotalCost  = 19
-    AmountPaid = 10
-
-    Therefore:
-
-    Remaining = 10
-    Actual Paid = 19 - 10 = 9
-  */
-
-  const remaining = Number(appointment?.amountPaid || 0);
-
-  const amountPaid = Math.max(totalCost - remaining, 0);
+  const amountPaid = Number(appointment?.amountPaid ?? 0);
+  const remaining = Number(appointment?.remaining ?? 0);
 
   // --------------------------------------------------
   // START COMPLETION
@@ -203,24 +177,14 @@ export default function AppointmentDetails() {
     setError("");
     setSuccess("");
 
-    /*
-      Since amountPaid from backend means REMAINING,
-      calculate the actual paid amount.
-    */
-
     const total = Number(appointment?.totalCost || 0);
 
     const currentRemaining = Number(appointment?.amountPaid || 0);
 
     const currentPaid = Math.max(total - currentRemaining, 0);
 
-    /*
-      If appointment is still unpaid,
-      start with empty amount.
-
-      Otherwise show the actual paid amount.
-    */
-
+    // If appointment is still unpaid,
+    // start with empty amount.
     if (appointment?.paymentStatus?.toLowerCase() === "unpaid") {
       setPaidAmount("");
     } else {
@@ -269,9 +233,9 @@ export default function AppointmentDetails() {
         return;
       }
 
-      if (amount > totalCost) {
+      if (amount > remaining) {
         setError(
-          `Paid amount cannot be greater than $${totalCost.toFixed(2)}.`,
+          `Paid amount cannot be greater than the remaining amount of $${remaining.toFixed(2)}.`,
         );
         return;
       }
@@ -316,6 +280,57 @@ export default function AppointmentDetails() {
       setError(
         err.response?.data?.message || "Failed to complete appointment.",
       );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // --------------------------------------------------
+  // CANCEL APPOINTMENT
+  // --------------------------------------------------
+
+  const handleCancelAppointment = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this appointment?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    setSaving(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.put(
+        `https://localhost:7166/api/appointments/${id}/cancel`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setSuccess(
+        response.data?.message || "Appointment cancelled successfully.",
+      );
+
+      // Reload appointment from backend
+      await loadAppointment();
+
+      // Close completion form if it was open
+      setShowCompletionForm(false);
+    } catch (err) {
+      console.error(
+        "Cancel appointment error:",
+        err.response?.data || err.message,
+      );
+
+      setError(err.response?.data?.message || "Failed to cancel appointment.");
     } finally {
       setSaving(false);
     }
@@ -557,14 +572,22 @@ export default function AppointmentDetails() {
 
                 <Chip
                   label={status}
-                  icon={isCompleted ? <CheckCircleIcon /> : undefined}
+                  icon={
+                    isCompleted ? (
+                      <CheckCircleIcon />
+                    ) : isCancelled ? (
+                      <CancelIcon />
+                    ) : undefined
+                  }
                   sx={{
                     fontWeight: 600,
+
                     background: isCompleted
                       ? "#f8e8a5"
                       : isCancelled
                         ? "#fee2e2"
                         : "#dbeafe",
+
                     color: isCompleted
                       ? "#806a00"
                       : isCancelled
@@ -658,28 +681,63 @@ export default function AppointmentDetails() {
             </Box>
 
             {/* -------------------------------- */}
-            {/* COMPLETE BUTTON */}
+            {/* PENDING ACTION BUTTONS */}
             {/* -------------------------------- */}
 
             {isPending && !showCompletionForm && (
-              <Box sx={{ mt: 4 }}>
+              <Box
+                sx={{
+                  mt: 4,
+                  display: "flex",
+                  gap: 2,
+                  flexWrap: "wrap",
+                }}
+              >
+                {/* COMPLETE APPOINTMENT */}
+
                 <Button
                   variant="contained"
                   size="large"
                   startIcon={<CheckCircleIcon />}
                   onClick={handleStartCompletion}
+                  disabled={saving}
                   sx={{
                     background: "#C9A227",
                     color: "#fff",
                     fontWeight: 700,
                     px: 4,
                     py: 1.3,
+
                     "&:hover": {
                       background: "#b18d20",
                     },
                   }}
                 >
                   Complete Appointment
+                </Button>
+
+                {/* CANCEL APPOINTMENT */}
+
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<CancelIcon />}
+                  onClick={handleCancelAppointment}
+                  disabled={saving}
+                  sx={{
+                    borderColor: "#dc2626",
+                    color: "#dc2626",
+                    fontWeight: 700,
+                    px: 4,
+                    py: 1.3,
+
+                    "&:hover": {
+                      borderColor: "#b91c1c",
+                      background: "#fef2f2",
+                    },
+                  }}
+                >
+                  Cancel Appointment
                 </Button>
               </Box>
             )}
@@ -742,7 +800,7 @@ export default function AppointmentDetails() {
                       onChange={(e) => setPaidAmount(e.target.value)}
                       inputProps={{
                         min: 0,
-                        max: totalCost,
+                        max: remaining,
                         step: "0.01",
                       }}
                       sx={{ mt: 2 }}
@@ -780,7 +838,7 @@ export default function AppointmentDetails() {
                           }}
                         >
                           $
-                          {Math.max(totalCost - Number(paidAmount), 0).toFixed(
+                          {Math.max(remaining - Number(paidAmount), 0).toFixed(
                             2,
                           )}
                         </Typography>
@@ -805,6 +863,7 @@ export default function AppointmentDetails() {
                         color: "#fff",
                         fontWeight: 700,
                         px: 4,
+
                         "&:hover": {
                           background: "#b18d20",
                         },
