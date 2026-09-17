@@ -196,67 +196,129 @@
     public async Task<IActionResult> GetAllTreatments()
     {
         var treatments = await _context.MedicalRecords
-            .Include(m => m.Patient)
-            .Include(m => m.ToothTreatments)
-                .ThenInclude(t => t.Tooth)
-            .Include(m => m.ToothTreatments)
-                .ThenInclude(t => t.Treatment)
 
-            .OrderByDescending(m => m.CreatedAt)
+     .Include(m => m.Patient)
 
-            .Select(m => new
-            {
-                id = m.Id,
+     .Include(m => m.ToothTreatments)
+         .ThenInclude(t => t.Tooth)
 
-                patientId = m.PatientId,
+     .Include(m => m.ToothTreatments)
+         .ThenInclude(t => t.Treatment)
 
-                patient =
-                    m.Patient.FirstName + " " + m.Patient.LastName,
+     .OrderByDescending(m => m.CreatedAt)
 
 
-                treatment =
-                    m.ToothTreatments
-                        .Where(t => t.Treatment != null)
-                        .Select(t => t.Treatment!.Name)
-                        .FirstOrDefault(),
+     .Select(m => new
+     {
+         id = m.Id,
+
+         patientId = m.PatientId,
 
 
-                tooth =
-                    m.ToothTreatments
-                        .Where(t => t.Tooth != null)
-                        .Select(t => t.Tooth!.Number)
-                        .ToList(),
+         patient =
+             m.Patient.FirstName + " " + m.Patient.LastName,
 
 
-                status =
-                    m.ToothTreatments
-                        .Select(t => t.Status.ToString())
-                        .FirstOrDefault(),
+         treatment =
+             m.ToothTreatments
+                 .Where(t => t.Treatment != null)
+                 .Select(t => t.Treatment!.Name)
+                 .FirstOrDefault(),
 
 
-                price =
-                    m.ToothTreatments
-                        .Where(t => t.Treatment != null)
-                        .Select(t => t.Treatment!.DefaultPrice)
-                        .FirstOrDefault(),
+
+         tooth =
+             m.ToothTreatments
+                 .Where(t => t.Tooth != null)
+                 .Select(t => t.Tooth!.Number)
+                 .ToList(),
 
 
-                duration =
-                    m.ToothTreatments
-                        .Where(t => t.Treatment != null)
-                        .Select(t => t.Treatment!.EstimatedMinutes)
-                        .FirstOrDefault(),
+
+         status =
+             m.ToothTreatments
+                 .Select(t => t.Status.ToString())
+                 .FirstOrDefault(),
 
 
-                notes = m.ClinicalNotes,
+
+         price =
+             m.ToothTreatments
+                 .Where(t => t.Treatment != null)
+                 .Select(t => t.Treatment!.DefaultPrice)
+                 .FirstOrDefault(),
+         notes = m.ClinicalNotes,
 
 
-                date = m.CreatedAt
+         date = m.CreatedAt,
 
-            })
-            .ToListAsync();
+
+         // PAYMENT FROM LAST APPOINTMENT
+         totalPrice =
+    m.AppointmentId != null
+        ? _context.Appointments
+            .Where(a => a.Id == m.AppointmentId)
+            .Select(a => a.TotalCost)
+            .FirstOrDefault()
+        :
+        m.ToothTreatments
+            .Where(t => t.Treatment != null)
+            .Select(t => t.Treatment!.DefaultPrice)
+            .FirstOrDefault(),
+
+
+     
+
+
+         remainingAmount =
+    m.AppointmentId != null
+        ? _context.Appointments
+            .Where(a => a.Id == m.AppointmentId)
+            .Select(a => a.RemainingAmount)
+            .FirstOrDefault()
+        :
+        m.ToothTreatments
+            .Where(t => t.Treatment != null)
+            .Select(t => t.Treatment!.DefaultPrice)
+            .FirstOrDefault()
+
+     })
+     .ToListAsync();
 
 
         return Ok(treatments);
+    }
+    [HttpDelete("treatments/{id}")]
+    public async Task<IActionResult> DeleteTreatment(int id)
+    {
+        try
+        {
+            var result =
+                await _service.DeleteTreatmentAsync(id);
+
+
+            if (!result.Success)
+            {
+                return NotFound(new
+                {
+                    message = result.Message
+                });
+            }
+
+
+            return Ok(new
+            {
+                message = result.Message
+            });
+
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Error deleting treatment.",
+                error = ex.Message
+            });
+        }
     }
 }

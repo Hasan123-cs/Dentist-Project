@@ -1,10 +1,4 @@
-import {
-  Paper,
-  Box,
-  Typography,
-  Chip,
-  Button,
-} from "@mui/material";
+import { Paper, Box, Typography, Chip, Button } from "@mui/material";
 
 import {
   MedicalServices,
@@ -13,14 +7,13 @@ import {
   AttachMoney,
   ArrowForward,
 } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import IconButton from "@mui/material/IconButton";
 
 import { useNavigate } from "react-router-dom";
 
-
-export default function TreatmentCard({ treatment }) {
-
+export default function TreatmentCard({ treatment, onDelete }) {
   const navigate = useNavigate();
-
 
   // =========================
   // STATUS COLORS
@@ -32,7 +25,6 @@ export default function TreatmentCard({ treatment }) {
     Pending: "#ef4444",
   };
 
-
   // =========================
   // FORMAT STATUS
   // =========================
@@ -43,20 +35,44 @@ export default function TreatmentCard({ treatment }) {
     Completed: "Completed",
   };
 
+  const status = statusMap[treatment.status] || treatment.status || "Pending";
+  // ============================
+  // DELETE CODE
+  // ===========================
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this treatment?",
+    );
 
-  const status =
-    statusMap[treatment.status] ||
-    treatment.status ||
-    "Pending";
+    if (!confirmDelete) return;
 
+    try {
+      const token = localStorage.getItem("token");
 
+      const response = await fetch(
+        `https://localhost:7166/api/patients/treatments/${treatment.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
+      if (!response.ok) {
+        throw new Error("Delete failed");
+      }
+
+      onDelete(treatment.id);
+    } catch (error) {
+      console.error("Delete error:", error);
+    }
+  };
   // =========================
   // FORMAT DATE
   // =========================
 
   const formatDate = (date) => {
-
     if (!date) {
       return "-";
     }
@@ -72,589 +88,263 @@ export default function TreatmentCard({ treatment }) {
       month: "short",
       year: "numeric",
     });
-
   };
 
-
-
   // =========================
-  // FORMAT TOOTH
+  // FORMAT
+
   // =========================
 
   const formatTooth = (tooth) => {
-
-    if (
-      tooth === null ||
-      tooth === undefined ||
-      tooth === ""
-    ) {
+    if (tooth === null || tooth === undefined || tooth === "") {
       return "-";
     }
 
-
     if (Array.isArray(tooth)) {
-
       if (tooth.length === 0) {
         return "-";
       }
 
       return tooth.join(", ");
-
     }
 
-
     return tooth;
-
   };
-
-
 
   // =========================
   // FORMAT PRICE
   // =========================
 
   const formatPrice = (price) => {
-
-    if (
-      price === null ||
-      price === undefined ||
-      price === ""
-    ) {
+    if (price === null || price === undefined || price === "") {
       return "-";
     }
 
-
-    if (
-      typeof price === "string" &&
-      price.includes("$")
-    ) {
+    if (typeof price === "string" && price.includes("$")) {
       return price;
     }
 
-
     return `$${Number(price).toFixed(2)}`;
-
   };
-
-
 
   // =========================
   // VIEW DETAILS
   // =========================
 
   const handleViewDetails = () => {
-
-
     if (!treatment.patientId) {
-
-      console.error(
-        "Patient ID is missing for treatment:",
-        treatment
-      );
+      console.error("Patient ID is missing for treatment:", treatment);
 
       return;
-
     }
 
-
-    navigate(
-      `/patients/${treatment.patientId}?tab=treatment`
-    );
-
-
+    navigate(`/patients/${treatment.patientId}?tab=treatment`);
   };
 
-
-
   return (
-
     <Paper
-
       sx={{
+        width: "100%",
 
-        width:"100%",
+        height: "100%",
 
-        height:"100%",
+        minHeight: 420,
 
-        minHeight:420,
+        p: 3,
 
+        borderRadius: 4,
 
-        p:3,
+        background: "#fff",
 
+        border: "1px solid #eee3c5",
 
-        borderRadius:4,
+        display: "flex",
 
+        flexDirection: "column",
 
-        background:"#fff",
+        justifyContent: "space-between",
 
+        boxSizing: "border-box",
 
-        border:"1px solid #eee3c5",
+        transition: "0.25s",
 
+        "&:hover": {
+          transform: "translateY(-4px)",
 
-        display:"flex",
-
-        flexDirection:"column",
-
-        justifyContent:"space-between",
-
-
-        boxSizing:"border-box",
-
-
-        transition:"0.25s",
-
-
-
-        "&:hover":{
-
-          transform:"translateY(-4px)",
-
-          boxShadow:"0 10px 25px rgba(0,0,0,.1)"
-
-        }
-
-
+          boxShadow: "0 10px 25px rgba(0,0,0,.1)",
+        },
       }}
-
-
     >
-
-
       {/* HEADER */}
 
-
       <Box>
-
-
-        <Box
-
-          display="flex"
-
-          alignItems="center"
-
-          justifyContent="space-between"
-
-        >
-
-
-
+        <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box
-
             sx={{
+              width: 55,
 
-              width:55,
+              height: 55,
 
-              height:55,
+              borderRadius: "50%",
 
-              borderRadius:"50%",
+              background: "#faf7ed",
 
+              display: "flex",
 
-              background:"#faf7ed",
+              alignItems: "center",
 
-
-              display:"flex",
-
-              alignItems:"center",
-
-              justifyContent:"center"
-
+              justifyContent: "center",
             }}
-
           >
-
-
             <MedicalServices
-
               sx={{
-
-                color:"#C9A227"
-
+                color: "#C9A227",
               }}
-
             />
-
-
           </Box>
 
-
-
-
-
           <Chip
-
             label={status}
-
             size="small"
-
-
             sx={{
+              background: statusColor[status] || "#999",
 
+              color: "#fff",
 
-              background:
-              statusColor[status] || "#999",
-
-
-              color:"#fff",
-
-
-              fontWeight:700
-
-
+              fontWeight: 700,
             }}
-
           />
-
-
         </Box>
 
-
-
-
-
-
-        <Typography
-
-          fontSize={19}
-
-          fontWeight={800}
-
-          color="#092c57"
-
-          mt={2}
-
-        >
-
+        <Typography fontSize={19} fontWeight={800} color="#092c57" mt={2}>
           {treatment.patient || "Unknown Patient"}
-
         </Typography>
 
-
-
-
-
-
-        <Typography
-
-          fontSize={14}
-
-          color="#718096"
-
-        >
-
+        <Typography fontSize={14} color="#718096">
           {treatment.treatment || "-"}
-
         </Typography>
-
-
-
       </Box>
-
-
-
-
-
-
 
       {/* DETAILS */}
 
-
       <Box mt={2}>
-
-
-
-        <Box
-
-          display="flex"
-
-          gap={1}
-
-          alignItems="center"
-
-          mb={1}
-
-        >
-
+        <Box display="flex" gap={1} alignItems="center" mb={1}>
           <MedicalServices
-
             fontSize="small"
-
             sx={{
-
-              color:"#C9A227"
-
+              color: "#C9A227",
             }}
-
           />
 
-
           <Typography fontSize={14}>
-
-            Tooth:{" "}
-
-            <b>
-              {formatTooth(treatment.tooth)}
-            </b>
-
+            Tooth: <b>{formatTooth(treatment.tooth)}</b>
           </Typography>
-
-
         </Box>
 
-
-
-
-
-
-        <Box
-
-          display="flex"
-
-          gap={1}
-
-          alignItems="center"
-
-          mb={1}
-
-        >
-
-
+        <Box display="flex" gap={1} alignItems="center" mb={1}>
           <CalendarMonth
-
             fontSize="small"
-
             sx={{
-
-              color:"#C9A227"
-
+              color: "#C9A227",
             }}
-
           />
 
-
-          <Typography fontSize={14}>
-
-            {formatDate(treatment.date)}
-
-          </Typography>
-
-
+          <Typography fontSize={14}>{formatDate(treatment.date)}</Typography>
         </Box>
+        {/* can add later as feature */}
 
-
-
-
-
-
-        <Box
-
-          display="flex"
-
-          gap={1}
-
-          alignItems="center"
-
-          mb={1}
-
-        >
-
-
+        {/* <Box display="flex" gap={1} alignItems="center" mb={1}>
           <AccessTime
-
             fontSize="small"
-
             sx={{
-
-              color:"#C9A227"
-
+              color: "#C9A227",
             }}
-
           />
-
 
           <Typography fontSize={14}>
-
-            {
-              treatment.duration
-                ? `${treatment.duration} min`
-                : "-"
-            }
-
+            {treatment.duration ? `${treatment.duration} min` : "-"}
           </Typography>
+        </Box> */}
 
-
-        </Box>
-
-
-
-
-
-
-        <Box
-
-          display="flex"
-
-          gap={1}
-
-          alignItems="center"
-
-        >
-
-
+        <Box display="flex" gap={1} alignItems="center">
           <AttachMoney
-
             fontSize="small"
-
             sx={{
-
-              color:"#C9A227"
-
+              color: "#C9A227",
             }}
-
           />
 
+          <Typography>Total Price: ${treatment.totalPrice}</Typography>
 
           <Typography
-
-            fontWeight={700}
-
-            color="green"
-
+            sx={{
+              color: "#d97706",
+              fontWeight: 700,
+            }}
           >
-
-            {formatPrice(treatment.price)}
-
+            Remaining: ${treatment.remainingAmount}
           </Typography>
-
-
         </Box>
-
-
-
       </Box>
-
-
-
-
-
-
 
       {/* NOTES */}
 
-
       <Box
-
-
         sx={{
+          background: "#faf8f2",
 
+          borderRadius: 2,
 
-          background:"#faf8f2",
+          p: 1.5,
 
+          mt: 2,
 
-          borderRadius:2,
+          minHeight: 45,
 
+          display: "flex",
 
-          p:1.5,
-
-
-          mt:2,
-
-
-          minHeight:45,
-
-
-          display:"flex",
-
-          alignItems:"center"
-
-
+          alignItems: "center",
         }}
-
-
       >
-
-
-        <Typography
-
-          fontSize={12}
-
-          color="#718096"
-
-        >
-
+        <Typography fontSize={12} color="#718096">
           {treatment.notes || "No notes"}
-
         </Typography>
-
-
       </Box>
-
-
-
-
-
-
-
 
       {/* BUTTON */}
 
-
       <Button
-
-
         fullWidth
-
-
         variant="contained"
-
-
-        endIcon={<ArrowForward/>}
-
-
+        endIcon={<ArrowForward />}
         onClick={handleViewDetails}
-
-
         sx={{
+          mt: 2,
 
+          height: 42,
 
-          mt:2,
+          background: "#C9A227",
 
+          borderRadius: 3,
 
-          height:42,
+          fontWeight: 700,
 
-
-          background:"#C9A227",
-
-
-          borderRadius:3,
-
-
-          fontWeight:700,
-
-
-          "&:hover":{
-
-            background:"#b18c1f"
-
-          }
-
-
+          "&:hover": {
+            background: "#b18c1f",
+          },
         }}
-
-
       >
-
-
         VIEW DETAILS
-
-
       </Button>
-
-
-
-
-
+      <IconButton
+        onClick={handleDelete}
+        sx={{
+          mt: 1,
+          color: "#d32f2f",
+        }}
+      >
+        <DeleteIcon />
+      </IconButton>
     </Paper>
-
   );
-
 }

@@ -446,7 +446,6 @@ export default function NewAppointment() {
 
         endTime: `${appointment.endTime}:00`,
       };
-     
 
       console.log("Appointment being sent:", appointmentToSend);
 

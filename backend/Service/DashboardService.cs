@@ -61,13 +61,13 @@ namespace dentist_project.Service
                         &&
                         x.StartDateTime < endWeek
                     )
-                    .SumAsync(x => x.AmountPaid);
+                    .SumAsync(x => x.PaidAmount);
 
                 // outstanding balance
                 dashboard.OutstandingBalance =
                 await _db.Appointments
                 .SumAsync(x =>
-                    x.TotalCost - x.AmountPaid
+                    x.TotalCost - x.PaidAmount
                 );
 
             }
@@ -156,7 +156,7 @@ namespace dentist_project.Service
                     Year = x.Key.Year,
                     Month = x.Key.Month,
                     Day = x.Key.Day,
-                    Amount = x.Sum(a => a.AmountPaid)
+                    Amount = x.Sum(a => a.PaidAmount)
                 })
                 .OrderBy(x => x.Year)
                 .ThenBy(x => x.Month)

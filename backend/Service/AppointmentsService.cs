@@ -196,11 +196,13 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
                 return (false, "Patient not found.");
             }
 
-
             var treatment = await _db.Treatments
-                .FirstOrDefaultAsync(t =>
-                    t.Name.ToLower()
-                    == dto.TreatmentName.Trim().ToLower());
+    .Where(t =>
+        t.Name.ToLower()
+        == dto.TreatmentName.Trim().ToLower()
+        && t.IsActive)
+    .OrderByDescending(t => t.Id)
+    .FirstOrDefaultAsync();
 
             if (treatment == null)
             {
@@ -312,7 +314,7 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
             // Later appointment:
             //     Remaining = previous appointment's remaining
             //
-            // AmountPaid stores the REMAINING amount.
+            // PaidAmount stores the REMAINING amount.
             //
 
             var previousAppointment = await _db.Appointments
@@ -331,8 +333,8 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
 
 
             var remainingAmount = previousAppointment != null
-                ? previousAppointment.AmountPaid
-                : treatment.DefaultPrice;
+     ? previousAppointment.RemainingAmount
+     : treatment.DefaultPrice;
 
 
             // 11. Create appointment
@@ -353,8 +355,9 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
                 // NEVER change this when patient pays
                 TotalCost = treatment.DefaultPrice,
 
-                // AmountPaid represents the REMAINING amount
-                AmountPaid = remainingAmount,
+                // PaidAmount represents what the patient pay 
+                PaidAmount = 0,
+                RemainingAmount = remainingAmount,
 
                 PaymentStatus = Enums.PaymentStatus.Unpaid
             };
@@ -425,14 +428,14 @@ public async Task<(bool Success, string Message, object? Data)>
                 return (false, "Enter the amount paid.", null);
             }
 
-            if (dto.PaidAmount > appointment.TotalCost)
+            if (dto.PaidAmount > appointment.RemainingAmount)
             {
                 return (false,
                     "Paid amount cannot be greater than the treatment price.",
                     null);
             }
 
-            var currentRemaining = appointment.AmountPaid;
+            var currentRemaining = appointment.RemainingAmount;
 
             if (dto.PaidAmount > currentRemaining)
             {
@@ -443,9 +446,10 @@ public async Task<(bool Success, string Message, object? Data)>
                 );
             }
 
-            var remaining = currentRemaining - dto.PaidAmount;
+            appointment.RemainingAmount =
+    currentRemaining - dto.PaidAmount;
 
-            appointment.AmountPaid = remaining;
+            appointment.PaidAmount += dto.PaidAmount;
             appointment.PaymentStatus =
                 dto.PaymentStatus == "Paid"
                     ? Enums.PaymentStatus.Paid
@@ -481,9 +485,9 @@ public async Task<(bool Success, string Message, object? Data)>
                     appointment.Id,
                     appointment.Status,
                     appointment.TotalCost,
-                    appointment.AmountPaid,
+                    appointment.PaidAmount,
                     appointment.PaymentStatus,
-                    Remaining = remaining
+                    appointment.RemainingAmount
                 }
             );
         }
@@ -535,7 +539,7 @@ public async Task<(bool Success, string Message, object? Data)>
 
                     totalCost = appointment.TotalCost,
 
-                    amountPaid = appointment.TotalCost - appointment.AmountPaid,
+                    PaidAmount = appointment.PaidAmount,
 
                     paymentStatus = appointment.PaymentStatus.ToString(),
 
@@ -544,7 +548,7 @@ public async Task<(bool Success, string Message, object? Data)>
                     createdBy = appointment.CreatedBy != null
     ? $"{appointment.CreatedBy.FirstName} {appointment.CreatedBy.LastName}"
     : "-",
-                    remaining = appointment.AmountPaid
+                    remaining = appointment.RemainingAmount
                 }
             );
         }

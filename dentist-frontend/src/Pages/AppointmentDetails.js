@@ -166,7 +166,7 @@ export default function AppointmentDetails() {
   // --------------------------------------------------
 
   const totalCost = Number(appointment?.totalCost || 0);
-  const amountPaid = Number(appointment?.amountPaid ?? 0);
+  const amountPaid = Number(appointment?.paidAmount ?? 0);
   const remaining = Number(appointment?.remaining ?? 0);
 
   // --------------------------------------------------

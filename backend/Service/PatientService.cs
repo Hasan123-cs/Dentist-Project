@@ -478,6 +478,12 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 // We need the Treatment ID later
                 await _context.SaveChangesAsync();
             }
+            else
+            {
+                treatment.DefaultPrice = dto.Price ?? treatment.DefaultPrice;
+                await _context.SaveChangesAsync();
+
+            }
 
             var isBridge = treatmentName.Contains(
                 "bridge",
@@ -989,5 +995,44 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             );
         }
         // === create an patient ===
+
+        // delete a treatment 
+        public async Task<(bool Success, string Message)> DeleteTreatmentAsync(int id)
+        {
+            var medicalRecord = await _context.MedicalRecords
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+
+            if (medicalRecord == null)
+            {
+                return (
+                    false,
+                    "Treatment record not found."
+                );
+            }
+
+
+            var toothTreatments = await _context.ToothTreatments
+                .Where(t => t.MedicalRecordId == id)
+                .ToListAsync();
+
+
+            if (toothTreatments.Any())
+            {
+                _context.ToothTreatments.RemoveRange(toothTreatments);
+            }
+
+
+            _context.MedicalRecords.Remove(medicalRecord);
+
+
+            await _context.SaveChangesAsync();
+
+
+            return (
+                true,
+                "Treatment deleted successfully."
+            );
+        }
     }
 }

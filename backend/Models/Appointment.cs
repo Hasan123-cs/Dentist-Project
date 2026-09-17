@@ -14,7 +14,8 @@ public class Appointment
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
     public string? Notes { get; set; }
     public decimal TotalCost { get; set; }
-    public decimal AmountPaid { get; set; }
+    public decimal PaidAmount { get; set; }
+    public decimal RemainingAmount { get; set; }
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
     public bool ReminderSent { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
