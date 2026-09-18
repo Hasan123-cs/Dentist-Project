@@ -36,6 +36,32 @@ export default function TreatmentCard({ treatment, onDelete }) {
   };
 
   const status = statusMap[treatment.status] || treatment.status || "Pending";
+  // update status
+  const updateStatus = async (newStatus) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `https://localhost:7166/api/patients/treatments/${treatment.id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(newStatus),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Status update failed");
+      }
+
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   // ============================
   // DELETE CODE
   // ===========================
@@ -203,7 +229,7 @@ export default function TreatmentCard({ treatment, onDelete }) {
             />
           </Box>
 
-          <Chip
+          {/* <Chip
             label={status}
             size="small"
             sx={{
@@ -213,7 +239,91 @@ export default function TreatmentCard({ treatment, onDelete }) {
 
               fontWeight: 700,
             }}
-          />
+          /> */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              mt: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Button
+              size="small"
+              variant={
+                treatment.status?.toLowerCase() === "pending"
+                  ? "contained"
+                  : "outlined"
+              }
+              onClick={() => updateStatus("NeedsTreatment")}
+              sx={{
+                color: status === "Pending" ? "#fff" : "#f59e0b",
+
+                backgroundColor:
+                  status === "Pending" ? "#f59e0b" : "transparent",
+
+                borderColor: "#f59e0b",
+
+                "&:hover": {
+                  backgroundColor: "#d97706",
+                  color: "#fff",
+                },
+              }}
+            >
+              Needs Treatment
+            </Button>
+
+            <Button
+              size="small"
+              variant={status === "In Progress" ? "contained" : "outlined"}
+              onClick={() => updateStatus("InProgress")}
+              sx={{
+                color: status === "In Progress" ? "#fff" : "#2563eb",
+
+                backgroundColor:
+                  status === "In Progress" ? "#2563eb" : "transparent",
+
+                borderColor: "#2563eb",
+
+                "&:hover": {
+                  backgroundColor: "#1d4ed8",
+                  color: "#fff",
+                },
+              }}
+            >
+              Progress
+            </Button>
+
+            <Button
+              size="small"
+              variant={
+                treatment.status?.toLowerCase() === "completed"
+                  ? "contained"
+                  : "outlined"
+              }
+              onClick={() => updateStatus("Completed")}
+              sx={{
+                color:
+                  treatment.status?.toLowerCase() === "completed"
+                    ? "#fff"
+                    : "#16a34a",
+
+                backgroundColor:
+                  treatment.status?.toLowerCase() === "completed"
+                    ? "#16a34a"
+                    : "transparent",
+
+                borderColor: "#16a34a",
+
+                "&:hover": {
+                  backgroundColor: "#15803d",
+                  color: "#fff",
+                },
+              }}
+            >
+              Completed
+            </Button>
+          </Box>
         </Box>
 
         <Typography fontSize={19} fontWeight={800} color="#092c57" mt={2}>

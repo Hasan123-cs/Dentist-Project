@@ -353,4 +353,29 @@
             });
         }
     }
+    [HttpPut("treatments/{id}/status")]
+    public async Task<IActionResult> UpdateTreatmentStatus(
+    int id,
+    [FromBody] string status)
+    {
+        var result =
+            await _service.UpdateTreatmentStatusAsync(
+                id,
+                status);
+
+
+        if (!result.Success)
+        {
+            return BadRequest(new
+            {
+                message = result.Message
+            });
+        }
+
+
+        return Ok(new
+        {
+            message = result.Message
+        });
+    }
 }

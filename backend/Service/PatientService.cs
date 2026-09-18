@@ -995,10 +995,10 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             );
         }
         // === create an patient ===
-
-        // delete a treatment 
+        //delte patient 
         public async Task<(bool Success, string Message)> DeleteTreatmentAsync(int id)
         {
+            // 1. Find medical record
             var medicalRecord = await _context.MedicalRecords
                 .FirstOrDefaultAsync(m => m.Id == id);
 
@@ -1012,26 +1012,77 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             }
 
 
+            // 2. Get ToothTreatments
             var toothTreatments = await _context.ToothTreatments
                 .Where(t => t.MedicalRecordId == id)
                 .ToListAsync();
 
 
-            if (toothTreatments.Any())
+            var treatmentIds = toothTreatments
+                .Where(t => t.TreatmentId != null)
+                .Select(t => t.TreatmentId!.Value)
+                .ToList();
+
+
+
+            // 3. Find appointments linked to this treatment
+            var appointmentTreatments = await _context.AppointmentTreatments
+                .Where(at =>
+                    treatmentIds.Contains(at.TreatmentId))
+                .ToListAsync();
+
+
+
+            var appointmentIds = appointmentTreatments
+                .Select(at => at.AppointmentId)
+                .ToList();
+
+
+
+            // 4. Delete appointment-treatment links
+            if (appointmentTreatments.Any())
             {
-                _context.ToothTreatments.RemoveRange(toothTreatments);
+                _context.AppointmentTreatments
+                    .RemoveRange(appointmentTreatments);
             }
 
 
+
+            // 5. Delete appointments related to this treatment
+            var appointments = await _context.Appointments
+                .Where(a =>
+                    appointmentIds.Contains(a.Id))
+                .ToListAsync();
+
+
+            if (appointments.Any())
+            {
+                _context.Appointments.RemoveRange(appointments);
+            }
+
+
+
+            // 6. Delete tooth treatments
+            if (toothTreatments.Any())
+            {
+                _context.ToothTreatments
+                    .RemoveRange(toothTreatments);
+            }
+
+
+
+            // 7. Delete medical record
             _context.MedicalRecords.Remove(medicalRecord);
+
 
 
             await _context.SaveChangesAsync();
 
 
+
             return (
                 true,
-                "Treatment deleted successfully."
+                "Treatment and all related data deleted successfully."
             );
         }
         public async Task<(bool Success, string Message)> DeletePatientAsync(int id)
@@ -1140,5 +1191,52 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 "Patient and all related data deleted successfully."
             );
         }
+
+        public async Task<(bool Success, string Message)> UpdateTreatmentStatusAsync(
+    int id,
+    string status)
+        {
+            var toothTreatments = await _context.ToothTreatments
+                .Where(t => t.MedicalRecordId == id)
+                .ToListAsync();
+
+
+            if (!toothTreatments.Any())
+            {
+                return (
+                    false,
+                    "Treatment not found."
+                );
+            }
+
+
+            if (!Enum.TryParse<ToothStatus>(
+                status,
+                true,
+                out var newStatus))
+            {
+                return (
+                    false,
+                    "Invalid status."
+                );
+            }
+
+
+            foreach (var toothTreatment in toothTreatments)
+            {
+                toothTreatment.Status = newStatus;
+            }
+
+
+            await _context.SaveChangesAsync();
+
+
+            return (
+                true,
+                "Treatment status updated successfully."
+            );
+        }
+
+
     }
 }
