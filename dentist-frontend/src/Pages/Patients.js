@@ -65,7 +65,7 @@ export default function Patients() {
 
       <PatientSearch search={search} setSearch={setSearch} />
 
-      <PatientList patients={filteredPatients} />
+      <PatientList patients={filteredPatients} setPatients={setPatients} />
     </Box>
   );
 }

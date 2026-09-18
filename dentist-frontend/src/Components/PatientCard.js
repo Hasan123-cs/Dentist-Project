@@ -1,476 +1,228 @@
 import {
-    Paper,
-    Box,
-    Typography,
-    Avatar,
-    Chip,
-    IconButton,
-    Button
+  Paper,
+  Box,
+  Typography,
+  Avatar,
+  Chip,
+  IconButton,
+  Button,
 } from "@mui/material";
-
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import {
-    MoreHoriz,
-    Phone,
-    CalendarMonth,
-    Payments,
-    ArrowForward
+  MoreHoriz,
+  Phone,
+  CalendarMonth,
+  Payments,
+  ArrowForward,
 } from "@mui/icons-material";
 
+import { useNavigate } from "react-router-dom";
 
-import {
-    useNavigate
-} from "react-router-dom";
+export default function PatientCard({ patient, onDelete }) {
+  const navigate = useNavigate();
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this patient?",
+    );
 
+    if (!confirmDelete) return;
 
+    try {
+      const response = await fetch(
+        `https://localhost:7166/api/patients/${patient.id}`,
+        {
+          method: "DELETE",
+        },
+      );
 
+      if (!response.ok) {
+        throw new Error("Delete failed");
+      }
 
+      onDelete(patient.id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  return (
+    <Paper
+      sx={{
+        width: "100%",
 
+        height: 520,
 
-export default function PatientCard({patient}){
+        boxSizing: "border-box",
 
+        p: 3,
 
-const navigate = useNavigate();
+        borderRadius: 4,
 
+        border: "1px solid #eee3c5",
 
+        background: "#fff",
 
+        display: "flex",
 
-return(
+        flexDirection: "column",
 
+        justifyContent: "space-between",
 
-<Paper
+        cursor: "pointer",
 
+        transition: "0.25s",
 
-sx={{
+        "&:hover": {
+          boxShadow: "0 10px 25px rgba(0,0,0,.12)",
 
+          transform: "translateY(-4px)",
+        },
+      }}
+    >
+      <Box>
+        {/* HEADER */}
 
-width:"100%",
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Avatar
+            sx={{
+              width: 70,
 
-height:520,
+              height: 70,
 
-boxSizing:"border-box",
+              background: "#eef2f7",
 
-p:3,
+              color: "#092c57",
 
-borderRadius:4,
+              fontSize: 22,
 
-border:"1px solid #eee3c5",
+              fontWeight: 800,
+            }}
+          >
+            {patient.name
 
-background:"#fff",
+              .split(" ")
 
-display:"flex",
+              .map((x) => x[0])
 
-flexDirection:"column",
+              .join("")}
+          </Avatar>
 
-justifyContent:"space-between",
+          <IconButton onClick={(e) => e.stopPropagation()}>
+            <MoreHoriz color="action" />
+          </IconButton>
+        </Box>
 
-cursor:"pointer",
+        <Box textAlign="center" mt={2}>
+          <Typography fontSize={18} fontWeight={800} color="#092c57">
+            {patient.name}
+          </Typography>
 
-
-transition:"0.25s",
-
-
-
-"&:hover":{
-
-boxShadow:"0 10px 25px rgba(0,0,0,.12)",
-
-transform:"translateY(-4px)"
-
-}
-
-
-}}
-
-
-
->
-
-
-
-<Box>
-
-
-{/* HEADER */}
-
-
-<Box
-
-display="flex"
-
-justifyContent="space-between"
-
-alignItems="center"
-
->
-
-
-<Avatar
-
-sx={{
-
-width:70,
-
-height:70,
-
-background:"#eef2f7",
-
-color:"#092c57",
-
-fontSize:22,
-
-fontWeight:800
-
-}}
-
->
-
-
-{
-
-patient.name
-
-.split(" ")
-
-.map(x=>x[0])
-
-.join("")
-
-}
-
-
-</Avatar>
-
-
-
-
-
-<IconButton
-
-onClick={(e)=>e.stopPropagation()}
-
->
-
-<MoreHoriz color="action"/>
-
-</IconButton>
-
-
-
-</Box>
-
-
-
-
-
-
-
-<Box
-
-textAlign="center"
-
-mt={2}
-
->
-
-
-<Typography
-
-fontSize={18}
-
-fontWeight={800}
-
-color="#092c57"
-
->
-
-{patient.name}
-
-</Typography>
-
-
-
-
-
-<Chip
-
-label={patient.status || "Active"}
-
-size="small"
-
-sx={{
-
-mt:1,
-
-background:
-
-patient.status==="Inactive"
-
-?
-
-"#9ca3af"
-
-:
-
-"#16a34a",
-
-
-color:"#fff",
-
-fontWeight:700
-
-}}
-
-/>
-
-
-
-</Box>
-
-
-
-
-
-
-
-
-
-{/* PHONE */}
-
-
-<Box
-
-mt={3}
-
-textAlign="center"
-
->
-
-
-<Phone
-
-sx={{
-
-color:"#C9A227",
-
-fontSize:22
-
-}}
-
-/>
-
-
-
-<Typography
-
-fontSize={14}
-
-mt={1}
-
->
-
-{patient.phone || "No phone"}
-
-</Typography>
-
-
-
-</Box>
-
-
-
-
-
-
-
-
-
-{/* INFO */}
-
-
-<Box
-
-mt={3}
-
-textAlign="center"
-
->
-
-
-<CalendarMonth
-
-sx={{
-
-color:"#C9A227",
-
-fontSize:22
-
-}}
-
-/>
-
-
-
-<Typography
-
-fontSize={13}
-
-color="#718096"
-
->
-
-Last Visit
-
-</Typography>
-
-
-
-<Typography
-
-fontWeight={700}
-
->
-
-{patient.lastVisit || "Not scheduled"}
-
-</Typography>
-
-
-
-
-
-
-
-<Payments
-
-sx={{
-
-color:"#C9A227",
-
-fontSize:22,
-
-mt:2
-
-}}
-
-/>
-
-
-
-<Typography
-
-fontSize={13}
-
-color="#718096"
-
->
-
-Balance
-
-</Typography>
-
-
-
-
-<Typography
-
-fontWeight={700}
-
-color={
-
-patient.balance !== "$0.00"
-
-?
-
-"#d97706"
-
-:
-
-"green"
-
-}
-
->
-
-{patient.balance || "$0.00"}
-
-</Typography>
-
-
-
-</Box>
-
-
-
-</Box>
-
-
-
-
-
-
-
-
-
-<Button
-
-
-fullWidth
-
-
-variant="contained"
-
-
-endIcon={<ArrowForward/>}
-
-
-onClick={()=>navigate(`/patients/${patient.id}`)}
-
-
-
-sx={{
-
-
-background:"#C9A227",
-
-borderRadius:3,
-
-py:1.3,
-
-fontWeight:800,
-
-fontSize:13,
-
-
-"&:hover":{
-
-background:"#b18c1f"
-
-}
-
-
-}}
-
-
->
-
-
-VIEW PATIENT PROFILE
-
-
-</Button>
-
-
-
-
-
-
-
-</Paper>
-
-
-)
-
-
+          <Chip
+            label={patient.status || "Active"}
+            size="small"
+            sx={{
+              mt: 1,
+
+              background: patient.status === "Inactive" ? "#9ca3af" : "#16a34a",
+
+              color: "#fff",
+
+              fontWeight: 700,
+            }}
+          />
+        </Box>
+
+        {/* PHONE */}
+
+        <Box mt={3} textAlign="center">
+          <Phone
+            sx={{
+              color: "#C9A227",
+
+              fontSize: 22,
+            }}
+          />
+
+          <Typography fontSize={14} mt={1}>
+            {patient.phone || "No phone"}
+          </Typography>
+        </Box>
+
+        {/* INFO */}
+
+        <Box mt={3} textAlign="center">
+          <CalendarMonth
+            sx={{
+              color: "#C9A227",
+
+              fontSize: 22,
+            }}
+          />
+
+          <Typography fontSize={13} color="#718096">
+            Last Visit
+          </Typography>
+
+          <Typography fontWeight={700}>
+            {patient.lastVisit || "Not scheduled"}
+          </Typography>
+
+          <Payments
+            sx={{
+              color: "#C9A227",
+
+              fontSize: 22,
+
+              mt: 2,
+            }}
+          />
+
+          <Typography fontSize={13} color="#718096">
+            Balance
+          </Typography>
+
+          <Typography
+            fontWeight={700}
+            color={patient.balance !== "$0.00" ? "#d97706" : "green"}
+          >
+            {patient.balance || "$0.00"}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Button
+        fullWidth
+        variant="contained"
+        endIcon={<ArrowForward />}
+        onClick={() => navigate(`/patients/${patient.id}`)}
+        sx={{
+          background: "#C9A227",
+
+          borderRadius: 3,
+
+          py: 1.3,
+
+          fontWeight: 800,
+
+          fontSize: 13,
+
+          "&:hover": {
+            background: "#b18c1f",
+          },
+        }}
+      >
+        VIEW PATIENT PROFILE
+      </Button>
+
+      <IconButton
+        onClick={handleDelete}
+        sx={{
+          color: "red",
+        }}
+      >
+        <DeleteIcon />
+      </IconButton>
+    </Paper>
+  );
 }

@@ -2,7 +2,7 @@ import { Box, Typography, Grid } from "@mui/material";
 
 import PatientCard from "./PatientCard";
 
-export default function PatientList({ patients }) {
+export default function PatientList({ patients, setPatients }) {
   return (
     <Box
       sx={{
@@ -60,6 +60,9 @@ export default function PatientList({ patients }) {
                     : "No visits",
 
                   balance: "$0.00",
+                }}
+                onDelete={(id) => {
+                  setPatients((prev) => prev.filter((p) => p.id !== id));
                 }}
               />
             </Box>

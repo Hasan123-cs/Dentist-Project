@@ -316,17 +316,23 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
             //
             // PaidAmount stores the REMAINING amount.
             //
-
+            // ----------------- Hassan Jakmara ---------------------
+            // todo you add the delete patient button still have : 
+            // if use unpaid for one time no remaine update 
+            // th treatment price enver change 
+            // ------------------------------------------------------
             var previousAppointment = await _db.Appointments
                 .Include(a => a.AppointmentTreatments)
                 .Where(a =>
-                    a.PatientId == patient.Id
-                    &&
-                    a.Status != AppointmentStatus.Cancelled
-                    &&
-                    a.AppointmentTreatments.Any(at =>
-                        at.TreatmentId == treatment.Id
-                    )
+                       a.PatientId == patient.Id
+    &&
+    a.Status == AppointmentStatus.Completed
+    &&
+    a.PaymentStatus == Enums.PaymentStatus.Paid
+    &&
+    a.AppointmentTreatments.Any(at =>
+        at.TreatmentId == treatment.Id
+    )
                 )
                 .OrderByDescending(a => a.StartDateTime)
                 .FirstOrDefaultAsync();

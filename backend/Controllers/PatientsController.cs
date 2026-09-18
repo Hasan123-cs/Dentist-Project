@@ -321,4 +321,36 @@
             });
         }
     }
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeletePatient(int id)
+    {
+        try
+        {
+            var result = await _service.DeletePatientAsync(id);
+
+
+            if (!result.Success)
+            {
+                return NotFound(new
+                {
+                    message = result.Message
+                });
+            }
+
+
+            return Ok(new
+            {
+                message = result.Message
+            });
+
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Error deleting patient.",
+                error = ex.Message
+            });
+        }
+    }
 }

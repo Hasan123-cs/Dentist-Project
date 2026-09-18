@@ -1034,5 +1034,111 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 "Treatment deleted successfully."
             );
         }
+        public async Task<(bool Success, string Message)> DeletePatientAsync(int id)
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+
+            if (patient == null)
+            {
+                return (
+                    false,
+                    "Patient not found."
+                );
+            }
+
+
+            // 1. Delete Tooth Treatments
+            var medicalRecords = await _context.MedicalRecords
+                .Where(m => m.PatientId == id)
+                .ToListAsync();
+
+
+            var medicalRecordIds = medicalRecords
+                .Select(m => m.Id)
+                .ToList();
+
+
+            var toothTreatments = await _context.ToothTreatments
+                .Where(t =>
+                    medicalRecordIds.Contains(t.MedicalRecordId))
+                .ToListAsync();
+
+
+            if (toothTreatments.Any())
+            {
+                _context.ToothTreatments.RemoveRange(
+                    toothTreatments
+                );
+            }
+
+
+
+            // 2. Delete Medical Records
+
+            if (medicalRecords.Any())
+            {
+                _context.MedicalRecords.RemoveRange(
+                    medicalRecords
+                );
+            }
+
+
+
+            // 3. Delete Appointment Treatments
+
+            var appointments = await _context.Appointments
+                .Where(a => a.PatientId == id)
+                .ToListAsync();
+
+
+            var appointmentIds = appointments
+                .Select(a => a.Id)
+                .ToList();
+
+
+            var appointmentTreatments =
+                await _context.AppointmentTreatments
+                .Where(at =>
+                    appointmentIds.Contains(
+                        at.AppointmentId))
+                .ToListAsync();
+
+
+            if (appointmentTreatments.Any())
+            {
+                _context.AppointmentTreatments.RemoveRange(
+                    appointmentTreatments
+                );
+            }
+
+
+
+            // 4. Delete Appointments
+
+            if (appointments.Any())
+            {
+                _context.Appointments.RemoveRange(
+                    appointments
+                );
+            }
+
+
+
+            // 5. Finally delete patient
+
+            _context.Patients.Remove(patient);
+
+
+
+            await _context.SaveChangesAsync();
+
+
+            return (
+                true,
+                "Patient and all related data deleted successfully."
+            );
+        }
     }
 }
