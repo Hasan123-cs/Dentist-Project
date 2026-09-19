@@ -255,32 +255,27 @@
 
          // PAYMENT FROM LAST APPOINTMENT
          totalPrice =
-    m.AppointmentId != null
-        ? _context.Appointments
-            .Where(a => a.Id == m.AppointmentId)
-            .Select(a => a.TotalCost)
-            .FirstOrDefault()
-        :
-        m.ToothTreatments
-            .Where(t => t.Treatment != null)
-            .Select(t => t.Treatment!.DefaultPrice)
-            .FirstOrDefault(),
+    m.ToothTreatments
+        .Where(t => t.Treatment != null)
+        .Select(t => t.Treatment!.DefaultPrice)
+        .FirstOrDefault(),
 
-
-     
 
 
          remainingAmount =
-    m.AppointmentId != null
-        ? _context.Appointments
-            .Where(a => a.Id == m.AppointmentId)
-            .Select(a => a.RemainingAmount)
-            .FirstOrDefault()
-        :
-        m.ToothTreatments
-            .Where(t => t.Treatment != null)
-            .Select(t => t.Treatment!.DefaultPrice)
-            .FirstOrDefault()
+    _context.Appointments
+        .Where(a =>
+            a.PatientId == m.PatientId
+        )
+        .OrderByDescending(a => a.StartDateTime)
+        .Select(a => (decimal?)a.RemainingAmount)
+        .FirstOrDefault()
+    ??
+    m.ToothTreatments
+        .Where(t => t.Treatment != null)
+        .Select(t => (decimal?)t.Treatment!.DefaultPrice)
+        .FirstOrDefault()
+    ?? 0
 
      })
      .ToListAsync();
@@ -378,4 +373,155 @@
             message = result.Message
         });
     }
+    // search treatment 
+    [HttpGet("search-treatments")]
+    public async Task<IActionResult> SearchTreatments(
+     [FromQuery] string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            return await GetAllTreatments();
+        }
+
+
+        keyword = keyword.ToLower();
+
+
+
+        var treatments = await _context.MedicalRecords
+
+            .Include(m => m.Patient)
+
+            .Include(m => m.ToothTreatments)
+                .ThenInclude(t => t.Treatment)
+
+            .Include(m => m.ToothTreatments)
+                .ThenInclude(t => t.Tooth)
+
+
+
+            .Where(m =>
+
+                (
+                    m.Patient.FirstName + " " +
+                    m.Patient.LastName
+                )
+                .ToLower()
+                .Contains(keyword)
+
+
+
+                ||
+
+                m.ToothTreatments.Any(t =>
+                    t.Treatment != null &&
+                    t.Treatment.Name
+                        .ToLower()
+                        .Contains(keyword)
+                )
+
+
+
+                ||
+
+                m.ToothTreatments.Any(t =>
+                    t.Tooth != null &&
+                    t.Tooth.Number
+                        .ToString()
+                        .Contains(keyword)
+                )
+
+            )
+
+
+
+            .OrderByDescending(m => m.CreatedAt)
+
+
+
+            .Select(m => new
+            {
+
+                id = m.Id,
+
+
+                patientId = m.PatientId,
+
+
+                patient =
+                    m.Patient.FirstName
+                    + " "
+                    + m.Patient.LastName,
+
+
+
+                treatment =
+                    m.ToothTreatments
+                        .Where(t => t.Treatment != null)
+                        .Select(t => t.Treatment!.Name)
+                        .FirstOrDefault(),
+
+
+
+                tooth =
+                    m.ToothTreatments
+                        .Where(t => t.Tooth != null)
+                        .Select(t => t.Tooth!.Number)
+                        .ToList(),
+
+
+
+                status =
+                    m.ToothTreatments
+                        .Select(t => t.Status.ToString())
+                        .FirstOrDefault(),
+
+
+
+                price =
+                    m.ToothTreatments
+                        .Where(t => t.Treatment != null)
+                        .Select(t => t.Treatment!.DefaultPrice)
+                        .FirstOrDefault(),
+
+
+
+                notes = m.ClinicalNotes,
+
+
+
+                date = m.CreatedAt,
+
+
+
+                totalPrice =
+    m.ToothTreatments
+        .Where(t => t.Treatment != null)
+        .Select(t => t.Treatment!.DefaultPrice)
+        .FirstOrDefault(),
+
+                remainingAmount =
+    _context.Appointments
+        .Where(a =>
+            a.PatientId == m.PatientId
+        )
+        .OrderByDescending(a => a.StartDateTime)
+        .Select(a => (decimal?)a.RemainingAmount)
+        .FirstOrDefault()
+    ??
+    m.ToothTreatments
+        .Where(t => t.Treatment != null)
+        .Select(t => (decimal?)t.Treatment!.DefaultPrice)
+        .FirstOrDefault()
+    ?? 0
+
+            })
+
+            .ToListAsync();
+
+
+
+        return Ok(treatments);
+    }
+    // == serach treatment ==
 }

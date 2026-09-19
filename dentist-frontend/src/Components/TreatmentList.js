@@ -4,7 +4,7 @@ import TreatmentCard from "./TreatmentCard";
 
 import { useEffect, useState } from "react";
 
-export default function TreatmentList() {
+export default function TreatmentList({ search }) {
   const [treatments, setTreatments] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -14,14 +14,15 @@ export default function TreatmentList() {
       try {
         const token = localStorage.getItem("token");
 
-        const response = await fetch(
-          "https://localhost:7166/api/patients/all-treatments",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const url = search
+          ? `https://localhost:7166/api/patients/search-treatments?keyword=${search}`
+          : "https://localhost:7166/api/patients/all-treatments";
+
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         if (!response.ok) {
           throw new Error("Failed to load treatments");
@@ -40,7 +41,7 @@ export default function TreatmentList() {
     };
 
     loadTreatments();
-  }, []);
+  }, [search]);
 
   if (loading) {
     return <Typography>Loading treatments...</Typography>;
