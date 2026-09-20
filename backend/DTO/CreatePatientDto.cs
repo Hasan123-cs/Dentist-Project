@@ -4,6 +4,7 @@
     {
         public string Name { get; set; } = null!;
 
+        public string PatientCode { get; set; } = null!;
 
         public string Phone { get; set; } = null!;
 

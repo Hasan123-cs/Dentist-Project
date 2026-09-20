@@ -3,7 +3,8 @@
 public class Patient
 {
     public int Id { get; set; }
-
+    // represent the code of each patient in saving mean ( 1,.. ) i dont prefer to use the primary key Id for some reason
+    public string PatientCode { get; set; } = null!;
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public DateOnly? DateOfBirth { get; set; }

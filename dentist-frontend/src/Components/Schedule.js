@@ -68,11 +68,11 @@ export default function Schedule({ ScheduleList }) {
               </Typography>
             </Box>
           </Box>
-          {item.status === "Confirmed" ? (
-            <Chip label="Confirmed" color="success" size="small" />
-          ) : item.status === "Scheduled" ? (
+          {item.status === "Completed" ? (
+            <Chip label="Completed" color="success" size="small" />
+          ) : item.status === "Pending" ? (
             <Chip
-              label="Scheduled"
+              label="Pending"
               sx={{
                 backgroundColor: "#D4AF37",
                 color: "#fff",
@@ -80,7 +80,7 @@ export default function Schedule({ ScheduleList }) {
               size="small"
             />
           ) : (
-            <Chip label="Canceled" color="error" size="small" />
+            <Chip label="Cancelled" color="error" size="small" />
           )}
         </Box>
       ))}

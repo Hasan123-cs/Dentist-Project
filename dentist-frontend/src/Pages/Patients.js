@@ -29,7 +29,7 @@ export default function Patients() {
         const response = await fetchApi.json();
 
         setPatients(response);
-
+        console.log(response);
         setFilteredPatients(response);
       } catch (error) {
         console.log(error);
@@ -46,8 +46,8 @@ export default function Patients() {
 
     const result = patients.filter((p) => {
       const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
-
-      return fullName.includes(value) || p.phone?.includes(value);
+      const patientCode = p.patientCode?.toLowerCase() || "";
+      return fullName.includes(value) || patientCode.includes(value);
     });
 
     setFilteredPatients(result);

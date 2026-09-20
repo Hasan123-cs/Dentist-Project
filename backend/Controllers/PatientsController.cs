@@ -3,7 +3,8 @@
     using dentist_project.DTOs;
     using dentist_project.Models;
     using dentist_project.Service;
-    using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
@@ -524,4 +525,17 @@
         return Ok(treatments);
     }
     // == serach treatment ==
+    // here we get the total revenue with secure endpoint 
+    [Authorize(Roles = "Doctor")]
+    [HttpGet("dashboard-revenue")]
+    public async Task<IActionResult> GetDashboardRevenue()
+    {
+        var totalRevenue = await _context.Appointments
+            .SumAsync(a => a.PaidAmount);
+
+        return Ok(new
+        {
+            totalRevenue
+        });
+    }
 }

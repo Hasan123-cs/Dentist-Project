@@ -50,7 +50,7 @@ export default function PatientList({ patients, setPatients }) {
                   id: p.id,
 
                   name: `${p.firstName} ${p.lastName}`,
-
+                  patientCode: p.patientCode,
                   phone: p.phone || "No phone",
 
                   status: "Active",
@@ -59,7 +59,7 @@ export default function PatientList({ patients, setPatients }) {
                     ? new Date(p.createdAt).toLocaleDateString()
                     : "No visits",
 
-                  balance: "$0.00",
+                  balance: p.balance,
                 }}
                 onDelete={(id) => {
                   setPatients((prev) => prev.filter((p) => p.id !== id));

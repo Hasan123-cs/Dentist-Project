@@ -20,23 +20,35 @@ namespace dentist_project.Service
         }
         public async Task<List<PatientDto>> GetPatients()
         {
-
             var patients = await _context.Patients
                 .Select(p => new PatientDto
                 {
                     Id = p.Id,
+
+                    PatientCode = p.PatientCode,
+
                     FirstName = p.FirstName,
+
                     LastName = p.LastName,
+
                     DateOfBirth = p.DateOfBirth,
+
                     Gender = p.Gender,
+
                     Phone = p.Phone,
+
                     Allergies = p.Allergies,
+
                     MedicalHistory = p.MedicalHistory,
-                    CreatedAt = p.CreatedAt
+
+                    CreatedAt = p.CreatedAt,
+
+                    Balance = p.Appointments
+                        .Sum(a => a.RemainingAmount)
                 })
                 .ToListAsync();
-            return patients;
 
+            return patients;
         }
         // DENTAL CHART 
         public async Task<List<DentalChartItemDto>> GetPatientDentalChartAsync(
@@ -937,6 +949,16 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             {
                 return (false, "Phone number is required.", null);
             }
+            if (string.IsNullOrWhiteSpace(dto.PatientCode))
+                return (false, "Patient code is required.", null);
+
+            var patientCode = dto.PatientCode.Trim();
+
+            var existingPatient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.PatientCode == patientCode);
+
+            if (existingPatient != null)
+                return (false, "This patient code already exists.", null);
 
             // Split full name
             var nameParts = dto.Name
@@ -957,6 +979,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             // Create patient
             var patient = new Patient
             {
+                PatientCode = patientCode,
                 FirstName = firstName,
                 LastName = lastName,
                 Phone = dto.Phone.Trim(),
@@ -978,6 +1001,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             // Return created patient
             var patientDto = new PatientDto
             {
+                PatientCode = patient.PatientCode,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
                 DateOfBirth = patient.DateOfBirth,

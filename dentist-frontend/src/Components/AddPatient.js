@@ -13,8 +13,8 @@ import { useState } from "react";
 
 export default function AddPatient() {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
+    patientCode: "",
     name: "",
     phone: "",
     gender: "",
@@ -113,6 +113,16 @@ export default function AddPatient() {
             gap: 2.5,
           }}
         >
+          {/* this for id patient */}
+          <TextField
+            label="Patient Code"
+            value={form.patientCode}
+            onChange={handleChange}
+            name="patientCode"
+            fullWidth
+            required
+          />
+          {/* === this for id patient === */}
           <TextField
             label="Full Name"
             name="name"

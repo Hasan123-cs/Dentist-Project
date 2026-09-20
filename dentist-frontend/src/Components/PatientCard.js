@@ -20,6 +20,9 @@ import {
 import { useNavigate } from "react-router-dom";
 
 export default function PatientCard({ patient, onDelete }) {
+  Object.entries(patient).forEach(([key, value]) => {
+    console.log(`${key}:`, value);
+  });
   const navigate = useNavigate();
   const handleDelete = async () => {
     const confirmDelete = window.confirm(
@@ -167,6 +170,9 @@ export default function PatientCard({ patient, onDelete }) {
           <Typography fontWeight={700}>
             {patient.lastVisit || "Not scheduled"}
           </Typography>
+          <Typography fontSize={18} fontWeight={800} color="#934506">
+            CODE : {patient.patientCode}
+          </Typography>
 
           <Payments
             sx={{
@@ -179,14 +185,14 @@ export default function PatientCard({ patient, onDelete }) {
           />
 
           <Typography fontSize={13} color="#718096">
-            Balance
+            Remain Balance
           </Typography>
 
           <Typography
             fontWeight={700}
             color={patient.balance !== "$0.00" ? "#d97706" : "green"}
           >
-            {patient.balance || "$0.00"}
+            ${Number(patient.balance || 0).toFixed(2)}
           </Typography>
         </Box>
       </Box>

@@ -3,9 +3,8 @@
 public class PatientDto
 {
     public int Id { get; set; }
-
+    public string PatientCode { get; set; } = null!;
     public string FirstName { get; set; } = null!;
-
     public string LastName { get; set; } = null!;
 
     public DateOnly? DateOfBirth { get; set; }
@@ -17,6 +16,6 @@ public class PatientDto
     public string? Allergies { get; set; }
 
     public string? MedicalHistory { get; set; }
-
+    public decimal Balance { get; set; }
     public DateTime CreatedAt { get; set; }
 }
