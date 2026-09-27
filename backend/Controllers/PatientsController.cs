@@ -538,4 +538,46 @@ using Microsoft.AspNetCore.Identity;
             totalRevenue
         });
     }
+
+    [HttpGet("{id}/treatments")]
+    public async Task<IActionResult> GetPatientTreatments(int id)
+    {
+        try
+        {
+            var treatments =
+                await _service.GetPatientTreatmentsAsync(id);
+
+
+            return Ok(treatments);
+        }
+
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Error loading patient treatments.",
+                error = ex.Message
+            });
+        }
+    }
+
+    [HttpGet("{id}/summary")]
+    public async Task<IActionResult> GetPatientSummary(int id)
+    {
+        try
+        {
+            var result =
+                await _service.GetPatientSummaryAsync(id);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Error loading patient summary.",
+                error = ex.Message
+            });
+        }
+    }
 }

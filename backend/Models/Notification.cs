@@ -14,4 +14,5 @@ public class Notification
     public string Message { get; set; } = null!;
     public bool IsSent { get; set; }
     public DateTime? SentAt { get; set; }
+    public string? ErrorMessage { get; set; }
 }

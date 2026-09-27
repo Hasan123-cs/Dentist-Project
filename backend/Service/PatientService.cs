@@ -482,7 +482,12 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                     Description = null,
                     DefaultPrice = dto.Price ?? 0,
                     EstimatedMinutes = 0,
-                    IsActive = true
+                    IsActive = true,
+                    HasRecallReminder =
+            treatmentName.Contains(
+    "clean",
+    StringComparison.OrdinalIgnoreCase
+)
                 };
 
                 _context.Treatments.Add(treatment);
@@ -1259,6 +1264,98 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 true,
                 "Treatment status updated successfully."
             );
+        }
+        public async Task<List<object>> GetPatientTreatmentsAsync(int patientId)
+        {
+            var treatments = await _context.ToothTreatments
+
+                .Include(t => t.MedicalRecord)
+                    .ThenInclude(m => m.Patient)
+
+                .Include(t => t.Treatment)
+
+                .Include(t => t.Tooth)
+
+                .Where(t =>
+                    t.MedicalRecord.PatientId == patientId
+                )
+
+                .OrderByDescending(t =>
+                    t.MedicalRecord.CreatedAt
+                )
+
+                .Select(t => new
+                {
+                    id = t.Id,
+
+                    treatment = t.Treatment != null
+                        ? t.Treatment.Name
+                        : "Unknown",
+
+
+                    toothNumber = t.Tooth != null
+                        ? t.Tooth.Number
+                        : (int?)null,
+
+
+                    surface = t.Surface != null
+                        ? t.Surface.ToString()
+                        : null,
+
+
+                    status = t.Status.ToString(),
+
+
+                    condition = t.Condition.ToString(),
+
+
+                    price = t.Treatment != null
+                        ? t.Treatment.DefaultPrice
+                        : 0,
+
+
+                    notes = t.Notes,
+
+
+                    // Date of treatment
+                    date = t.MedicalRecord.CreatedAt
+
+                })
+
+                .ToListAsync();
+
+
+            return treatments
+                .Cast<object>()
+                .ToList();
+        }
+
+
+        public async Task<object> GetPatientSummaryAsync(int patientId)
+        {
+            var lastAppointment = await _context.Appointments
+                .Where(a => a.PatientId == patientId)
+                .OrderByDescending(a => a.StartDateTime)
+                .FirstOrDefaultAsync();
+
+
+            var upcomingAppointments = await _context.Appointments
+                .CountAsync(a =>
+                    a.PatientId == patientId &&
+                    a.StartDateTime > DateTime.UtcNow &&
+                    a.Status != AppointmentStatus.Completed &&
+                    a.Status != AppointmentStatus.Cancelled
+                );
+
+
+            return new
+            {
+                balance = lastAppointment?.RemainingAmount ?? 0,
+
+                upcomingAppointments = upcomingAppointments,
+
+                lastVisit = lastAppointment?.StartDateTime
+            };
         }
 
 

@@ -8,6 +8,7 @@ public class Treatment
     public decimal DefaultPrice { get; set; }
     public int EstimatedMinutes { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool HasRecallReminder { get; set; } = false;
     public ICollection<ToothTreatment> ToothTreatments { get; set; }= new List<ToothTreatment>();
     public ICollection<AppointmentTreatment> AppointmentTreatments { get; set; } = new List<AppointmentTreatment>();
 }

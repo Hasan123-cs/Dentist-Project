@@ -264,7 +264,21 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
             var endDateTime = TimeZoneInfo.ConvertTimeToUtc(
                 localEndDateTime,
                 lebanonTimeZone);
+                // check if time is pass
+                var nowLebanon = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.UtcNow,
+                lebanonTimeZone
+            );
 
+            var appointmentStartLocal = dto.Date.ToDateTime(dto.StartTime);
+
+            if (appointmentStartLocal <= nowLebanon)
+            {
+                return (
+                    false,
+                    "Cannot create an appointment with a past date or time."
+                );
+            }
 
             // ==========================================
             // 9. Check appointment overlap

@@ -8,10 +8,14 @@ namespace dentist_project.Services;
 public class NotificationService 
 {
     private readonly AppDbContext _context;
+    private readonly WhatsAppService _whatsappService;
 
-    public NotificationService(AppDbContext context)
+    public NotificationService(
+    AppDbContext context,
+    WhatsAppService whatsappService)
     {
         _context = context;
+        _whatsappService = whatsappService;
     }
 
     public async Task ProcessAppointmentRemindersAsync()
@@ -20,17 +24,27 @@ public class NotificationService
             GetLebanonNow().AddDays(1)
         );
 
+        var now = GetLebanonNow();
+
         var appointments = await _context.Appointments
             .Include(a => a.Patient)
             .Where(a =>
-                a.Status == AppointmentStatus.Pending &&
                 !a.ReminderSent &&
-                a.Patient.Phone != null
+                a.Status != AppointmentStatus.Completed &&
+                a.Status != AppointmentStatus.Cancelled &&
+                a.Patient.Phone != null &&
+                a.StartDateTime > DateTime.UtcNow
             )
             .ToListAsync();
 
         foreach (var appointment in appointments)
         {
+            if (appointment.Status == AppointmentStatus.Completed ||
+    appointment.Status == AppointmentStatus.Cancelled ||
+    appointment.StartDateTime <= DateTime.UtcNow)
+            {
+                continue;
+            }
             var appointmentLocalDate =
                 TimeZoneInfo.ConvertTimeFromUtc(
                     appointment.StartDateTime,
@@ -40,9 +54,6 @@ public class NotificationService
             if (DateOnly.FromDateTime(appointmentLocalDate) != tomorrow)
                 continue;
 
-            // -----------------------------------------
-            // WhatsApp will be sent here 
-            // -----------------------------------------
 
             var notification = new Notification
             {
@@ -50,15 +61,35 @@ public class NotificationService
                 AppointmentId = appointment.Id,
                 Type = NotificationType.WhatsApp,
                 Message =
-                    $"Reminder: You have an appointment tomorrow at " +
-                    $"{appointmentLocalDate:dd/MM/yyyy HH:mm}.",
-                IsSent = true,
-                SentAt = DateTime.UtcNow
+         $"Reminder: You have an appointment tomorrow at " +
+         $"{appointmentLocalDate:dd/MM/yyyy HH:mm}.",
+                IsSent = false
             };
 
+
+            // 1- create notification first
             _context.Notifications.Add(notification);
 
-            appointment.ReminderSent = true;
+            await _context.SaveChangesAsync();
+
+
+            // 2- send WhatsApp
+            var sent = await _whatsappService.SendMessage(
+                appointment.Patient.Phone,
+                notification.Message
+            );
+
+
+            // 3- update status
+            notification.IsSent = sent;
+
+            if (sent)
+            {
+                notification.SentAt = DateTime.UtcNow;
+            }
+
+
+            appointment.ReminderSent = sent;
         }
 
         await _context.SaveChangesAsync();
@@ -73,9 +104,10 @@ public class NotificationService
                 .ThenInclude(a => a.Patient)
             .Include(at => at.Treatment)
             .Where(at =>
-                at.Appointment.Status == AppointmentStatus.Pending &&
-                at.Treatment.Name == "Cleaning"
-            )
+    at.Appointment.Status == AppointmentStatus.Completed
+    &&
+    at.Treatment.HasRecallReminder
+)
             .ToListAsync();
 
         var latestCleaningPerPatient = cleaningAppointments
@@ -100,11 +132,13 @@ public class NotificationService
                 continue;
 
             var alreadySent = await _context.Notifications
-                .AnyAsync(n =>
-                    n.AppointmentId == cleaning.AppointmentId &&
-                    n.Type == NotificationType.WhatsApp &&
-                    n.IsSent
-                );
+    .AnyAsync(n =>
+        n.PatientId == cleaning.Appointment.PatientId
+        &&
+        n.Message.Contains("follow-up")
+        &&
+        n.SentAt >= DateTime.UtcNow.AddMonths(-6)
+    );
 
             if (alreadySent)
                 continue;
@@ -112,27 +146,48 @@ public class NotificationService
             if (string.IsNullOrWhiteSpace(cleaning.Appointment.Patient.Phone))
                 continue;
 
-            // -----------------------------------------
-            // WhatsApp will be sent here later
-            // -----------------------------------------
 
             var notification = new Notification
             {
                 PatientId = cleaning.Appointment.PatientId,
                 AppointmentId = cleaning.AppointmentId,
                 Type = NotificationType.WhatsApp,
+
                 Message =
-                    $"Hello {cleaning.Appointment.Patient.FirstName}, " +
-                    $"it has been 6 months since your last cleaning. " +
-                    $"Please schedule your next cleaning appointment.",
-                IsSent = true,
-                SentAt = DateTime.UtcNow
+          $"Hello {cleaning.Appointment.Patient.FirstName}, " +
+          $"your {cleaning.Treatment.Name} follow-up is due. " +
+          $"Please schedule your next appointment.",
+
+                IsSent = false
             };
 
+
+            // 1- Save notification first
             _context.Notifications.Add(notification);
+
+            await _context.SaveChangesAsync();
+
+
+            // 2- Send WhatsApp
+            var sent = await _whatsappService.SendMessage(
+                cleaning.Appointment.Patient.Phone,
+                notification.Message
+            );
+
+
+            // 3- Update result
+            notification.IsSent = sent;
+
+            if (sent)
+            {
+                notification.SentAt = DateTime.UtcNow;
+            }
+
+
+            await _context.SaveChangesAsync();
+
         }
 
-        await _context.SaveChangesAsync();
     }
 
     public async Task RemoveAppointmentNotificationAsync(int appointmentId)
