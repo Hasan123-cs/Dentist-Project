@@ -7,98 +7,155 @@ import {
     ListItemText,
     Avatar
 } from "@mui/material";
-
-
+ 
+ 
 import {
     Home,
     CalendarMonth,
     People,
     MedicalServices,
     Settings,
-    Logout
+    Logout,
+    Chat
 } from "@mui/icons-material";
-
-
+ 
+ 
 import {
     useNavigate,
     useLocation
 } from "react-router-dom";
-
-
+ 
+ 
+import amanyImage from "../images/Amany.jpeg";
+ 
+ 
+ 
 const menu = [
-
+ 
     {
         name:"Dashboard",
         icon:<Home />,
         path:"/dashboard"
     },
-
+ 
     {
         name:"Appointments",
         icon:<CalendarMonth />,
         path:"/appointments"
     },
-
+ 
     {
         name:"Patients",
         icon:<People />,
         path:"/patients"
     },
-
+ 
     {
         name:"Treatments",
         icon:<MedicalServices />,
         path:"/treatments"
     },
-
+ 
+    {
+        name:"WhatsApp",
+        icon:<Chat />,
+        path:"/whatsapp"
+    },
+ 
     {
         name:"Settings",
         icon:<Settings />,
         path:"/settings"
     }
-
+ 
 ];
-
-
+ 
+ 
+ 
 export default function Sidebar(){
-
+ 
+ 
     const navigate = useNavigate();
+ 
     const location = useLocation();
-
-
+ 
+ 
+ 
+    const token = localStorage.getItem("token");
+ 
+ 
+    let isAssistant = false;
+ 
+ 
+ 
+    if(token){
+ 
+        const payload = JSON.parse(
+            atob(token.split(".")[1])
+        );
+ 
+ 
+        const role =
+            payload[
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            ];
+ 
+ 
+        console.log("SIDEBAR ROLE:", role);
+ 
+ 
+        isAssistant = role === "Assistant";
+ 
+    }
+ 
+ 
+ 
+ 
+    const userName = isAssistant
+        ? "Assistant"
+        : "Dr. Amany Nseif";
+ 
+ 
+ 
+ 
     return (
-
+ 
         <Box
-
+ 
             sx={{
-
+ 
                 width:280,
+ 
                 minWidth:280,
+ 
                 flexShrink:0,
-
+ 
                 height:"100vh",
-
+ 
                 background:"#ffffff",
-
+ 
                 borderRight:"1px solid #eee3c5",
-
+ 
                 p:3,
-
+ 
                 boxSizing:"border-box",
-
+ 
                 display:"flex",
+ 
                 flexDirection:"column",
-
+ 
                 position:"sticky",
+ 
                 top:0
-
+ 
             }}
-
+ 
         >
-
-
+ 
+ 
+ 
             {/* LOGO */}
-
+ 
             <Box
                 sx={{
                     display:"flex",
@@ -107,7 +164,7 @@ export default function Sidebar(){
                     mb:4
                 }}
             >
-
+ 
                 <Box
                     sx={{
                         width:45,
@@ -120,12 +177,14 @@ export default function Sidebar(){
                         fontSize:25
                     }}
                 >
+ 
                     🦷
+ 
                 </Box>
-
-
+ 
+ 
                 <Box>
-
+ 
                     <Typography
                         fontSize={20}
                         fontWeight={800}
@@ -133,199 +192,291 @@ export default function Sidebar(){
                     >
                         DentalCare
                     </Typography>
-
-
+ 
+ 
                     <Typography
                         fontSize={12}
                         color="text.secondary"
                     >
                         Clinic Management
                     </Typography>
-
+ 
                 </Box>
-
-
+ 
             </Box>
-
-
-
-            {/* DOCTOR */}
-
+ 
+ 
+ 
+ 
+ 
+ 
+            {/* USER PROFILE */}
+ 
             <Box
+ 
                 sx={{
+ 
                     background:"#faf7ed",
+ 
                     borderRadius:4,
+ 
                     p:2,
+ 
                     mb:3,
+ 
                     display:"flex",
+ 
                     alignItems:"center",
+ 
                     gap:2
+ 
                 }}
+ 
             >
-
-                <Avatar
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
-                    sx={{
-                        width:55,
-                        height:55
-                    }}
-                />
-
-
+ 
+ 
+                {!isAssistant && (
+ 
+                    <Avatar
+ 
+                        src={amanyImage}
+ 
+                        sx={{
+ 
+                            width:55,
+ 
+                            height:55
+ 
+                        }}
+ 
+                    />
+ 
+                )}
+ 
+ 
+ 
                 <Box>
-
+ 
+ 
                     <Typography fontWeight={700}>
-                        Dr. David
+ 
+                        {userName}
+ 
                     </Typography>
-
-
-                    <Typography
-                        fontSize={13}
-                        color="text.secondary"
-                    >
-                        Dentist
-                    </Typography>
-
+ 
+ 
+ 
+                    {!isAssistant && (
+ 
+                        <Typography
+ 
+                            fontSize={13}
+ 
+                            color="text.secondary"
+ 
+                        >
+ 
+                            Dentist
+ 
+                        </Typography>
+ 
+                    )}
+ 
+ 
+ 
                 </Box>
-
-
+ 
+ 
             </Box>
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
             {/* MENU */}
-
-            <List
-                sx={{
-                    flex:1
-                }}
-            >
-
+ 
+ 
+            <List sx={{flex:1}}>
+ 
+ 
                 {
                     menu.map((item)=>{
-
+ 
+ 
                         const active =
                         location.pathname.startsWith(item.path);
-
-
+ 
+ 
+ 
                         return (
-
+ 
                             <ListItemButton
-
+ 
                                 key={item.name}
-
+ 
                                 onClick={()=>navigate(item.path)}
-
+ 
                                 sx={{
-
+ 
                                     height:48,
-
+ 
                                     borderRadius:3,
-
+ 
                                     mb:1,
-
+ 
+ 
                                     background:
+ 
                                     active
+ 
                                     ?
+ 
                                     "#C9A227"
+ 
                                     :
+ 
                                     "transparent",
-
-
+ 
+ 
+ 
                                     color:
+ 
                                     active
+ 
                                     ?
+ 
                                     "#fff"
+ 
                                     :
+ 
                                     "#52677e",
-
-
+ 
+ 
+ 
                                     "&:hover":{
+ 
                                         background:
+ 
                                         active
+ 
                                         ?
+ 
                                         "#C9A227"
+ 
                                         :
+ 
                                         "#faf7ed"
+ 
                                     }
-
+ 
                                 }}
-
+ 
                             >
-
+ 
+ 
                                 <ListItemIcon
-
+ 
                                     sx={{
+ 
                                         minWidth:40,
-
+ 
                                         color:
+ 
                                         active
+ 
                                         ?
+ 
                                         "#fff"
+ 
                                         :
+ 
                                         "#8a7a55"
+ 
                                     }}
-
+ 
                                 >
-
+ 
                                     {item.icon}
-
+ 
                                 </ListItemIcon>
-
-
+ 
+ 
+ 
                                 <ListItemText
+ 
                                     primary={item.name}
+ 
                                 />
-
-
+ 
+ 
                             </ListItemButton>
-
-                        )
-
+ 
+                        );
+ 
+ 
                     })
+ 
                 }
-
-
+ 
+ 
             </List>
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
             {/* LOGOUT */}
-
+ 
+ 
             <ListItemButton
-
+ 
                 sx={{
+ 
                     borderRadius:3,
+ 
                     color:"#d32f2f"
+ 
                 }}
-
+ 
             >
-
+ 
+ 
                 <ListItemIcon
-
+ 
                     sx={{
+ 
                         minWidth:40,
+ 
                         color:"#d32f2f"
+ 
                     }}
-
+ 
                 >
-
+ 
                     <Logout />
-
+ 
                 </ListItemIcon>
-
-
+ 
+ 
                 <ListItemText
+ 
                     primary="Logout"
+ 
                 />
-
+ 
+ 
             </ListItemButton>
-
-
+ 
+ 
+ 
         </Box>
-
+ 
     );
-
+ 
 }
