@@ -7,17 +7,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DotNetEnv;
-using dentist_project.Services;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
+//builder.WebHost.UseUrls("http://0.0.0.0:8080");
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-builder.Services.AddHttpClient<WhatsAppService>();
+//builder.Services.AddHttpClient<WhatsAppService>();
 
 builder.Services.AddCors(options =>
 {
@@ -48,9 +47,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<AppointmentsService>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<PatientService>();
-builder.Services.AddScoped<NotificationService>();
+//builder.Services.AddScoped<NotificationService>();
 // i use host because is not a service calledf from controller its run from background
-builder.Services.AddHostedService<NotificationBackgroundService>();
+//builder.Services.AddHostedService<NotificationBackgroundService>();
 builder.Services.AddScoped<DashboardService>();
 // identity 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

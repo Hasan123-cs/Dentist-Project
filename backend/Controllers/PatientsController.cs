@@ -580,4 +580,37 @@ using Microsoft.AspNetCore.Identity;
             });
         }
     }
+
+
+    [HttpGet("{id}/patient-phone")]
+    public async Task<IActionResult> GetPatientPhone(int id)
+    {
+        var appointment = await _context.Appointments
+            .Include(a => a.Patient)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+
+        if (appointment == null)
+        {
+            return NotFound(new
+            {
+                message = "Appointment not found"
+            });
+        }
+
+
+        if (appointment.Patient == null)
+        {
+            return NotFound(new
+            {
+                message = "Patient not found"
+            });
+        }
+
+
+        return Ok(new
+        {
+            phone = appointment.Patient.Phone
+        });
+    }
 }

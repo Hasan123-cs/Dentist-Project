@@ -1,51 +1,129 @@
-﻿using dentist_project.Data;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using dentist_project.Data;
+using dentist_project.DTO;
+using dentist_project.Enums;
 
-namespace dentist_project.Controllers
+namespace dentist_project.Controllers;
+
+
+[Authorize]
+[ApiController]
+[Route("api/notifications")]
+public class NotificationsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    [Authorize]
-    public class NotificationController : ControllerBase
+
+    private readonly AppDbContext _context;
+
+
+    public NotificationsController(AppDbContext context)
     {
-        private readonly AppDbContext _context;
+        _context = context;
+    }
 
 
-        public NotificationController(AppDbContext context)
+
+    // GET: api/notifications/reminders
+    [HttpGet("reminders")]
+    public async Task<IActionResult> GetReminders()
+    {
+
+        var todayUtc = DateTime.UtcNow.Date;
+
+        var tomorrowStart = todayUtc.AddDays(1);
+
+        var tomorrowEnd = todayUtc.AddDays(2);
+
+
+
+        var reminders = await _context.Notifications
+
+            .Include(x => x.Patient)
+
+            .Include(x => x.Appointment)
+
+            .Where(x =>
+                !x.IsSent
+                &&
+                (
+                    // Appointment reminders
+                    (
+                        x.Type == NotificationType.AppointmentReminder
+                        &&
+                        x.Appointment != null
+                        &&
+                        x.Appointment.Status != AppointmentStatus.Cancelled
+                        &&
+                        x.Appointment.Status != AppointmentStatus.Completed
+                        &&
+                        x.Appointment.StartDateTime >= tomorrowStart
+                        &&
+                        x.Appointment.StartDateTime < tomorrowEnd
+                    )
+
+
+                    ||
+
+                    // Cleaning reminders
+                    (
+                        x.Type == NotificationType.CleaningReminder
+                    )
+                )
+            )
+
+            .ToListAsync();
+
+
+
+        var result = reminders.Select(x => new ReminderDto
         {
-            _context = context;
-        }
+
+            Id = x.Id,
+
+
+            PatientName =
+                x.Patient.FirstName + " " +
+                x.Patient.LastName,
+
+
+            Phone =
+                x.Patient.Phone,
+
+
+            Message =
+                x.Message,
+
+
+            Type =
+                x.Type.ToString(),
+
+
+            Date =
+    x.Type == NotificationType.CleaningReminder
+    ?
+    x.Message
+    :
+    x.Appointment.StartDateTime
+        .ToLocalTime()
+        .ToString("yyyy-MM-dd"),
+
+
+            Time =
+    x.Type == NotificationType.CleaningReminder
+    ?
+    ""
+    :
+    x.Appointment.StartDateTime
+        .ToLocalTime()
+        .ToString("HH:mm")
+
+        })
+        .ToList();
 
 
 
-        [HttpGet]
-        public async Task<IActionResult> GetNotifications()
-        {
-            var notifications = await _context.Notifications
-                .Include(n => n.Patient)
-                .OrderByDescending(n => n.SentAt)
-                .Select(n => new
-                {
-                    id = n.Id,
+        return Ok(result);
 
-                    patientName =
-                        n.Patient.FirstName + " "
-                        + n.Patient.LastName,
-
-                    phone = n.Patient.Phone,
-
-                    message = n.Message,
-
-                    sentAt = n.SentAt,
-
-                    isSent = n.IsSent
-                })
-                .ToListAsync();
-
-
-            return Ok(notifications);
-        }
     }
 }

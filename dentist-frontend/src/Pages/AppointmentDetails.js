@@ -10,7 +10,9 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-
+import {
+  WhatsApp
+} from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -23,7 +25,7 @@ import dayjs from "dayjs";
 export default function AppointmentDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const [messageLanguage, setMessageLanguage] = useState("en");
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,7 +41,67 @@ export default function AppointmentDetails() {
   // --------------------------------------------------
   // LOAD APPOINTMENT
   // --------------------------------------------------
+  const handleSendWhatsapp = async () => {
 
+
+    const token = localStorage.getItem("token");
+
+
+    const phoneResponse = await axios.get(
+      `https://localhost:7166/api/patients/${id}/patient-phone`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+
+    const patientPhone = phoneResponse.data.phone;
+
+
+    if (!patientPhone) {
+
+      setError("Patient phone not found");
+      return;
+
+    }
+
+
+    const message =
+      messageLanguage === "ar"
+        ?
+        `مرحباً ${getPatientName()}
+
+نذكركم بأن لديكم موعداً في عيادة الأسنان.
+
+التاريخ: ${formatDate(appointment.startDateTime)}
+الوقت: ${formatTime(appointment.startDateTime)}
+
+شكراً لثقتكم بنا.`
+        :
+        `Hello ${getPatientName()}
+
+This is a reminder that you have a dental appointment.
+
+Date: ${formatDate(appointment.startDateTime)}
+Time: ${formatTime(appointment.startDateTime)}
+
+Thank you for trusting us.`;
+
+
+
+    const whatsappUrl =
+      `https://wa.me/${patientPhone}?text=${encodeURIComponent(message)}`;
+
+
+
+    window.open(
+      whatsappUrl,
+      "_blank"
+    );
+
+  };
   useEffect(() => {
     loadAppointment();
   }, [id]);
@@ -127,9 +189,8 @@ export default function AppointmentDetails() {
 
     if (appointment.patient) {
       return (
-        `${appointment.patient.firstName || ""} ${
-          appointment.patient.lastName || ""
-        }`.trim() || "-"
+        `${appointment.patient.firstName || ""} ${appointment.patient.lastName || ""
+          }`.trim() || "-"
       );
     }
 
@@ -741,7 +802,81 @@ export default function AppointmentDetails() {
                 </Button>
               </Box>
             )}
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
+                flexWrap: "wrap"
+              }}
+            >
 
+
+              <Button
+                variant="outlined"
+                onClick={() => setMessageLanguage("ar")}
+                sx={{
+                  background:
+                    messageLanguage === "ar"
+                      ?
+                      "#C9A227"
+                      :
+                      "transparent",
+                  color:
+                    messageLanguage === "ar"
+                      ?
+                      "#fff"
+                      :
+                      "#333"
+                }}
+              >
+                العربية
+              </Button>
+
+
+
+              <Button
+                variant="outlined"
+                onClick={() => setMessageLanguage("en")}
+                sx={{
+                  background:
+                    messageLanguage === "en"
+                      ?
+                      "#092c57"
+                      :
+                      "transparent",
+                  color:
+                    messageLanguage === "en"
+                      ?
+                      "#fff"
+                      :
+                      "#333"
+                }}
+              >
+                English
+              </Button>
+
+
+
+              <Button
+                variant="contained"
+                startIcon={<WhatsApp />}
+                onClick={handleSendWhatsapp}
+                sx={{
+                  background: "#25D366",
+                  fontWeight: 700,
+
+                  "&:hover": {
+                    background: "#1da851"
+                  }
+                }}
+              >
+                Send WhatsApp
+              </Button>
+
+
+            </Box>
             {/* -------------------------------- */}
             {/* COMPLETION / PAYMENT FORM */}
             {/* -------------------------------- */}

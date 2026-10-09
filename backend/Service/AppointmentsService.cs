@@ -403,6 +403,34 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
 
             await _db.SaveChangesAsync();
 
+
+            // ===============================
+            // Create WhatsApp Reminder
+            // ===============================
+
+            var notification = new Notification
+            {
+                PatientId = patient.Id,
+
+                AppointmentId = appointment.Id,
+
+                Type = NotificationType.AppointmentReminder,
+
+                Message =
+                   $" Appointments normal  : {appointment.StartDateTime.ToLocalTime():yyyy-MM-dd HH:mm}",
+                IsSent = false,
+
+                IsApproved = false
+            };
+
+
+            _db.Notifications.Add(notification);
+
+
+            await _db.SaveChangesAsync();
+
+
+
             return (
                 true,
                 "Appointment added successfully."
@@ -493,7 +521,43 @@ public async Task<(bool Success, string Message, object? Data)>
            
 
             appointment.Status = AppointmentStatus.Completed;
+            // ======================================
+            // Create 6 month cleaning reminder
+            // ======================================
 
+            var hasRecall = appointment.AppointmentTreatments
+                .Any(at => at.Treatment.HasRecallReminder);
+
+
+            if (hasRecall)
+            {
+
+                var cleaningDate =
+                    appointment.StartDateTime
+                    .AddMonths(6);
+
+
+                var notification = new Notification
+                {
+                    PatientId = appointment.PatientId,
+
+                    AppointmentId = appointment.Id,
+
+                    Type = NotificationType.CleaningReminder,
+
+                    Message =
+                       $" Cleaning Appointment : {cleaningDate.ToLocalTime():yyyy-MM-dd HH:mm}",
+
+
+                    IsSent = false,
+
+                    IsApproved = false
+                };
+
+
+                _db.Notifications.Add(notification);
+
+            }
             await _db.SaveChangesAsync();
 
 
