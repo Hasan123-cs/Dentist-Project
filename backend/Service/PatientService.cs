@@ -71,7 +71,9 @@ namespace dentist_project.Service
                 .Select(g => g.First())
                 .Select(tt => new DentalChartItemDto
                 {
-                    ToothNumber = tt.Tooth.Number,
+                    ToothNumber = tt.Tooth != null
+    ? tt.Tooth.Number
+    : 0,
                     Surface = tt.Surface,
                     Condition = tt.Condition,
                     Status = tt.Status,
@@ -1255,7 +1257,109 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             {
                 toothTreatment.Status = newStatus;
             }
+            foreach (var toothTreatment in toothTreatments)
+            {
+                toothTreatment.Status = newStatus;
+            }
 
+
+
+            // Get medical record
+            var medicalRecord = await _context.MedicalRecords
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+
+            if (medicalRecord == null)
+            {
+                return (
+                    false,
+                    "Medical record not found."
+                );
+            }
+
+
+
+            // ==========================================
+            // REMOVE CLEANING REMINDER
+            // if treatment is not completed anymore
+            // ==========================================
+
+            if (newStatus != ToothStatus.Completed)
+            {
+
+                var cleaningReminders = await _context.Notifications
+                    .Where(n =>
+                        n.PatientId == medicalRecord.PatientId &&
+                        n.Type == NotificationType.CleaningReminder
+                    )
+                    .ToListAsync();
+
+
+                if (cleaningReminders.Any())
+                {
+                    _context.Notifications.RemoveRange(cleaningReminders);
+                }
+
+            }
+
+
+
+
+
+            // ==========================================
+            // CREATE 6 MONTH CLEANING REMINDER
+            // when treatment becomes completed
+            // ==========================================
+
+            if (newStatus == ToothStatus.Completed)
+            {
+
+                var hasReminder = await _context.Notifications
+                    .AnyAsync(n =>
+                        n.PatientId == medicalRecord.PatientId &&
+                        n.Type == NotificationType.CleaningReminder
+                    );
+
+
+                if (!hasReminder)
+                {
+
+                    var cleaningDate =
+                        DateTime.UtcNow.AddMonths(6);
+
+
+
+                    var notification = new Notification
+                    {
+
+                        PatientId = medicalRecord.PatientId,
+
+
+                        AppointmentId = medicalRecord.AppointmentId,
+
+
+                        Type = NotificationType.CleaningReminder,
+
+
+                        Message =
+                            $"Cleaning appointment reminder after 6 months: {cleaningDate:yyyy-MM-dd}",
+
+
+                        IsSent = false,
+                        ReminderDate = cleaningDate,
+
+                        IsApproved = false
+
+                    };
+
+
+                    _context.Notifications.Add(notification);
+
+                }
+
+            
+
+        }
 
             await _context.SaveChangesAsync();
 

@@ -28,7 +28,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState("");
   const disable = !email || !password ? true : false;
-  const [rememberMe, setRememberMe] = useState(false);
   // === states ===
   //handlers
   async function handleLogin() {
@@ -42,7 +41,6 @@ export default function Login() {
         body: JSON.stringify({
           email: email,
           password: password,
-          rememberMe: rememberMe,
         }),
       });
       const data = await response.json();
@@ -193,43 +191,7 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* Options */}
 
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                sx={{
-                  color: "#c9a227",
-                  "&.Mui-checked": {
-                    color: "#c9a227",
-                  },
-                }}
-                onClick={() => {
-                  setRememberMe(!rememberMe);
-                }}
-                value={rememberMe}
-              />
-            }
-            label="Remember me"
-          />
-
-          <Link
-            underline="hover"
-            sx={{
-              cursor: "pointer",
-              color: "#b8860b",
-              fontWeight: 500,
-            }}
-          >
-            Forgot password?
-          </Link>
-        </Box>
 
         {/* Login Button */}
 

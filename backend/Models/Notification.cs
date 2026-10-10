@@ -28,7 +28,7 @@ public class Notification
 
 
 
-    public DateTime ReminderDate { get; set; }
+    public DateTime? ReminderDate { get; set; }
 
 
 

@@ -7,8 +7,8 @@ import {
     ListItemText,
     Avatar
 } from "@mui/material";
- 
- 
+
+
 import {
     Home,
     CalendarMonth,
@@ -18,173 +18,175 @@ import {
     Logout,
     Chat
 } from "@mui/icons-material";
- 
- 
+
+
 import {
     useNavigate,
     useLocation
 } from "react-router-dom";
- 
- 
+
+
 import amanyImage from "../images/Amany.jpeg";
- 
- 
- 
+
+
+
 const menu = [
- 
+
     {
-        name:"Dashboard",
-        icon:<Home />,
-        path:"/dashboard"
+        name: "Dashboard",
+        icon: <Home />,
+        path: "/dashboard"
     },
- 
+
     {
-        name:"Appointments",
-        icon:<CalendarMonth />,
-        path:"/appointments"
+        name: "Appointments",
+        icon: <CalendarMonth />,
+        path: "/appointments"
     },
- 
+
     {
-        name:"Patients",
-        icon:<People />,
-        path:"/patients"
+        name: "Patients",
+        icon: <People />,
+        path: "/patients"
     },
- 
+
     {
-        name:"Treatments",
-        icon:<MedicalServices />,
-        path:"/treatments"
+        name: "Treatments",
+        icon: <MedicalServices />,
+        path: "/treatments"
     },
- 
+
     {
-        name:"WhatsApp",
-        icon:<Chat />,
-        path:"/whatsapp"
+        name: "WhatsApp",
+        icon: <Chat />,
+        path: "/whatsapp"
     },
- 
-    {
-        name:"Settings",
-        icon:<Settings />,
-        path:"/settings"
-    }
- 
+
+
+
 ];
- 
- 
- 
-export default function Sidebar(){
- 
- 
+
+
+
+export default function Sidebar() {
+
+
     const navigate = useNavigate();
- 
+
     const location = useLocation();
- 
- 
- 
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+
+        console.log("Token after logout:", localStorage.getItem("token"));
+
+        navigate("/login", { replace: true });
+    };
+
     const token = localStorage.getItem("token");
- 
- 
+
+
     let isAssistant = false;
- 
- 
- 
-    if(token){
- 
+
+
+
+    if (token) {
+
         const payload = JSON.parse(
             atob(token.split(".")[1])
         );
- 
- 
+
+
         const role =
             payload[
-                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
             ];
- 
- 
+
+
         console.log("SIDEBAR ROLE:", role);
- 
- 
+
+
         isAssistant = role === "Assistant";
- 
+
     }
- 
- 
- 
- 
+
+
+
+
     const userName = isAssistant
         ? "Assistant"
         : "Dr. Amany Nseif";
- 
- 
- 
- 
+
+
+
+
     return (
- 
+
         <Box
- 
+
             sx={{
- 
-                width:280,
- 
-                minWidth:280,
- 
-                flexShrink:0,
- 
-                height:"100vh",
- 
-                background:"#ffffff",
- 
-                borderRight:"1px solid #eee3c5",
- 
-                p:3,
- 
-                boxSizing:"border-box",
- 
-                display:"flex",
- 
-                flexDirection:"column",
- 
-                position:"sticky",
- 
-                top:0
- 
+
+                width: 280,
+
+                minWidth: 280,
+
+                flexShrink: 0,
+
+                height: "100vh",
+
+                background: "#ffffff",
+
+                borderRight: "1px solid #eee3c5",
+
+                p: 3,
+
+                boxSizing: "border-box",
+
+                display: "flex",
+
+                flexDirection: "column",
+
+                position: "sticky",
+
+                top: 0
+
             }}
- 
+
         >
- 
- 
- 
+
+
+
             {/* LOGO */}
- 
+
             <Box
                 sx={{
-                    display:"flex",
-                    alignItems:"center",
-                    gap:2,
-                    mb:4
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: 4
                 }}
             >
- 
+
                 <Box
                     sx={{
-                        width:45,
-                        height:45,
-                        borderRadius:3,
-                        background:"#F8F0D8",
-                        display:"flex",
-                        alignItems:"center",
-                        justifyContent:"center",
-                        fontSize:25
+                        width: 45,
+                        height: 45,
+                        borderRadius: 3,
+                        background: "#F8F0D8",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 25
                     }}
                 >
- 
+
                     🦷
- 
+
                 </Box>
- 
- 
+
+
                 <Box>
- 
+
                     <Typography
                         fontSize={20}
                         fontWeight={800}
@@ -192,291 +194,271 @@ export default function Sidebar(){
                     >
                         DentalCare
                     </Typography>
- 
- 
+
+
                     <Typography
                         fontSize={12}
                         color="text.secondary"
                     >
                         Clinic Management
                     </Typography>
- 
+
                 </Box>
- 
+
             </Box>
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
             {/* USER PROFILE */}
- 
+
             <Box
- 
+
                 sx={{
- 
-                    background:"#faf7ed",
- 
-                    borderRadius:4,
- 
-                    p:2,
- 
-                    mb:3,
- 
-                    display:"flex",
- 
-                    alignItems:"center",
- 
-                    gap:2
- 
+
+                    background: "#faf7ed",
+
+                    borderRadius: 4,
+
+                    p: 2,
+
+                    mb: 3,
+
+                    display: "flex",
+
+                    alignItems: "center",
+
+                    gap: 2
+
                 }}
- 
+
             >
- 
- 
+
+
                 {!isAssistant && (
- 
+
                     <Avatar
- 
+
                         src={amanyImage}
- 
+
                         sx={{
- 
-                            width:55,
- 
-                            height:55
- 
+
+                            width: 55,
+
+                            height: 55
+
                         }}
- 
+
                     />
- 
+
                 )}
- 
- 
- 
+
+
+
                 <Box>
- 
- 
+
+
                     <Typography fontWeight={700}>
- 
+
                         {userName}
- 
+
                     </Typography>
- 
- 
- 
+
+
+
                     {!isAssistant && (
- 
+
                         <Typography
- 
+
                             fontSize={13}
- 
+
                             color="text.secondary"
- 
+
                         >
- 
+
                             Dentist
- 
+
                         </Typography>
- 
+
                     )}
- 
- 
- 
+
+
+
                 </Box>
- 
- 
+
+
             </Box>
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
             {/* MENU */}
- 
- 
-            <List sx={{flex:1}}>
- 
- 
+
+
+            <List sx={{ flex: 1 }}>
+
+
                 {
-                    menu.map((item)=>{
- 
- 
+                    menu.map((item) => {
+
+
                         const active =
-                        location.pathname.startsWith(item.path);
- 
- 
- 
+                            location.pathname.startsWith(item.path);
+
+
+
                         return (
- 
+
                             <ListItemButton
- 
+
                                 key={item.name}
- 
-                                onClick={()=>navigate(item.path)}
- 
+
+                                onClick={() => navigate(item.path)}
+
                                 sx={{
- 
-                                    height:48,
- 
-                                    borderRadius:3,
- 
-                                    mb:1,
- 
- 
+
+                                    height: 48,
+
+                                    borderRadius: 3,
+
+                                    mb: 1,
+
+
                                     background:
- 
-                                    active
- 
-                                    ?
- 
-                                    "#C9A227"
- 
-                                    :
- 
-                                    "transparent",
- 
- 
- 
+
+                                        active
+
+                                            ?
+
+                                            "#C9A227"
+
+                                            :
+
+                                            "transparent",
+
+
+
                                     color:
- 
-                                    active
- 
-                                    ?
- 
-                                    "#fff"
- 
-                                    :
- 
-                                    "#52677e",
- 
- 
- 
-                                    "&:hover":{
- 
+
+                                        active
+
+                                            ?
+
+                                            "#fff"
+
+                                            :
+
+                                            "#52677e",
+
+
+
+                                    "&:hover": {
+
                                         background:
- 
-                                        active
- 
-                                        ?
- 
-                                        "#C9A227"
- 
-                                        :
- 
-                                        "#faf7ed"
- 
+
+                                            active
+
+                                                ?
+
+                                                "#C9A227"
+
+                                                :
+
+                                                "#faf7ed"
+
                                     }
- 
+
                                 }}
- 
+
                             >
- 
- 
+
+
                                 <ListItemIcon
- 
+
                                     sx={{
- 
-                                        minWidth:40,
- 
+
+                                        minWidth: 40,
+
                                         color:
- 
-                                        active
- 
-                                        ?
- 
-                                        "#fff"
- 
-                                        :
- 
-                                        "#8a7a55"
- 
+
+                                            active
+
+                                                ?
+
+                                                "#fff"
+
+                                                :
+
+                                                "#8a7a55"
+
                                     }}
- 
+
                                 >
- 
+
                                     {item.icon}
- 
+
                                 </ListItemIcon>
- 
- 
- 
+
+
+
                                 <ListItemText
- 
+
                                     primary={item.name}
- 
+
                                 />
- 
- 
+
+
                             </ListItemButton>
- 
+
                         );
- 
- 
+
+
                     })
- 
+
                 }
- 
- 
+
+
             </List>
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
             {/* LOGOUT */}
- 
- 
+
+
             <ListItemButton
- 
+                onClick={handleLogout}
                 sx={{
- 
-                    borderRadius:3,
- 
-                    color:"#d32f2f"
- 
+                    borderRadius: 3,
+                    color: "#d32f2f"
                 }}
- 
             >
- 
- 
                 <ListItemIcon
- 
                     sx={{
- 
-                        minWidth:40,
- 
-                        color:"#d32f2f"
- 
+                        minWidth: 40,
+                        color: "#d32f2f"
                     }}
- 
                 >
- 
                     <Logout />
- 
                 </ListItemIcon>
- 
- 
-                <ListItemText
- 
-                    primary="Logout"
- 
-                />
- 
- 
+
+                <ListItemText primary="Logout" />
             </ListItemButton>
- 
- 
- 
+
+
+
         </Box>
- 
+
     );
- 
+
 }

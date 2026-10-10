@@ -67,7 +67,11 @@ public class NotificationsController : ControllerBase
 
                     // Cleaning reminders
                     (
-                        x.Type == NotificationType.CleaningReminder
+                           x.Type == NotificationType.CleaningReminder
+    &&
+    x.ReminderDate.HasValue
+    &&
+    x.ReminderDate.Value.Date == todayUtc.AddDays(1)
                     )
                 )
             )
