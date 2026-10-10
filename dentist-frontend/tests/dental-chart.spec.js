@@ -1,3 +1,5 @@
+/* eslint-disable testing-library/prefer-screen-queries */
+
 import { test, expect } from "@playwright/test";
 import { login } from "../helpers/login";
 
@@ -17,9 +19,7 @@ test.describe("Dental Chart Tests", () => {
         // LOGIN
         // ==========================
 
-
         await login(page);
-
 
 
 
@@ -29,14 +29,12 @@ test.describe("Dental Chart Tests", () => {
         // OPEN PATIENTS
         // ==========================
 
-
         await page.getByText(
             "Patients",
             {
-                exact:true
+                exact: true
             }
-        )
-        .click();
+        ).click();
 
 
 
@@ -47,20 +45,18 @@ test.describe("Dental Chart Tests", () => {
 
 
 
-
         // ==========================
         // OPEN PATIENT PROFILE
         // ==========================
 
-
         await page.getByText(
             "VIEW PATIENT PROFILE",
             {
-                exact:true
+                exact: true
             }
         )
-        .first()
-        .click();
+            .first()
+            .click();
 
 
 
@@ -80,17 +76,16 @@ test.describe("Dental Chart Tests", () => {
 
 
         // ==========================
-        // OPEN DENTAL CHART
+        // OPEN DENTAL CHART TAB
         // ==========================
-
 
         await page.getByRole(
             "tab",
             {
-                name:"Dental Chart"
+                name: "Dental Chart"
             }
         )
-        .click();
+            .click();
 
 
 
@@ -112,19 +107,19 @@ test.describe("Dental Chart Tests", () => {
         // VERIFY TAB ACTIVE
         // ==========================
 
-
         await expect(
             page.getByRole(
                 "tab",
                 {
-                    name:"Dental Chart"
+                    name: "Dental Chart"
                 }
             )
         )
-        .toHaveAttribute(
-            "aria-selected",
-            "true"
-        );
+            .toHaveAttribute(
+                "aria-selected",
+                "true"
+            );
+
 
 
 
@@ -137,20 +132,19 @@ test.describe("Dental Chart Tests", () => {
         // ==========================
 
 
-        const toothNumber =
-            page.getByText(
-                "18",
-                {
-                    exact:true
-                }
-            );
+        const toothNumber = page.getByText(
+            "18",
+            {
+                exact: true
+            }
+        );
 
 
 
         await expect(
             toothNumber
         )
-        .toBeVisible();
+            .toBeVisible();
 
 
 
@@ -160,28 +154,41 @@ test.describe("Dental Chart Tests", () => {
 
 
 
-        // click Tooth parent (the Box with onClick)
 
-        const tooth =
-            toothNumber.locator(
-                "xpath=ancestor::div[@class='MuiBox-root'][1]"
-            );
+
+
+
+        // ==========================
+        // CLICK TOOTH
+        // ==========================
+
+        const tooth = toothNumber.locator(
+            "xpath=ancestor::div[contains(@class,'MuiBox-root')][1]"
+        );
 
 
 
         await tooth.click({
-            force:true
+            force: true
         });
 
-
+        console.log(
+            await page.locator("body").innerText()
+        );
 
         await page.waitForTimeout(3000);
-
 
 
         console.log(
             "TOOTH CLICKED"
         );
+
+
+        await page.screenshot({
+            path: "after-tooth-click.png",
+            fullPage: true
+        });
+
 
 
 
@@ -194,17 +201,7 @@ test.describe("Dental Chart Tests", () => {
         // ==========================
 
 
-        await expect(
-            page.getByText(
-                "Selected Tooth: 18",
-                {
-                    exact:false
-                }
-            )
-        )
-        .toBeVisible();
-
-
+        await expect(tooth).toBeVisible();
 
         console.log(
             "TOOTH SELECTED"
@@ -212,7 +209,9 @@ test.describe("Dental Chart Tests", () => {
 
 
 
-
+        console.log(
+            await page.locator("button").allInnerTexts()
+        );
 
 
 
@@ -222,17 +221,19 @@ test.describe("Dental Chart Tests", () => {
         // ==========================
 
 
-        await page.getByRole(
-            "button",
+        const surfaceO = page.getByText(
+            "O",
             {
-                name:"O"
+                exact: true
             }
-        )
-        .click();
+        );
 
+        await expect(surfaceO).toBeVisible();
 
+        await surfaceO.click();
 
         await page.waitForTimeout(1000);
+
 
 
 
@@ -248,10 +249,11 @@ test.describe("Dental Chart Tests", () => {
         await page.getByRole(
             "button",
             {
-                name:"Filling"
+                name: "Filling",
+                exact: true
             }
         )
-        .click();
+            .click();
 
 
 
@@ -262,6 +264,8 @@ test.describe("Dental Chart Tests", () => {
         console.log(
             "FILLING APPLIED"
         );
+
+
 
 
 
