@@ -17,7 +17,7 @@ export default function CalendarToolbar({
       sx={{
         mt: 3,
 
-        p: 2,
+        p: { xs: 1.5, sm: 2 },
 
         borderRadius: 4,
 
@@ -27,20 +27,34 @@ export default function CalendarToolbar({
       }}
     >
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        flexWrap="wrap"
-        gap={2}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
       >
-        <Box display="flex" alignItems="center" gap={2}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: { xs: 1, sm: 2 },
+            justifyContent: { xs: "space-between", sm: "center" },
+            width: { xs: "100%", sm: "auto" },
+          }}
+        >
           <CalendarMonth
             sx={{
               color: "#C9A227",
             }}
           />
 
-          <Typography fontWeight={700} color="#3d2f12">
+          <Typography
+            fontWeight={700}
+            color="#3d2f12"
+            sx={{ fontSize: { xs: 13, sm: 16 }, textAlign: "center" }}
+          >
             Calendar View
           </Typography>
         </Box>
@@ -77,9 +91,17 @@ export default function CalendarToolbar({
           </IconButton>
         </Box>
 
-        <Box display="flex" gap={1}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            width: { xs: "100%", sm: "auto" },
+            justifyContent: { xs: "space-between", sm: "flex-start" },
+          }}
+        >
           <Button
             onClick={() => setView("day")}
+            fullWidth
             sx={{
               color: view === "day" ? "#fff" : "#8a7a55",
 
@@ -93,6 +115,7 @@ export default function CalendarToolbar({
 
           <Button
             onClick={() => setView("3days")}
+            fullWidth
             sx={{
               color: view === "3days" ? "#fff" : "#8a7a55",
 
@@ -106,6 +129,7 @@ export default function CalendarToolbar({
 
           <Button
             onClick={() => setView("week")}
+            fullWidth
             sx={{
               color: view === "week" ? "#fff" : "#8a7a55",
 

@@ -50,7 +50,8 @@ export default function AppointmentStats({ stats }) {
             sx={{
               width: "100%",
 
-              height: 140,
+              minHeight: 120,
+              height: "100%",
 
               borderRadius: 4,
 
@@ -62,9 +63,9 @@ export default function AppointmentStats({ stats }) {
 
               alignItems: "center",
 
-              gap: 3,
+              gap: { xs: 2, sm: 3 },
 
-              px: 3,
+              px: { xs: 2, sm: 3 },
 
               boxSizing: "border-box",
 
@@ -101,7 +102,11 @@ export default function AppointmentStats({ stats }) {
             </Box>
 
             <Box>
-              <Typography fontSize={32} fontWeight={800} color="#3d2f12">
+              <Typography
+                sx={{ fontSize: { xs: 27, sm: 32 } }}
+                fontWeight={800}
+                color="#3d2f12"
+              >
                 {item.value}
               </Typography>
 

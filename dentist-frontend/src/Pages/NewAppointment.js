@@ -644,51 +644,51 @@ export default function NewAppointment() {
         {/* =========================
             Save
         ========================= */}
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "20px" }}>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            disabled={
+              !appointment.patientName.trim() ||
+              !appointment.treatmentName.trim() ||
+              !appointment.date ||
+              !appointment.startTime ||
+              !appointment.endTime ||
+              invalidTime ||
+              isSelectedTimeBooked
+            }
+            sx={{
+              background: "#C9A227",
 
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={
-            !appointment.patientName.trim() ||
-            !appointment.treatmentName.trim() ||
-            !appointment.date ||
-            !appointment.startTime ||
-            !appointment.endTime ||
-            invalidTime ||
-            isSelectedTimeBooked
-          }
-          sx={{
-            background: "#C9A227",
-
-            "&:hover": {
-              background: "#b8911f",
-            },
-          }}
-        >
-          SAVE APPOINTMENT
-        </Button>
-      </Paper>
-
-      {/* =========================
+              "&:hover": {
+                background: "#b8911f",
+              },
+            }}
+          >
+            SAVE APPOINTMENT
+          </Button>
+          {/* =========================
           Back
       ========================= */}
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/appointments")}
+            sx={{
+              borderColor: "#C9A227",
+              color: "#8a6d1d",
+              fontWeight: 700,
+              borderRadius: 2,
+              px: 2,
+            }}
+          >
+            ← BACK
+          </Button>
+        </div>
+      </Paper>
 
-      <Button
-        variant="outlined"
-        onClick={() => navigate("/appointments")}
-        sx={{
-          position: "absolute",
-          bottom: 250,
-          right: 100,
-          borderColor: "#C9A227",
-          color: "#8a6d1d",
-          fontWeight: 700,
-          borderRadius: 2,
-          px: 2,
-        }}
-      >
-        ← BACK
-      </Button>
+
+
+
     </Box>
   );
 }

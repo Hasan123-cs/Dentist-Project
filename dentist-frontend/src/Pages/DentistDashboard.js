@@ -18,8 +18,11 @@ import {
 
 export default function DentistDashboard() {
   const navigate = useNavigate();
-
   const [dashboardData, setDashboardData] = useState(null);
+  // const storedUser = localStorage.getItem("user");
+
+  // const user = storedUser ? JSON.parse(storedUser) : {};
+
 
   const [loading, setLoading] = useState(true);
 
@@ -60,7 +63,8 @@ export default function DentistDashboard() {
 
     fetchDashboardData();
   }, [navigate, token]);
-
+  const isDoctor =
+    dashboardData?.userName === "Amany";
   if (loading) {
     return (
       <Box p={4} color="#092c57">
@@ -102,9 +106,8 @@ export default function DentistDashboard() {
             icon={<CalendarMonth />}
             title="Today's Appointments"
             value={dashboardData?.todaysAppointments || 0}
-            description={`${dashboardData?.confirmedAppointments || 0} confirmed ${
-              dashboardData?.pendingAppointments || 0
-            } pending`}
+            description={`${dashboardData?.confirmedAppointments || 0} confirmed ${dashboardData?.pendingAppointments || 0
+              } pending`}
           />
         </Grid>
 
@@ -150,9 +153,10 @@ export default function DentistDashboard() {
 
       {/* ANALYTICS */}
 
-      <Box mt={4} width="100%">
+      {isDoctor && <Box mt={4} width="100%">
         <Analytics analysisList={dashboardData?.analytics || {}} />
       </Box>
+      }
     </Box>
   );
 }

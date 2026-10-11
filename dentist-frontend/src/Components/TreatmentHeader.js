@@ -19,6 +19,10 @@ justifyContent:"space-between",
 
 alignItems:"center",
 
+flexWrap:"wrap",
+
+gap:2,
+
 mb:4
 
 }}
@@ -31,7 +35,7 @@ mb:4
 
 <Typography
 
-fontSize={32}
+sx={{ fontSize: { xs: 26, sm: 32 } }}
 
 fontWeight={800}
 

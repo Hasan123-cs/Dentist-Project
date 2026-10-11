@@ -9,10 +9,15 @@ export default function AppointmentHeader() {
       display="flex"
       justifyContent="space-between"
       alignItems="center"
+      flexWrap="wrap"
+      gap={2}
       mb={3}
     >
       <Box>
-        <Typography fontSize={30} fontWeight={800} color="#3d2f12">
+        <Typography
+          sx={{ fontSize: { xs: 24, sm: 30 }, fontWeight: 800 }}
+          color="#3d2f12"
+        >
           Appointments
         </Typography>
 
@@ -28,7 +33,9 @@ export default function AppointmentHeader() {
 
           fontWeight: 700,
 
-          px: 3,
+          px: { xs: 2, sm: 3 },
+          width: { xs: "100%", sm: "auto" },
+          whiteSpace: "nowrap",
 
           "&:hover": {
             background: "#A88418",

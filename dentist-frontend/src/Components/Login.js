@@ -31,8 +31,9 @@ export default function Login() {
   // === states ===
   //handlers
   async function handleLogin() {
-    alert("handleLogin clicked ");
     try {
+      setShowPassword(false);
+      document.getElementById("login-button").innerHTML = "Logging in...";
       const response = await fetch("https://localhost:7166/api/auth/login", {
         method: "POST",
         headers: {
@@ -50,13 +51,20 @@ export default function Login() {
       }
       console.log("Login success:", data);
       localStorage.setItem("token", data.token);
-      //   localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
       navigate("/dashboard");
     } catch (error) {
       console.log(error);
 
       setErrors("Something went wrong. Try again.");
     }
+    document.getElementById("login-button").innerHTML = "Login";
+
+    setShowPassword(true);
+
   }
 
   //===handlers===
@@ -198,6 +206,7 @@ export default function Login() {
         <Button
           fullWidth
           variant="contained"
+          id="login-button"
           sx={{
             py: 1.5,
 
@@ -222,7 +231,13 @@ export default function Login() {
         >
           Login
         </Button>
-
+        <span style={{
+          color: "red",
+          fontSize: "14px",
+          marginTop: "10px",
+          display: "block",
+          marginBottom: "10px",
+        }}>{errors}</span>
         <Typography
           textAlign="center"
           mt={4}

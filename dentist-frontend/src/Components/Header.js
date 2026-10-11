@@ -8,10 +8,10 @@ export default function Header({ dashboardData }) {
 
 
     const formattedDate = today.toLocaleDateString("en-US", {
-        weekday:"long",
-        month:"long",
-        day:"numeric",
-        year:"numeric",
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
     });
 
 
@@ -22,12 +22,12 @@ export default function Header({ dashboardData }) {
     let greeting = "Good morning";
 
 
-    if(hour >= 12 && hour < 17){
+    if (hour >= 12 && hour < 17) {
 
         greeting = "Good afternoon";
 
     }
-    else if(hour >= 17){
+    else if (hour >= 17) {
 
         greeting = "Good evening";
 
@@ -38,186 +38,139 @@ export default function Header({ dashboardData }) {
 
 
 
-return (
+    return (
 
 
 
-<Box
+        <Box
 
-sx={{
+            sx={{
 
-    width:"100%",
+                width: "100%",
 
-    display:"flex",
+                display: "flex",
 
-    flexDirection:"column",
+                flexDirection: "column",
 
-    alignItems:"flex-start",
+                alignItems: "flex-start",
 
-    mb:3
+                mb: 3
 
-}}
+            }}
 
->
+        >
 
 
 
 
 
-<Typography
+            <Typography
 
-sx={{
+                sx={{
+                    fontSize: {
+                        xs: 24,
+                        sm: 32,
+                        md: 42,
+                    },
+                    fontWeight: 800,
+                    color: "#111",
+                }}
 
-    fontSize:42,
+            >
 
-    fontWeight:800,
+                {formattedDate}
 
-    color:"#111",
+            </Typography>
 
-}}
 
->
 
-{formattedDate}
 
-</Typography>
 
 
 
 
 
+            <Typography
 
+                sx={{
+                    fontSize: {
+                        xs: 24,
+                        sm: 32,
+                        md: 42,
+                    },
+                    fontWeight: 800,
+                    color: "#111",
+                }}
 
+            >
 
+                {greeting}, {dashboardData?.userName || "Doctor"}
 
-<Typography
+            </Typography>
 
-sx={{
 
-    fontSize:42,
 
-    fontWeight:800,
 
-    color:"#111",
 
-}}
 
->
 
-{greeting}, {dashboardData?.userName || "Doctor"}
 
-</Typography>
 
+            <Typography
 
+                sx={{
+                    fontSize: {
+                        xs: 14,
+                        sm: 16,
+                        md: 17,
+                    },
+                    mt: 1
+                }}
 
+                color="text.secondary"
 
 
 
+            >
 
+                You have{" "}
 
+                <b>
+                    {dashboardData?.todaysAppointments || 0} appointments
+                </b>{" "}
 
-<Typography
+                scheduled for today •{" "}
 
-fontSize={17}
+                <b>
+                    {dashboardData?.confirmedAppointments || 0}
+                </b>{" "}
 
-color="text.secondary"
+                confirmed,{" "}
 
-sx={{
+                <b>
+                    {dashboardData?.pendingAppointments || 0}
+                </b>{" "}
 
-    mt:1
+                pending
 
-}}
+            </Typography>
 
->
 
-You have{" "}
 
-<b>
-{dashboardData?.todaysAppointments || 0} appointments
-</b>{" "}
 
-scheduled for today •{" "}
 
-<b>
-{dashboardData?.confirmedAppointments || 0}
-</b>{" "}
 
-confirmed,{" "}
 
-<b>
-{dashboardData?.pendingAppointments || 0}
-</b>{" "}
 
-pending
 
-</Typography>
 
 
 
 
+        </Box>
 
 
-
-
-
-<Button
-
-
-variant="contained"
-
-
-sx={{
-
-
-mt:2,
-
-
-borderRadius:3,
-
-
-px:4,
-
-
-py:1.5,
-
-
-backgroundColor:"#C9A227",
-
-
-fontWeight:700,
-
-
-alignSelf:"flex-start",
-
-
-
-"&:hover":{
-
-backgroundColor:"#B08A1D"
-
-}
-
-
-}}
-
-
-
->
-
-+ QUICK ADD
-
-
-</Button>
-
-
-
-
-
-
-</Box>
-
-
-);
+    );
 
 
 }

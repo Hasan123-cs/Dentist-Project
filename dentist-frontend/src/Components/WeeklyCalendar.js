@@ -147,26 +147,23 @@ export default function WeeklyCalendar({
   };
 
   return (
-    <Paper
-      sx={{
-        mt: 3,
-
-        borderRadius: 4,
-
-        overflow: "visible",
-
-        border: "1px solid #eee3c5",
-
-        background: "#fff",
-      }}
-    >
+    <Box sx={{ mt: 3, width: "100%", overflowX: "auto" }}>
+      <Paper
+        sx={{
+          minWidth: days.length === 1 ? 480 : days.length === 3 ? 600 : 850,
+          borderRadius: 4,
+          overflow: "visible",
+          border: "1px solid #eee3c5",
+          background: "#fff",
+        }}
+      >
       {/* HEADER */}
 
       <Box
         sx={{
           display: "grid",
 
-          gridTemplateColumns: `80px repeat(${days.length},1fr)`,
+          gridTemplateColumns: `80px repeat(${days.length}, minmax(110px, 1fr))`,
         }}
       >
         <Box />
@@ -201,7 +198,7 @@ export default function WeeklyCalendar({
           sx={{
             display: "grid",
 
-            gridTemplateColumns: `80px repeat(${days.length},1fr)`,
+            gridTemplateColumns: `80px repeat(${days.length}, minmax(110px, 1fr))`,
 
             height: 60,
           }}
@@ -285,6 +282,7 @@ export default function WeeklyCalendar({
           })}
         </Box>
       ))}
-    </Paper>
+      </Paper>
+    </Box>
   );
 }

@@ -5,8 +5,10 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    Avatar
+    Avatar,
+    Drawer
 } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 
 import {
@@ -14,7 +16,6 @@ import {
     CalendarMonth,
     People,
     MedicalServices,
-    Settings,
     Logout,
     Chat
 } from "@mui/icons-material";
@@ -68,18 +69,17 @@ const menu = [
 
 
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
 
 
     const navigate = useNavigate();
 
     const location = useLocation();
+    const isMobile = useMediaQuery("(max-width:899px)");
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-
-        console.log("Token after logout:", localStorage.getItem("token"));
-
+        onClose?.();
         navigate("/login", { replace: true });
     };
 
@@ -120,19 +120,21 @@ export default function Sidebar() {
 
 
 
-    return (
-
+    const sidebar = (
         <Box
+            component="nav"
+            aria-label="Main navigation"
 
             sx={{
 
-                width: 280,
+                width: isMobile ? "min(280px, 85vw)" : 280,
 
-                minWidth: 280,
+                minWidth: isMobile ? "min(280px, 85vw)" : 280,
 
                 flexShrink: 0,
 
-                height: "100vh",
+                height: isMobile ? "100dvh" : "100vh",
+                overflowY: "auto",
 
                 background: "#ffffff",
 
@@ -146,9 +148,9 @@ export default function Sidebar() {
 
                 flexDirection: "column",
 
-                position: "sticky",
+                position: isMobile ? "static" : "sticky",
 
-                top: 0
+                top: 0,
 
             }}
 
@@ -319,7 +321,10 @@ export default function Sidebar() {
 
                                 key={item.name}
 
-                                onClick={() => navigate(item.path)}
+                                onClick={() => {
+                                    navigate(item.path);
+                                    onClose?.();
+                                }}
 
                                 sx={{
 
@@ -458,7 +463,20 @@ export default function Sidebar() {
 
 
         </Box>
-
     );
 
+    if (isMobile) {
+        return (
+            <Drawer
+                anchor="left"
+                open={open}
+                onClose={onClose}
+                PaperProps={{ sx: { width: "min(280px, 85vw)", maxWidth: "85vw" } }}
+            >
+                {sidebar}
+            </Drawer>
+        );
+    }
+
+    return sidebar;
 }

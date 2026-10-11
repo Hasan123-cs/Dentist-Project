@@ -31,6 +31,16 @@ body {
   overflow-x: hidden;
 }
 
+#root,
+.App {
+  min-width: 0;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
 
 code {
   font-family:

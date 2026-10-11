@@ -14,7 +14,7 @@ export default function Treatments() {
         width: "100%",
         minHeight: "100vh",
         background: "#faf8f2",
-        px: 3,
+        px: { xs: 0, md: 3 },
         py: 3,
         boxSizing: "border-box",
       }}

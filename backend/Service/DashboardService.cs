@@ -89,7 +89,9 @@ namespace dentist_project.Service
            .Select(x => new ScheduleDto
            {
 
-               Time =x.StartDateTime.ToString("HH:mm"),
+               Time = x.StartDateTime
+    .ToLocalTime()
+    .ToString("HH:mm"),
 
 
                Name =x.Patient.FirstName+ " "+ x.Patient.LastName,

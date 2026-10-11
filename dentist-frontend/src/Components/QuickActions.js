@@ -4,239 +4,240 @@ import { Link } from "react-router-dom";
 
 
 const actions = [
-    ["Add Patient", PersonAdd, "/Patients/AddPatient"],
-    ["Schedule Appointment", CalendarMonth, "/Schedule"],
+    ["Add Patient", PersonAdd, "/patients/add"],
+    ["Schedule Appointment", CalendarMonth, "/appointments/new"],
 ];
 
 
 
-export default function QuickActions(){
+export default function QuickActions() {
 
 
-return (
+    return (
 
 
-<Grid
+        <Grid
 
-container
+            container
 
-spacing={3}
+            spacing={3}
 
-mt={4}
+            mt={4}
 
-sx={{
+            sx={{
 
-    width:"100%",
+                width: "100%",
 
-    justifyContent:"flex-start",
+                justifyContent: "flex-start",
 
-    alignItems:"center"
+                alignItems: "center"
 
-}}
+            }}
 
->
+        >
 
 
-{
+            {
 
-actions.map(([name, Icon, route])=>(
+                actions.map(([name, Icon, route]) => (
 
 
-<Grid
+                    <Grid
 
-item
+                        item
 
-xs={12}
+                        xs={12}
 
-sm={6}
+                        sm={6}
 
-md="auto"
+                        md="auto"
 
-key={name}
+                        key={name}
 
->
+                    >
 
 
-<Link
+                        <Link
 
-to={route}
+                            to={route}
 
-style={{
+                            style={{
+                                textDecoration: "none",
+                                display: "block",
+                                width: "100%",
+                            }}
 
-textDecoration:"none"
+                        >
 
-}}
 
->
+                            <Paper
 
 
-<Paper
+                                sx={{
 
 
-sx={{
+                                    width: { xs: "100%", sm: 250 },
+                                    maxWidth: "100%",
 
+                                    height: 150,
 
-width:250,
 
-height:150,
+                                    borderRadius: 3,
 
 
-borderRadius:3,
+                                    display: "flex",
 
 
-display:"flex",
+                                    flexDirection: "column",
 
 
-flexDirection:"column",
+                                    alignItems: "center",
 
 
-alignItems:"center",
+                                    justifyContent: "center",
 
 
-justifyContent:"center",
+                                    gap: 1.5,
 
 
-gap:1.5,
+                                    border: "1px solid #e2eaf3",
 
 
-border:"1px solid #e2eaf3",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
 
 
-boxShadow:"0 2px 8px rgba(0,0,0,0.08)",
+                                    cursor: "pointer",
 
 
-cursor:"pointer",
+                                    transition: "0.3s",
 
 
-transition:"0.3s",
 
+                                    "&:hover": {
 
 
-"&:hover":{
+                                        background: "#f8fbff",
 
 
-background:"#f8fbff",
+                                        borderColor: "#C9A227",
 
 
-borderColor:"#C9A227",
+                                        transform: "translateY(-3px)"
 
 
-transform:"translateY(-3px)"
+                                    }
 
 
-}
+                                }}
 
 
-}}
 
+                            >
 
 
->
+                                <Box
 
 
-<Box
+                                    sx={{
 
 
-sx={{
+                                        width: 55,
 
+                                        height: 55,
 
-width:55,
+                                        borderRadius: "50%",
 
-height:55,
+                                        background: "#eaf3ff",
 
-borderRadius:"50%",
+                                        display: "flex",
 
-background:"#eaf3ff",
+                                        alignItems: "center",
 
-display:"flex",
+                                        justifyContent: "center"
 
-alignItems:"center",
+                                    }}
 
-justifyContent:"center"
 
-}}
+                                >
 
 
->
+                                    <Icon
 
+                                        sx={{
 
-<Icon
+                                            color: "#C9A227",
 
-sx={{
+                                            fontSize: 28
 
-color:"#C9A227",
+                                        }}
 
-fontSize:28
+                                    />
 
-}}
 
-/>
+                                </Box>
 
 
-</Box>
 
 
 
+                                <Typography
 
 
-<Typography
+                                    sx={{
 
 
-sx={{
+                                        fontSize: 14,
 
 
-fontSize:14,
+                                        fontWeight: 700,
 
 
-fontWeight:700,
+                                        color: "#092c57",
 
 
-color:"#092c57",
+                                        textAlign: "center",
 
 
-textAlign:"center",
+                                        whiteSpace: "nowrap"
 
 
-whiteSpace:"nowrap"
+                                    }}
 
 
-}}
+                                >
 
+                                    {name}
 
->
+                                </Typography>
 
-{name}
 
-</Typography>
 
 
 
+                            </Paper>
 
 
-</Paper>
 
+                        </Link>
 
 
-</Link>
 
+                    </Grid>
 
 
-</Grid>
 
+                ))
 
 
-))
+            }
 
 
-}
 
+        </Grid>
 
 
-</Grid>
 
-
-
-);
+    );
 
 
 }

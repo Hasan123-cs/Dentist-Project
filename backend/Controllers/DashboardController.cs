@@ -28,16 +28,8 @@ public class DashboardController : ControllerBase
             return Unauthorized();
         }
         var dashboard =await _dashboardService.GetDashboardAsync(role);
-       var x  = User.FindFirst("FirstName")?.Value;
-        if(x is null)
-        {
-            dashboard.userName = "Doctor";
-        }
-        else
-        {
-
-        dashboard.userName = x;
-        }
+       var username = User.FindFirst("FirstName")?.Value;
+        dashboard.userName = username;
         return Ok(dashboard);
     }
 

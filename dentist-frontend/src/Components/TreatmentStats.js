@@ -138,14 +138,19 @@ export default function TreatmentStats() {
   }
 
   return (
-    <Grid container spacing={3} mb={4}>
+    <Grid
+      container
+      spacing={3}
+      sx={{ width: "100%", m: 0, mb: 4 }}
+    >
       {stats.map((item) => (
         <Grid item xs={12} sm={6} lg={3} key={item.title}>
           <Paper
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 3 },
 
-              height: 140,
+              minHeight: 120,
+              height: "100%",
 
               borderRadius: 4,
 
@@ -157,7 +162,7 @@ export default function TreatmentStats() {
 
               alignItems: "center",
 
-              gap: 2,
+              gap: { xs: 1.5, sm: 2 },
 
               boxShadow: "0 3px 10px rgba(0,0,0,.05)",
             }}
@@ -167,6 +172,7 @@ export default function TreatmentStats() {
                 width: 55,
 
                 height: 55,
+                flexShrink: 0,
 
                 borderRadius: "50%",
 
@@ -190,12 +196,19 @@ export default function TreatmentStats() {
               </Box>
             </Box>
 
-            <Box>
+            <Box sx={{ minWidth: 0 }}>
               <Typography fontSize={13} color="#718096">
                 {item.title}
               </Typography>
 
-              <Typography fontSize={28} fontWeight={800} color="#092c57">
+              <Typography
+                sx={{
+                  fontSize: { xs: 23, sm: 28 },
+                  overflowWrap: "anywhere",
+                }}
+                fontWeight={800}
+                color="#092c57"
+              >
                 {item.value}
               </Typography>
             </Box>
