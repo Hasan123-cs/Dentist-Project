@@ -10,7 +10,9 @@ import {
   appointmentReminderArabic,
   cleaningReminderArabic,
   appointmentReminderEnglish,
-  cleaningReminderEnglish
+  cleaningReminderEnglish,
+  cleaningReminderBoth,
+  appointmentReminderBoth
 } from "../translate/whatsappMessages";
 
 import {
@@ -130,6 +132,11 @@ export default function WhatsAppReminders() {
 
 
       }
+      else if (language === "both") {
+
+        message = appointmentReminderBoth(item.patientName, item.date, item.time);
+
+      }
       else {
 
 
@@ -162,6 +169,11 @@ export default function WhatsAppReminders() {
 
 
       }
+      else if (language === "both") {
+
+        message = cleaningReminderBoth(item.patientName);
+
+      }
       else {
 
 
@@ -174,6 +186,7 @@ export default function WhatsAppReminders() {
       }
 
 
+
     }
 
 
@@ -184,18 +197,21 @@ export default function WhatsAppReminders() {
       message
     );
 
-
-
-    const whatsappUrl =
-      `https://wa.me/${patientPhone}?text=${encodeURIComponent(message)}`;
-
-
-
-    window.open(
-      whatsappUrl,
-      "_blank"
+    const whatsappUrl = new URL(
+      `https://wa.me/${encodeURIComponent(patientPhone)}`,
     );
+    whatsappUrl.searchParams.set("text", message);
+    const link = document.createElement("a");
 
+    link.href = whatsappUrl.toString();
+
+    link.target = "_blank";
+
+    document.body.appendChild(link);
+    console.log("OUTGOING URL", whatsappUrl.toString())
+    link.click();
+
+    document.body.removeChild(link);
 
   };
 
@@ -289,12 +305,22 @@ export default function WhatsAppReminders() {
 
       <Box
 
-        display="flex"
 
-        gap={2}
 
         mb={4}
-
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: {
+            xs: "flex-start",
+            sm: "center"
+          },
+          flexDirection: {
+            xs: "column",
+            sm: "row"
+          },
+          gap: 2
+        }}
       >
 
 
@@ -362,6 +388,25 @@ export default function WhatsAppReminders() {
 
         </Button>
 
+        <Button
+          variant="contained"
+          onClick={() => setLanguage("both")}
+          sx={{
+
+            background:
+              language === "both"
+                ? "#6b5b3e"
+                : "#ddd",
+
+            color:
+              language === "both"
+                ? "#fff"
+                : "#333"
+
+          }}
+        >
+          Both
+        </Button>
 
       </Box>
 

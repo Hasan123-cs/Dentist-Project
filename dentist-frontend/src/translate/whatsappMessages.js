@@ -4,15 +4,17 @@ export const appointmentReminderArabic = (
     time
 ) => {
 
-    return `
-مرحباً ${patientName}
+    return `مرحبًا ${patientName} 🌸
 
-نذكركم بأن لديكم موعداً في عيادة الأسنان.
+هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
 
-التاريخ: ${date || "-"}
-الوقت: ${time || "-"}
+📅 التاريخ: ${date}
+⏰ الوقت: ${time}
 
-شكراً لثقتكم بنا.
+لأي تعديل بالموعد يرجى الاتصال بنا 📞
+
+📍 الموقع:
+https://maps.app.goo.gl/HBrFE4x7kFTmj4U58?g_st=ic
 `;
 
 };
@@ -25,14 +27,18 @@ export const cleaningReminderArabic = (
     patientName
 ) => {
 
-    return `
-مرحباً ${patientName}
+    return `مرحبًا ${patientName} 🌸
 
-حان موعد تذكيركم بتنظيف الأسنان الدوري.
+هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
 
-يرجى التواصل معنا لحجز موعد جديد.
+حان موعد تنظيف الأسنان الدوري الخاص بك.
 
-شكراً لثقتكم بنا.
+للحجز أو لأي تعديل بالموعد يرجى الاتصال بنا 📞
+
+شكرًا لثقتكم بنا 🤍
+
+📍 الموقع:
+https://maps.app.goo.gl/HBrFE4x7kFTmj4U58?g_st=ic
 `;
 
 };
@@ -49,15 +55,17 @@ export const appointmentReminderEnglish = (
     time
 ) => {
 
-    return `
-Hello ${patientName}
+    return `Hello ${patientName} 👋
 
-This is a reminder that you have a dental appointment.
+This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
 
-Date: ${date}
-Time: ${time}
+📅 Date: ${date}
+⏰ Time: ${time}
 
-Thank you for trusting us.
+For any changes, please call us 📞
+
+📍 Location:
+https://maps.app.goo.gl/HBrFE4x7kFTmj4U58?g_st=ic
 `;
 
 };
@@ -72,14 +80,88 @@ export const cleaningReminderEnglish = (
     patientName
 ) => {
 
-    return `
-Hello ${patientName}
+    return `Hello ${patientName} 👋
 
-This is a reminder that your periodic dental cleaning is due.
+This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
 
-Please contact us to schedule your next appointment.
+Your periodic dental cleaning is due.
 
-Thank you for trusting us.
+Please contact us to schedule your appointment or for any changes 📞
+
+Thank you for trusting us 🌸
+
+📍 Location:
+https://maps.app.goo.gl/HBrFE4x7kFTmj4U58?g_st=ic
 `;
 
 };
+
+
+export function appointmentReminderBoth(
+    patientName,
+    date,
+    time
+) {
+
+    return `Hello ${patientName} 👋
+
+This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
+
+📅 Date: ${date}
+⏰ Time: ${time}
+
+For any changes, please call us 📞
+
+
+-------------------------
+
+
+مرحبًا ${patientName} 🌸
+
+هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
+
+📅 التاريخ: ${date}
+⏰ الوقت: ${time}
+
+لأي تعديل بالموعد يرجى الاتصال بنا 📞
+
+
+📍 Location / الموقع:
+https://maps.app.goo.gl/HBrFE4x7kFTmj4U58?g_st=ic
+`;
+}
+
+
+
+export function cleaningReminderBoth(
+    patientName
+) {
+    return `Hello ${patientName} 👋
+
+This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
+
+Your periodic dental cleaning is due.
+
+Please contact us to schedule your appointment or for any changes 📞
+
+Thank you for trusting us 🌸
+
+
+-------------------------
+
+
+مرحبًا ${patientName} 🌸
+
+هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
+
+حان موعد تنظيف الأسنان الدوري الخاص بك.
+
+للحجز أو لأي تعديل بالموعد يرجى الاتصال بنا 📞
+
+شكرًا لثقتكم بنا 🤍
+
+
+📍 Location / الموقع:
+https://maps.app.goo.gl/HBrFE4x7kFTmj4U58?g_st=ic
+`;
+}
