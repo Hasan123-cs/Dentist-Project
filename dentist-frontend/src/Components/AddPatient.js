@@ -14,7 +14,6 @@ import { useState } from "react";
 export default function AddPatient() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    patientCode: "",
     name: "",
     phone: "",
     gender: "",
@@ -113,15 +112,7 @@ export default function AddPatient() {
             gap: 2.5,
           }}
         >
-          {/* this for id patient */}
-          <TextField
-            label="Patient Code"
-            value={form.patientCode}
-            onChange={handleChange}
-            name="patientCode"
-            fullWidth
-            required
-          />
+
           {/* === this for id patient === */}
           <TextField
             label="Full Name"
@@ -171,7 +162,7 @@ export default function AddPatient() {
             }}
           />
 
-          <TextField
+          {/* <TextField
             label="Medical Notes"
             name="notes"
             value={form.notes}
@@ -179,7 +170,38 @@ export default function AddPatient() {
             multiline
             rows={4}
             fullWidth
-          />
+          /> */}
+
+          <select name="notes"
+            value={form.notes}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              maxWidth: "300px",
+              padding: "8px 12px",
+              fontSize: "15px",
+              color: "#333",
+              background: "white",
+              border: "1px solid #ccc",
+              borderRadius: "6px",
+              outline: "none",
+              cursor: "pointer",
+            }} >
+            <option value="Bridge">Bridge </option>
+            <option value="Filling">Filling </option>
+            <option value="Gouttiere">Gouttiere</option>
+            <option value="Laser">Laser</option>
+            <option value="Root canal">Root canal
+            </option>
+            <option value="Extraction">Extraction</option>
+            <option value="Crown">Crown</option>
+            <option value="Implant">Implant</option>
+            <option value="Veneers">Veneers</option>
+            <option value="Pulpotomie">Pulpotomie</option>
+            <option value="Pulpectomie">Pulpectomie</option>
+            <option value="Cpp">Cpp</option>
+            <option value="Scaling">Scaling</option>
+          </select>
 
           <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
             <Button

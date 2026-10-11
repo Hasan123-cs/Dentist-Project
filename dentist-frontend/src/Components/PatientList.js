@@ -50,7 +50,6 @@ export default function PatientList({ patients, setPatients }) {
                   id: p.id,
 
                   name: `${p.firstName} ${p.lastName}`,
-                  patientCode: p.patientCode,
                   phone: p.phone || "No phone",
 
                   status: "Active",

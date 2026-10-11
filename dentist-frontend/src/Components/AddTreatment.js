@@ -263,9 +263,9 @@ export default function AddTreatment() {
     const toothNumbers = !showTooth
       ? []
       : form.tooth
-          .split(",")
-          .map((tooth) => Number(tooth.trim()))
-          .filter((tooth) => !Number.isNaN(tooth));
+        .split(",")
+        .map((tooth) => Number(tooth.trim()))
+        .filter((tooth) => !Number.isNaN(tooth));
 
     /*
      * Surface:

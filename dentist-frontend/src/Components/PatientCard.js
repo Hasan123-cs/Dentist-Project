@@ -116,6 +116,9 @@ export default function PatientCard({ patient, onDelete }) {
           </IconButton>
         </Box>
 
+        <Typography fontWeight={800} sx={{ color: "#930b06", fontSize: 20 }}>
+          ID : {patient.id}
+        </Typography>
         <Box textAlign="center" mt={2}>
           <Typography fontSize={18} fontWeight={800} color="#092c57">
             {patient.name}
@@ -150,6 +153,7 @@ export default function PatientCard({ patient, onDelete }) {
           <Typography fontSize={14} mt={1}>
             {patient.phone || "No phone"}
           </Typography>
+
         </Box>
 
         {/* INFO */}
@@ -170,9 +174,7 @@ export default function PatientCard({ patient, onDelete }) {
           <Typography fontWeight={700}>
             {patient.lastVisit || "Not scheduled"}
           </Typography>
-          <Typography fontSize={18} fontWeight={800} color="#934506">
-            CODE : {patient.patientCode}
-          </Typography>
+
 
           <Payments
             sx={{

@@ -452,10 +452,6 @@ namespace dentist_project.Migrations
                     b.Property<string>("MedicalHistory")
                         .HasColumnType("text");
 
-                    b.Property<string>("PatientCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("text");

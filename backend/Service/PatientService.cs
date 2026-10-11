@@ -25,7 +25,6 @@ namespace dentist_project.Service
                 {
                     Id = p.Id,
 
-                    PatientCode = p.PatientCode,
 
                     FirstName = p.FirstName,
 
@@ -986,16 +985,13 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             {
                 return (false, "Phone number is required.", null);
             }
-            if (string.IsNullOrWhiteSpace(dto.PatientCode))
-                return (false, "Patient code is required.", null);
 
-            var patientCode = dto.PatientCode.Trim();
 
-            var existingPatient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.PatientCode == patientCode);
+            //var existingPatient = await _context.Patients
+            //    .FirstOrDefaultAsync(p => p.FirstName + " " + p.LastName == dto.Name);
 
-            if (existingPatient != null)
-                return (false, "This patient code already exists.", null);
+            //if (existingPatient != null)
+            //    return (false, "This patient code already exists.", null);
 
             // Split full name
             var nameParts = dto.Name
@@ -1016,7 +1012,6 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             // Create patient
             var patient = new Patient
             {
-                PatientCode = patientCode,
                 FirstName = firstName,
                 LastName = lastName,
                 Phone = dto.Phone.Trim(),
@@ -1038,7 +1033,6 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             // Return created patient
             var patientDto = new PatientDto
             {
-                PatientCode = patient.PatientCode,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
                 DateOfBirth = patient.DateOfBirth,

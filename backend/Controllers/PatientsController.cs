@@ -374,7 +374,8 @@ using Microsoft.AspNetCore.Identity;
             message = result.Message
         });
     }
-    // search treatment 
+    //
+    // treatment 
     [HttpGet("search-treatments")]
     public async Task<IActionResult> SearchTreatments(
      [FromQuery] string keyword)
