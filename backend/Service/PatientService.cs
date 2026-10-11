@@ -51,40 +51,70 @@ namespace dentist_project.Service
             return patients;
         }
         // DENTAL CHART 
+        // DENTAL CHART 
         public async Task<List<DentalChartItemDto>> GetPatientDentalChartAsync(
-      int patientId)
+            int patientId)
         {
             var toothTreatments = await _context.ToothTreatments
+
                 .Include(tt => tt.Tooth)
+
                 .Include(tt => tt.MedicalRecord)
-                .Where(tt => tt.MedicalRecord.PatientId == patientId)
+
+                .Where(tt =>
+                    tt.MedicalRecord.PatientId == patientId
+                    &&
+                    tt.Status == ToothStatus.Completed
+                )
+
                 .OrderByDescending(tt => tt.MedicalRecord.CreatedAt)
+
                 .ThenByDescending(tt => tt.Id)
+
                 .ToListAsync();
 
+
+
             var latestTreatments = toothTreatments
+
                 .GroupBy(tt => new
                 {
                     tt.ToothId,
                     tt.Surface
                 })
+
                 .Select(g => g.First())
+
                 .Select(tt => new DentalChartItemDto
                 {
+
                     ToothNumber = tt.Tooth != null
-    ? tt.Tooth.Number
-    : 0,
+                        ? tt.Tooth.Number
+                        : 0,
+
+
                     Surface = tt.Surface,
+
+
                     Condition = tt.Condition,
+
+
                     Status = tt.Status,
+
+
                     TreatmentId = tt.TreatmentId,
+
+
                     Notes = tt.Notes
+
                 })
+
                 .ToList();
+
+
 
             return latestTreatments;
         }
-
         // update for each tooth in dental chart 
         public async Task<(bool Success, string Message)> UpdateToothStatusAsync(
      UpdateToothStatusDto dto)
@@ -1373,58 +1403,233 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
         {
             var treatments = await _context.ToothTreatments
 
-                .Include(t => t.MedicalRecord)
-                    .ThenInclude(m => m.Patient)
+                .Include(x => x.Treatment)
 
-                .Include(t => t.Treatment)
+                .Include(x => x.Tooth)
+
+                .Include(x => x.MedicalRecord)
+                    .ThenInclude(x => x.Appointment)
+                        .ThenInclude(x => x.AppointmentTreatments)
+
+
+                .Where(x =>
+                    x.MedicalRecord.PatientId == patientId
+                    &&
+                    x.Status == ToothStatus.Completed
+                )
+
+
+                .Select(x => new
+                {
+                    id = x.Id,
+
+
+                    treatment =
+                        x.Treatment != null
+                        ?
+                        x.Treatment.Name
+                        :
+                        "Unknown",
+
+
+
+                    toothNumber =
+                        x.Tooth != null
+                        ?
+                        x.Tooth.Number
+                        :
+                        0,
+
+
+                    surface =
+                        x.Surface.HasValue
+                        ?
+                        x.Surface.ToString()
+                        :
+                        null,
+
+
+
+                    status = x.Status.ToString(),
+
+
+                    condition = x.Condition.ToString(),
+
+
+
+                    cost =
+                        x.Treatment != null
+                        ?
+                        x.Treatment.DefaultPrice
+                        :
+                        0,
+
+
+
+                    paid =
+                        x.MedicalRecord.Appointment != null
+                        ?
+                        x.MedicalRecord.Appointment
+                            .AppointmentTreatments
+                            .Where(at =>
+                                at.TreatmentId == x.TreatmentId
+                            )
+                            .Select(at =>
+                                at.PaidAmount
+                            )
+                            .FirstOrDefault()
+                        :
+                        0,
+
+
+
+                    remaining =
+                        (
+                            x.Treatment != null
+                            ?
+                            x.Treatment.DefaultPrice
+                            :
+                            0
+                        )
+                        -
+                        (
+                            x.MedicalRecord.Appointment != null
+                            ?
+                            x.MedicalRecord.Appointment
+                                .AppointmentTreatments
+                                .Where(at =>
+                                    at.TreatmentId == x.TreatmentId
+                                )
+                                .Select(at =>
+                                    at.PaidAmount
+                                )
+                                .FirstOrDefault()
+                            :
+                            0
+                        ),
+
+
+
+                    notes = x.Notes,
+
+
+                    date = x.MedicalRecord.CreatedAt
+
+
+                })
+
+                .OrderByDescending(x => x.date)
+
+                .ToListAsync();
+
+
+
+            return treatments
+                .Cast<object>()
+                .ToList();
+        }
+        public async Task<List<object>> GetCompletedTreatmentsAsync(
+    int patientId)
+        {
+            var treatments = await _context.ToothTreatments
 
                 .Include(t => t.Tooth)
 
+                .Include(t => t.Treatment)
+
+                .Include(t => t.MedicalRecord)
+                    .ThenInclude(m => m.Appointment)
+                        .ThenInclude(a => a.AppointmentTreatments)
+
+
                 .Where(t =>
                     t.MedicalRecord.PatientId == patientId
+                    &&
+                    t.Status == ToothStatus.Completed
                 )
 
-                .OrderByDescending(t =>
-                    t.MedicalRecord.CreatedAt
-                )
 
                 .Select(t => new
                 {
                     id = t.Id,
 
-                    treatment = t.Treatment != null
-                        ? t.Treatment.Name
-                        : "Unknown",
+                    treatment =
+                        t.Treatment != null
+                        ?
+                        t.Treatment.Name
+                        :
+                        "Unknown",
 
 
-                    toothNumber = t.Tooth != null
-                        ? t.Tooth.Number
-                        : (int?)null,
-
-
-                    surface = t.Surface != null
-                        ? t.Surface.ToString()
-                        : null,
+                    toothNumber =
+                        t.Tooth != null
+                        ?
+                        t.Tooth.Number
+                        :
+                        0,
 
 
                     status = t.Status.ToString(),
 
 
-                    condition = t.Condition.ToString(),
+                    cost =
+                        t.Treatment != null
+                        ?
+                        t.Treatment.DefaultPrice
+                        :
+                        0,
 
 
-                    price = t.Treatment != null
-                        ? t.Treatment.DefaultPrice
-                        : 0,
+                    paid =
+                        t.MedicalRecord.Appointment != null
+                        ?
+                        t.MedicalRecord.Appointment
+                            .AppointmentTreatments
+                            .Where(at =>
+                                at.TreatmentId == t.TreatmentId
+                            )
+                            .Select(at =>
+                                at.PaidAmount
+                            )
+                            .FirstOrDefault()
+                        :
+                        0,
 
 
-                    notes = t.Notes,
+                    remaining =
+                        (
+                            t.Treatment != null
+                            ?
+                            t.Treatment.DefaultPrice
+                            :
+                            0
+                        )
+                        -
+                        (
+                            t.MedicalRecord.Appointment != null
+                            ?
+                            t.MedicalRecord.Appointment
+                                .AppointmentTreatments
+                                .Where(at =>
+                                    at.TreatmentId == t.TreatmentId
+                                )
+                                .Select(at =>
+                                    at.PaidAmount
+                                )
+                                .FirstOrDefault()
+                            :
+                            0
+                        ),
 
 
-                    // Date of treatment
-                    date = t.MedicalRecord.CreatedAt
+                    date = t.MedicalRecord.CreatedAt,
+
+
+                    notes = t.Notes
 
                 })
+
+                .OrderByDescending(x => x.date)
 
                 .ToListAsync();
 
@@ -1433,8 +1638,6 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 .Cast<object>()
                 .ToList();
         }
-
-
         public async Task<object> GetPatientSummaryAsync(int patientId)
         {
             var lastAppointment = await _context.Appointments

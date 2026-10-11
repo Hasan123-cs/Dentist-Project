@@ -36,6 +36,7 @@ const [summary,setSummary] = useState({
 
   const [patient, setPatient] = useState(null);
 const [treatments, setTreatments] = useState([]);
+const [completedTreatments, setCompletedTreatments] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
@@ -57,6 +58,18 @@ const [treatments, setTreatments] = useState([]);
         const treatmentData = await treatmentRes.json();
         setTreatments(treatmentData);
       }
+      const completedRes = await fetch(
+  `https://localhost:7166/api/patients/${id}/completed-treatments`
+);
+
+
+if (completedRes.ok) {
+
+  const completedData = await completedRes.json();
+
+  setCompletedTreatments(completedData);
+
+}
       const summaryRes = await fetch(
  `https://localhost:7166/api/patients/${id}/summary`
 );
@@ -184,15 +197,19 @@ if(summaryRes.ok)
           mb: 3,
         }}
       >
-        <Tabs value={tab} onChange={(e, v) => setTab(v)}>
-          <Tab label="Overview" />
+       <Tabs value={tab} onChange={(e,v)=>setTab(v)}>
 
-          <Tab label="Dental Chart" />
+<Tab label="Overview" />
 
-          <Tab label="Treatment Plan" />
+<Tab label="Dental Chart" />
 
-          <Tab label="Images" />
-        </Tabs>
+<Tab label="Treatment Plan" />
+
+<Tab label="Completed Treatments" />
+
+<Tab label="Images" />
+
+</Tabs>
       </Paper>
 
       {/* OVERVIEW */}
@@ -648,10 +665,183 @@ if(summaryRes.ok)
 )}
         </Paper>
       )}
+      {/* COMPLETED TREATMENTS */}
+
+{tab === 3 && (
+
+<Paper
+sx={{
+mt:3,
+p:4,
+borderRadius:4,
+border:"1px solid #eee3c5"
+}}
+>
+
+
+<Typography
+fontSize={24}
+fontWeight={800}
+color="#C9A227"
+mb={3}
+>
+Completed Treatments
+</Typography>
+
+
+
+<Box
+sx={{
+background:"#faf8f2",
+borderRadius:3,
+p:3,
+mb:3
+}}
+>
+
+
+<Typography fontWeight={800}>
+Total Cost : $
+
+{
+completedTreatments
+.reduce(
+(sum,t)=>
+sum + (t.cost || 0),
+0
+)
+}
+
+</Typography>
+
+
+
+<Typography fontWeight={800}>
+Total Paid : $
+
+{
+completedTreatments
+.reduce(
+(sum,t)=>
+sum + (t.paid || 0),
+0
+)
+}
+
+</Typography>
+
+
+
+<Typography fontWeight={800}>
+Total Remaining : $
+
+{
+completedTreatments
+.reduce(
+(sum,t)=>
+sum + (t.remaining || 0),
+0
+)
+}
+
+</Typography>
+
+
+</Box>
+
+
+
+
+
+<Grid container spacing={3}>
+
+
+{
+completedTreatments
+.map((t,index)=>(
+
+
+<Grid
+item
+xs={12}
+sm={6}
+md={4}
+key={index}
+>
+
+
+<Paper
+sx={{
+p:3,
+borderRadius:3,
+border:"1px solid #eee3c5"
+}}
+>
+
+
+
+<Typography
+fontSize={20}
+fontWeight={800}
+color="#092c57"
+>
+🦷 {t.treatment}
+</Typography>
+
+
+
+<Typography>
+Tooth: {t.toothNumber}
+</Typography>
+
+
+
+<Typography>
+Status: {t.status}
+</Typography>
+
+
+
+<Typography>
+💰 Cost: ${t.cost}
+</Typography>
+
+
+
+<Typography>
+✅ Paid: ${t.paid}
+</Typography>
+
+
+
+<Typography>
+⏳ Remaining: ${t.remaining}
+</Typography>
+
+
+
+</Paper>
+
+
+</Grid>
+
+
+))
+
+}
+
+
+</Grid>
+
+
+
+</Paper>
+
+)}
 
       {/* IMAGES */}
 
-      {tab === 3 && (
+      {tab === 4 && (
         <Paper
           sx={{
             mt: 3,

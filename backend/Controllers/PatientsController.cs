@@ -613,4 +613,24 @@ using Microsoft.AspNetCore.Identity;
             phone = appointment.Patient.Phone
         });
     }
+    [HttpGet("{id}/completed-treatments")]
+    public async Task<IActionResult> GetCompletedTreatments(int id)
+    {
+        try
+        {
+            var treatments =
+                await _service.GetCompletedTreatmentsAsync(id);
+
+            return Ok(treatments);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Error loading completed treatments.",
+                error = ex.Message
+            });
+        }
+    
+}
 }

@@ -391,8 +391,16 @@ public async Task<(bool sucsess, string message)> CreateAppointmentAsync(
 
                 TreatmentId = treatment.Id,
 
-                // Keep original treatment price
-                Price = treatment.DefaultPrice
+                // Original treatment price
+                Price = treatment.DefaultPrice,
+
+                // Payment tracking per treatment
+                PaidAmount = 0,
+
+                // Treatment starts as planned
+                Status = TreatmentStatus.Planned,
+
+                CompletedAt = null
             };
 
             appointment.AppointmentTreatments.Add(
@@ -518,10 +526,40 @@ public async Task<(bool Success, string Message, object? Data)>
             // TotalCost stays 100.
             // --------------------------------
 
-           
+
+
+            // Update treatment payment and status
+
+            foreach (var treatment in appointment.AppointmentTreatments)
+            {
+                treatment.PaidAmount += dto.PaidAmount;
+
+                treatment.Status = TreatmentStatus.Completed;
+
+                treatment.CompletedAt = DateTime.UtcNow;
+            }
+
+
 
             appointment.Status = AppointmentStatus.Completed;
-            
+
+
+            // Change dental chart treatment status
+            var medicalRecord = await _db.MedicalRecords
+                .Include(m => m.ToothTreatments)
+                .FirstOrDefaultAsync(m =>
+                    m.AppointmentId == appointment.Id
+                );
+
+            if (medicalRecord != null)
+            {
+                foreach (var toothTreatment in medicalRecord.ToothTreatments)
+                {
+                    toothTreatment.Status = ToothStatus.Completed;
+                }
+            }
+
+
             await _db.SaveChangesAsync();
 
 

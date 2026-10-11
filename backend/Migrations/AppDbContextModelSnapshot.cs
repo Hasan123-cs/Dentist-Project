@@ -297,11 +297,20 @@ namespace dentist_project.Migrations
                     b.Property<int>("AppointmentId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<int>("TreatmentId")
                         .HasColumnType("integer");
@@ -517,6 +526,9 @@ namespace dentist_project.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AppointmentTreatmentId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Condition")
                         .HasColumnType("integer");
 
@@ -539,6 +551,8 @@ namespace dentist_project.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppointmentTreatmentId");
 
                     b.HasIndex("MedicalRecordId");
 
@@ -733,6 +747,10 @@ namespace dentist_project.Migrations
 
             modelBuilder.Entity("dentist_project.Models.ToothTreatment", b =>
                 {
+                    b.HasOne("dentist_project.Models.AppointmentTreatment", null)
+                        .WithMany("ToothTreatments")
+                        .HasForeignKey("AppointmentTreatmentId");
+
                     b.HasOne("dentist_project.Models.MedicalRecord", "MedicalRecord")
                         .WithMany("ToothTreatments")
                         .HasForeignKey("MedicalRecordId")
@@ -766,6 +784,11 @@ namespace dentist_project.Migrations
             modelBuilder.Entity("dentist_project.Models.Appointment", b =>
                 {
                     b.Navigation("AppointmentTreatments");
+                });
+
+            modelBuilder.Entity("dentist_project.Models.AppointmentTreatment", b =>
+                {
+                    b.Navigation("ToothTreatments");
                 });
 
             modelBuilder.Entity("dentist_project.Models.MedicalRecord", b =>
