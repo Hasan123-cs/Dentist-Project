@@ -197,21 +197,13 @@ export default function WhatsAppReminders() {
       message
     );
 
-    const whatsappUrl = new URL(
-      `https://wa.me/${encodeURIComponent(patientPhone)}`,
+    const whatsappUrl =
+
+      `https://api.whatsapp.com/send?phone=${patientPhone}&text=${encodeURIComponent(message)}`;
+    window.open(
+      whatsappUrl,
+      "_blank"
     );
-    whatsappUrl.searchParams.set("text", message);
-    const link = document.createElement("a");
-
-    link.href = whatsappUrl.toString();
-
-    link.target = "_blank";
-
-    document.body.appendChild(link);
-    console.log("OUTGOING URL", whatsappUrl.toString())
-    link.click();
-
-    document.body.removeChild(link);
 
   };
 

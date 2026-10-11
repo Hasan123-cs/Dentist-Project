@@ -4,7 +4,7 @@ export const appointmentReminderArabic = (
     time
 ) => {
 
-    return `مرحبًا ${patientName} 🌸
+    return `مرحبًا ${patientName} سيد/سيدة 🌸
 
 هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
 
@@ -27,7 +27,7 @@ export const cleaningReminderArabic = (
     patientName
 ) => {
 
-    return `مرحبًا ${patientName} 🌸
+    return `مرحبًا ${patientName} سيد/سيدة 🌸
 
 هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
 
@@ -55,7 +55,7 @@ export const appointmentReminderEnglish = (
     time
 ) => {
 
-    return `Hello ${patientName} 👋
+    return `Hello Mr/Ms ${patientName} 👋
 
 This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
 
@@ -80,7 +80,7 @@ export const cleaningReminderEnglish = (
     patientName
 ) => {
 
-    return `Hello ${patientName} 👋
+    return `Hello Mr/Ms ${patientName} 👋
 
 This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
 
@@ -103,7 +103,7 @@ export function appointmentReminderBoth(
     time
 ) {
 
-    return `Hello ${patientName} 👋
+    return `Hello Mr/Ms ${patientName} 👋
 
 This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
 
@@ -116,7 +116,7 @@ For any changes, please call us 📞
 -------------------------
 
 
-مرحبًا ${patientName} 🌸
+مرحبًا ${patientName} سيد/سيدة 🌸
 
 هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
 
@@ -136,7 +136,7 @@ https://maps.app.goo.gl/HBrFE4x7kFTmj4U58?g_st=ic
 export function cleaningReminderBoth(
     patientName
 ) {
-    return `Hello ${patientName} 👋
+    return `Hello Mr/Ms ${patientName} 👋
 
 This is a reminder from Dr. Amany Nseif’s dental clinic 🦷
 
@@ -150,7 +150,7 @@ Thank you for trusting us 🌸
 -------------------------
 
 
-مرحبًا ${patientName} 🌸
+مرحبًا ${patientName} سيد/سيدة 🌸
 
 هذا تذكير من عيادة الدكتورة أماني نصيف لطب الأسنان 🦷
 
