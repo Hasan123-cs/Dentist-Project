@@ -28,15 +28,15 @@ export default function PatientProfile() {
   const navigate = useNavigate();
 
   const [tab, setTab] = useState(0);
-const [summary,setSummary] = useState({
-  balance:0,
-  upcomingAppointments:0
-});
+  const [summary, setSummary] = useState({
+    balance: 0,
+    upcomingAppointments: 0
+  });
   const [conditions, setConditions] = useState({});
 
   const [patient, setPatient] = useState(null);
-const [treatments, setTreatments] = useState([]);
-const [completedTreatments, setCompletedTreatments] = useState([]);
+  const [treatments, setTreatments] = useState([]);
+  const [completedTreatments, setCompletedTreatments] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
@@ -50,36 +50,36 @@ const [completedTreatments, setCompletedTreatments] = useState([]);
           setPatient(data);
         }
 
-              const treatmentRes = await fetch(
-        `https://localhost:7166/api/patients/${id}/treatments`
-      );
+        const treatmentRes = await fetch(
+          `https://localhost:7166/api/patients/${id}/treatments`
+        );
 
-      if (treatmentRes.ok) {
-        const treatmentData = await treatmentRes.json();
-        setTreatments(treatmentData);
-      }
-      const completedRes = await fetch(
-  `https://localhost:7166/api/patients/${id}/completed-treatments`
-);
+        if (treatmentRes.ok) {
+          const treatmentData = await treatmentRes.json();
+          setTreatments(treatmentData);
+          console.log("Treatments:", treatments);
+        }
+        const completedRes = await fetch(
+          `https://localhost:7166/api/patients/${id}/completed-treatments`
+        );
 
 
-if (completedRes.ok) {
+        if (completedRes.ok) {
 
-  const completedData = await completedRes.json();
+          const completedData = await completedRes.json();
 
-  setCompletedTreatments(completedData);
+          setCompletedTreatments(completedData);
 
-}
-      const summaryRes = await fetch(
- `https://localhost:7166/api/patients/${id}/summary`
-);
+        }
+        const summaryRes = await fetch(
+          `https://localhost:7166/api/patients/${id}/summary`
+        );
 
-if(summaryRes.ok)
-{
- const summaryData = await summaryRes.json();
- setSummary(summaryData);
-}
-      
+        if (summaryRes.ok) {
+          const summaryData = await summaryRes.json();
+          setSummary(summaryData);
+        }
+
       } catch (err) {
         console.log(err);
       }
@@ -170,7 +170,7 @@ if(summaryRes.ok)
           </Box>
 
           <Box display="flex" gap={2}>
-            
+
 
             <Button
               onClick={() => navigate("/patients")}
@@ -197,19 +197,19 @@ if(summaryRes.ok)
           mb: 3,
         }}
       >
-       <Tabs value={tab} onChange={(e,v)=>setTab(v)}>
+        <Tabs value={tab} onChange={(e, v) => setTab(v)}>
 
-<Tab label="Overview" />
+          <Tab label="Overview" />
 
-<Tab label="Dental Chart" />
+          <Tab label="Dental Chart" />
 
-<Tab label="Treatment Plan" />
+          <Tab label="Treatment Plan" />
 
-<Tab label="Completed Treatments" />
+          <Tab label="Completed Treatments" />
 
-<Tab label="Images" />
+          <Tab label="Images" />
 
-</Tabs>
+        </Tabs>
       </Paper>
 
       {/* OVERVIEW */}
@@ -262,7 +262,7 @@ if(summaryRes.ok)
                 <Title>Financial</Title>
 
                 <Typography fontSize={32} fontWeight={800} color="#C9A227">
-                   ${summary.balance.toFixed(2)}
+                  ${summary.balance.toFixed(2)}
                 </Typography>
 
                 <Typography>Outstanding Balance</Typography>
@@ -275,7 +275,7 @@ if(summaryRes.ok)
                 <Title>Appointments</Title>
 
                 <Typography fontSize={32} fontWeight={800} color="#092c57">
-                   {summary.upcomingAppointments}
+                  {summary.upcomingAppointments}
                 </Typography>
 
                 <Typography>Upcoming Visits</Typography>
@@ -327,7 +327,7 @@ if(summaryRes.ok)
                 justifyContent: "center",
               }}
             >
-              <Typography>
+              <Typography sx={{ color: "red" }}>
                 {patient.medicalHistory ||
                   patient.allergies ||
                   "No medical notes available."}
@@ -392,11 +392,11 @@ if(summaryRes.ok)
 
             <Button
               variant="contained"
-            
+
               onClick={() => navigate(`/patients/${patient.id}/add-treatment`)}
               sx={{
                 background: "#C9A227",
-                marginBottom:3,
+                marginBottom: 3,
                 fontWeight: 700,
 
                 borderRadius: 3,
@@ -405,439 +405,439 @@ if(summaryRes.ok)
               + ADD TREATMENT
             </Button>
           </Box>
-{treatments.length === 0 ? (
+          {treatments.length === 0 ? (
 
-  <Typography color="#718096">
-    No treatments added yet.
-  </Typography>
-
-
-) : (
-
-  treatments.map((treatment, index) => (
-
-    <Paper
-      key={index}
-      sx={{
-        p:3,
-        mb:3,
-        borderRadius:4,
-        background:"#ffffff",
-        border:"1px solid #eee3c5",
-        boxShadow:"0 4px 12px rgba(0,0,0,0.05)"
-      }}
-    >
-
-      {/* HEADER */}
-
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-
-        <Box display="flex" alignItems="center" gap={2}>
-
-          <Avatar
-            sx={{
-              background:"#faf0c8",
-              color:"#C9A227",
-              fontWeight:800
-            }}
-          >
-            🦷
-          </Avatar>
-
-
-          <Box>
-
-            <Typography
-              fontSize={20}
-              fontWeight={800}
-              color="#092c57"
-            >
-              {treatment.treatment}
+            <Typography color="#718096">
+              No treatments added yet.
             </Typography>
 
 
-            <Typography
-              color="text.secondary"
-              fontSize={14}
-            >
-              Treatment Record
-            </Typography>
+          ) : (
 
-          </Box>
+            treatments.map((treatment, index) => (
 
-        </Box>
+              <Paper
+                key={index}
+                sx={{
+                  p: 3,
+                  mb: 3,
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  border: "1px solid #eee3c5",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+                }}
+              >
 
+                {/* HEADER */}
 
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}
+                >
 
-        <Chip
-          label={treatment.status}
-          sx={{
-            fontWeight:700,
+                  <Box display="flex" alignItems="center" gap={2}>
 
-            background:
-              treatment.status === "Completed"
-              ? "#dcfce7"
-              :
-              treatment.status === "InProgress"
-              ? "#fef3c7"
-              :
-              "#e0f2fe",
-
-            color:
-              treatment.status === "Completed"
-              ? "#166534"
-              :
-              treatment.status === "InProgress"
-              ? "#92400e"
-              :
-              "#0369a1"
-          }}
-        />
-
-      </Box>
+                    <Avatar
+                      sx={{
+                        background: "#faf0c8",
+                        color: "#C9A227",
+                        fontWeight: 800
+                      }}
+                    >
+                      🦷
+                    </Avatar>
 
 
+                    <Box>
 
-      {/* DATE */}
-
-      <Box
-        sx={{
-          background:"#faf8f2",
-          p:2,
-          borderRadius:3,
-          mb:2
-        }}
-      >
-
-        <Typography
-          fontWeight={700}
-          color="#092c57"
-        >
-          📅 Date
-        </Typography>
+                      <Typography
+                        fontSize={20}
+                        fontWeight={800}
+                        color="#092c57"
+                      >
+                        {treatment.treatment}
+                      </Typography>
 
 
-        <Typography color="text.secondary">
+                      <Typography
+                        color="text.secondary"
+                        fontSize={14}
+                      >
+                        Treatment Record
+                      </Typography>
 
-          {new Date(treatment.date)
-          .toLocaleDateString(
-            "en-GB",
-            {
-              day:"2-digit",
-              month:"long",
-              year:"numeric"
-            }
+                    </Box>
+
+                  </Box>
+
+
+
+                  <Chip
+                    label={treatment.status}
+                    sx={{
+                      fontWeight: 700,
+
+                      background:
+                        treatment.status === "Completed"
+                          ? "#dcfce7"
+                          :
+                          treatment.status === "InProgress"
+                            ? "#fef3c7"
+                            :
+                            "#e0f2fe",
+
+                      color:
+                        treatment.status === "Completed"
+                          ? "#166534"
+                          :
+                          treatment.status === "InProgress"
+                            ? "#92400e"
+                            :
+                            "#0369a1"
+                    }}
+                  />
+
+                </Box>
+
+
+
+                {/* DATE */}
+
+                <Box
+                  sx={{
+                    background: "#faf8f2",
+                    p: 2,
+                    borderRadius: 3,
+                    mb: 2
+                  }}
+                >
+
+                  <Typography
+                    fontWeight={700}
+                    color="#092c57"
+                  >
+                    📅 Date
+                  </Typography>
+
+
+                  <Typography color="text.secondary">
+
+                    {new Date(treatment.date)
+                      .toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric"
+                        }
+                      )}
+
+                  </Typography>
+
+                </Box>
+
+
+
+                {/* DETAILS GRID */}
+
+                <Grid container spacing={2}>
+
+
+                  {
+                    treatment.toothNumber &&
+
+                    <Grid item xs={12} sm={6}>
+
+                      <Box>
+                        <Typography fontWeight={700}>
+                          🦷 Tooth
+                        </Typography>
+
+                        <Typography color="text.secondary">
+                          {treatment.toothNumber}
+                        </Typography>
+                      </Box>
+
+                    </Grid>
+                  }
+
+
+
+                  {
+                    treatment.surface &&
+
+                    <Grid item xs={12} sm={6}>
+
+                      <Box>
+
+                        <Typography fontWeight={700}>
+                          Surface
+                        </Typography>
+
+                        <Typography color="text.secondary">
+                          {treatment.surface}
+                        </Typography>
+
+                      </Box>
+
+                    </Grid>
+
+                  }
+
+
+
+                  <Grid item xs={12} sm={6}>
+
+                    <Box>
+
+                      <Typography fontWeight={700}>
+                        Condition
+                      </Typography>
+
+                      <Typography color="text.secondary">
+                        {treatment.condition}
+                      </Typography>
+
+                    </Box>
+
+                  </Grid>
+
+
+
+                  <Grid item xs={12} sm={6}>
+
+                    <Box>
+
+                      <Typography fontWeight={700}>
+                        💰 Price
+                      </Typography>
+
+                      <Typography
+                        color="#C9A227"
+                        fontWeight={800}
+                      >
+                        ${treatment.price}
+                      </Typography>
+
+                    </Box>
+
+                  </Grid>
+
+
+                </Grid>
+
+
+
+                {/* NOTES */}
+
+                {
+                  treatment.notes &&
+
+                  <Box
+                    sx={{
+                      mt: 2,
+                      p: 2,
+                      borderRadius: 3,
+                      background: "#f8fafc"
+                    }}
+                  >
+
+                    <Typography fontWeight={700}>
+                      Notes
+                    </Typography>
+
+
+                    <Typography color="text.secondary">
+                      {treatment.notes}
+                    </Typography>
+
+                  </Box>
+
+                }
+
+
+              </Paper>
+
+            ))
+
           )}
-
-        </Typography>
-
-      </Box>
-
-
-
-      {/* DETAILS GRID */}
-
-      <Grid container spacing={2}>
-
-
-        {
-          treatment.toothNumber &&
-
-          <Grid item xs={12} sm={6}>
-
-            <Box>
-              <Typography fontWeight={700}>
-                🦷 Tooth
-              </Typography>
-
-              <Typography color="text.secondary">
-                {treatment.toothNumber}
-              </Typography>
-            </Box>
-
-          </Grid>
-        }
-
-
-
-        {
-          treatment.surface &&
-
-          <Grid item xs={12} sm={6}>
-
-            <Box>
-
-              <Typography fontWeight={700}>
-                Surface
-              </Typography>
-
-              <Typography color="text.secondary">
-                {treatment.surface}
-              </Typography>
-
-            </Box>
-
-          </Grid>
-
-        }
-
-
-
-        <Grid item xs={12} sm={6}>
-
-          <Box>
-
-            <Typography fontWeight={700}>
-              Condition
-            </Typography>
-
-            <Typography color="text.secondary">
-              {treatment.condition}
-            </Typography>
-
-          </Box>
-
-        </Grid>
-
-
-
-        <Grid item xs={12} sm={6}>
-
-          <Box>
-
-            <Typography fontWeight={700}>
-              💰 Price
-            </Typography>
-
-            <Typography
-              color="#C9A227"
-              fontWeight={800}
-            >
-              ${treatment.price}
-            </Typography>
-
-          </Box>
-
-        </Grid>
-
-
-      </Grid>
-
-
-
-      {/* NOTES */}
-
-      {
-        treatment.notes &&
-
-        <Box
-          sx={{
-            mt:2,
-            p:2,
-            borderRadius:3,
-            background:"#f8fafc"
-          }}
-        >
-
-          <Typography fontWeight={700}>
-            Notes
-          </Typography>
-
-
-          <Typography color="text.secondary">
-            {treatment.notes}
-          </Typography>
-
-        </Box>
-
-      }
-
-
-    </Paper>
-
-  ))
-
-)}
         </Paper>
       )}
       {/* COMPLETED TREATMENTS */}
 
-{tab === 3 && (
+      {tab === 3 && (
 
-<Paper
-sx={{
-mt:3,
-p:4,
-borderRadius:4,
-border:"1px solid #eee3c5"
-}}
->
+        <Paper
+          sx={{
+            mt: 3,
+            p: 4,
+            borderRadius: 4,
+            border: "1px solid #eee3c5"
+          }}
+        >
 
 
-<Typography
-fontSize={24}
-fontWeight={800}
-color="#C9A227"
-mb={3}
->
-Completed Treatments
-</Typography>
+          <Typography
+            fontSize={24}
+            fontWeight={800}
+            color="#C9A227"
+            mb={3}
+          >
+            Completed Treatments
+          </Typography>
 
 
 
-<Box
-sx={{
-background:"#faf8f2",
-borderRadius:3,
-p:3,
-mb:3
-}}
->
+          <Box
+            sx={{
+              background: "#faf8f2",
+              borderRadius: 3,
+              p: 3,
+              mb: 3
+            }}
+          >
 
 
-<Typography fontWeight={800}>
-Total Cost : $
+            <Typography fontWeight={800}>
+              Total Cost : $
 
-{
-completedTreatments
-.reduce(
-(sum,t)=>
-sum + (t.cost || 0),
-0
-)
-}
+              {
+                completedTreatments
+                  .reduce(
+                    (sum, t) =>
+                      sum + (t.cost || 0),
+                    0
+                  )
+              }
 
-</Typography>
+            </Typography>
 
 
 
-<Typography fontWeight={800}>
-Total Paid : $
+            <Typography fontWeight={800}>
+              Total Paid : $
 
-{
-completedTreatments
-.reduce(
-(sum,t)=>
-sum + (t.paid || 0),
-0
-)
-}
+              {
+                completedTreatments
+                  .reduce(
+                    (sum, t) =>
+                      sum + (t.paid || 0),
+                    0
+                  )
+              }
 
-</Typography>
+            </Typography>
 
 
 
-<Typography fontWeight={800}>
-Total Remaining : $
+            <Typography fontWeight={800}>
+              Total Remaining : $
 
-{
-completedTreatments
-.reduce(
-(sum,t)=>
-sum + (t.remaining || 0),
-0
-)
-}
+              {
+                completedTreatments
+                  .reduce(
+                    (sum, t) =>
+                      sum + (t.remaining || 0),
+                    0
+                  )
+              }
 
-</Typography>
+            </Typography>
 
 
-</Box>
+          </Box>
 
 
 
 
 
-<Grid container spacing={3}>
+          <Grid container spacing={3}>
 
 
-{
-completedTreatments
-.map((t,index)=>(
+            {
+              completedTreatments
+                .map((t, index) => (
 
 
-<Grid
-item
-xs={12}
-sm={6}
-md={4}
-key={index}
->
+                  <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={4}
+                    key={index}
+                  >
 
 
-<Paper
-sx={{
-p:3,
-borderRadius:3,
-border:"1px solid #eee3c5"
-}}
->
+                    <Paper
+                      sx={{
+                        p: 3,
+                        borderRadius: 3,
+                        border: "1px solid #eee3c5"
+                      }}
+                    >
 
 
 
-<Typography
-fontSize={20}
-fontWeight={800}
-color="#092c57"
->
-🦷 {t.treatment}
-</Typography>
+                      <Typography
+                        fontSize={20}
+                        fontWeight={800}
+                        color="#092c57"
+                      >
+                        🦷 {t.treatment}
+                      </Typography>
 
 
 
-<Typography>
-Tooth: {t.toothNumber}
-</Typography>
+                      <Typography>
+                        Tooth: {t.toothNumber}
+                      </Typography>
 
 
 
-<Typography>
-Status: {t.status}
-</Typography>
+                      <Typography>
+                        Status: {t.status}
+                      </Typography>
 
 
 
-<Typography>
-💰 Cost: ${t.cost}
-</Typography>
+                      <Typography>
+                        💰 Cost: ${t.cost}
+                      </Typography>
 
 
 
-<Typography>
-✅ Paid: ${t.paid}
-</Typography>
+                      <Typography>
+                        ✅ Paid: ${t.paid}
+                      </Typography>
 
 
 
-<Typography>
-⏳ Remaining: ${t.remaining}
-</Typography>
+                      <Typography>
+                        ⏳ Remaining: ${t.remaining}
+                      </Typography>
 
 
 
-</Paper>
+                    </Paper>
 
 
-</Grid>
+                  </Grid>
 
 
-))
+                ))
 
-}
+            }
 
 
-</Grid>
+          </Grid>
 
 
 
-</Paper>
+        </Paper>
 
-)}
+      )}
 
       {/* IMAGES */}
 

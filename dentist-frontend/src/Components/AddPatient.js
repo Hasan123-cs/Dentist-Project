@@ -20,7 +20,7 @@ export default function AddPatient() {
     birthDate: "",
     notes: "",
   });
-
+  const [notesss, setNotesss] = useState("");
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -39,6 +39,10 @@ export default function AddPatient() {
         alert("You are not authenticated.");
         return;
       }
+      console.log(form.notes)
+      console.log(form.notesss)
+      form.notes = form.notes + " " + notesss;
+      console.log(form.notes)
 
       const response = await fetch("https://localhost:7166/api/Patients", {
         method: "POST",
@@ -117,6 +121,7 @@ export default function AddPatient() {
           <TextField
             label="Full Name"
             name="name"
+            required
             value={form.name}
             onChange={handleChange}
             fullWidth
@@ -125,6 +130,8 @@ export default function AddPatient() {
           <TextField
             label="Phone"
             name="phone"
+            type="number"
+            required
             value={form.phone}
             onChange={handleChange}
             fullWidth
@@ -162,15 +169,15 @@ export default function AddPatient() {
             }}
           />
 
-          {/* <TextField
+          <TextField
             label="Medical Notes"
-            name="notes"
-            value={form.notes}
-            onChange={handleChange}
+            name="notesss"
+            value={notesss}
+            onChange={(e) => { setNotesss(e.target.value) }}
             multiline
             rows={4}
             fullWidth
-          /> */}
+          />
 
           <select name="notes"
             value={form.notes}
@@ -187,20 +194,22 @@ export default function AddPatient() {
               outline: "none",
               cursor: "pointer",
             }} >
-            <option value="Bridge">Bridge </option>
-            <option value="Filling">Filling </option>
-            <option value="Gouttiere">Gouttiere</option>
-            <option value="Laser">Laser</option>
-            <option value="Root canal">Root canal
+            <option value="Hypertension">Hypertension </option>
+            <option value="Diabetes">Diabetes </option>
+            <option value="Allergie a penicillin">Allergie a penicillin</option>
+            <option value="Allergie">Allergie</option>
+            <option value="Heart disease">Heart disease
             </option>
-            <option value="Extraction">Extraction</option>
-            <option value="Crown">Crown</option>
-            <option value="Implant">Implant</option>
-            <option value="Veneers">Veneers</option>
-            <option value="Pulpotomie">Pulpotomie</option>
-            <option value="Pulpectomie">Pulpectomie</option>
-            <option value="Cpp">Cpp</option>
-            <option value="Scaling">Scaling</option>
+            <option value="Bleeding discorders">Bleeding discorders</option>
+            <option value="Asthma">Asthma</option>
+            <option value="Kidney disease">Kidney disease</option>
+            <option value="Liver disease">Liver disease</option>
+            <option value="Thyroid disease">Thyroid disease</option>
+            <option value="Epilepsy">Epilepsy</option>
+            <option value="Pregnant">Pregnant</option>
+            <option value="Anticoagulants medicament">Anticoagulants medicament</option>
+            <option value="Previous endocarditis / prosthetic">Previous endocarditis / prosthetic</option>
+            <option value="heart valve">heart valve</option>
           </select>
 
           <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>

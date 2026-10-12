@@ -46,8 +46,8 @@ export default function Patients() {
 
     const result = patients.filter((p) => {
       const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
-      const patientCode = p.patientCode?.toLowerCase() || "";
-      return fullName.includes(value) || patientCode.includes(value);
+      const id = p.id?.toString() || "";
+      return fullName.includes(value) || id.includes(value);
     });
 
     setFilteredPatients(result);

@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+using Superpower;
 
 
-    namespace dentist_project.Controllers;
+namespace dentist_project.Controllers;
 
 
     [ApiController]
@@ -51,24 +52,33 @@ using Microsoft.AspNetCore.Identity;
         [HttpGet("search/{keyword}")]
         public async Task<IActionResult> SearchPatient(string keyword)
         {
+        if(keyword.Contains("Extraction"))
+        {
+            keyword = keyword.Replace("Extraction", "missing");
+        }
+        var query = _context.Patients.AsQueryable();
+
+        if (int.TryParse(keyword, out int id))
+        {
+            Console.WriteLine("id is +++++++++++++++++++++++++"+id);
+            query = query.Where(p =>
+                p.Id == id ||
+                p.FirstName.Contains(keyword) ||
+                p.LastName.Contains(keyword));
+        }
+        else
+        {
+            query = query.Where(p =>
+                p.FirstName.Contains(keyword) ||
+                p.LastName.Contains(keyword));
+        }
+
+        var patients = await query.ToListAsync();
 
 
-            var patient = await _context.Patients
-                .FirstOrDefaultAsync(
-                    p =>
-                    p.FirstName.Contains(keyword)
-                    ||
-                    p.LastName.Contains(keyword)
-                );
+       
 
-
-
-            if (patient == null)
-                return NotFound();
-
-
-
-            return Ok(patient);
+            return Ok(patients);
 
         }
 
@@ -384,7 +394,10 @@ using Microsoft.AspNetCore.Identity;
         {
             return await GetAllTreatments();
         }
-
+        if(keyword.Contains("Extraction"))
+        {
+            keyword = keyword.Replace("Extraction", "missing");
+        }
 
         keyword = keyword.ToLower();
 

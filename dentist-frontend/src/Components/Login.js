@@ -27,12 +27,12 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState("");
-  const disable = !email || !password ? true : false;
+  let disable = !email || !password ? true : false;
   // === states ===
   //handlers
   async function handleLogin() {
     try {
-      setShowPassword(false);
+      disable = true;
       document.getElementById("login-button").innerHTML = "Logging in...";
       const response = await fetch("https://localhost:7166/api/auth/login", {
         method: "POST",
@@ -63,7 +63,7 @@ export default function Login() {
     }
     document.getElementById("login-button").innerHTML = "Login";
 
-    setShowPassword(true);
+    disable = false;
 
   }
 

@@ -225,7 +225,9 @@ export default function AddTreatment() {
     e.preventDefault();
 
     setError("");
-
+    if (form.treatment == "Extraction") {
+      form.treatment = "missing";
+    }
     /*
      * Treatment name required.
      */
@@ -281,6 +283,7 @@ export default function AddTreatment() {
     /*
      * Final payload
      */
+
     const treatmentData = {
       patientId: Number(id),
       treatment: form.treatment.trim(),
@@ -387,7 +390,7 @@ export default function AddTreatment() {
           {/* =========================
               TREATMENT NAME
           ========================== */}
-
+          {/* 
           <TextField
             label="Treatment Name"
             name="treatment"
@@ -396,7 +399,40 @@ export default function AddTreatment() {
             fullWidth
             required
             placeholder="Example: Cleaning / Filling / Root Canal"
-          />
+          /> */}
+          <select name="treatment"
+            id="n"
+            value={form.treatment}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              maxWidth: "300px",
+              padding: "8px 12px",
+              mt: 3,
+              fontSize: "15px",
+              color: "#333",
+              background: "white",
+              border: "1px solid #ccc",
+              borderRadius: "6px",
+              outline: "none",
+              cursor: "pointer",
+            }} >
+            <option value="Bridge">Bridge </option>
+
+            <option value="Filling">Filling </option>
+            <option value="Gouttiere">Gouttiere</option>
+            <option value="Laser">Laser</option>
+            <option value="Root canal">Root canal
+            </option>
+            <option value="Extraction">Extraction</option>
+            <option value="Crown">Crown</option>
+            <option value="Implant">Implant</option>
+            <option value="Veneers">Veneers</option>
+            <option value="Pulpotomie">Pulpotomie</option>
+            <option value="Pulpectomie">Pulpectomie</option>
+            <option value="Cpp">Cpp</option>
+            <option value="Scaling">Scaling</option>
+          </select>
 
           {/* =========================
               TOOTH NUMBER
@@ -576,6 +612,7 @@ export default function AddTreatment() {
           {/* =========================
               NOTES
           ========================== */}
+
 
           <TextField
             label="Notes"

@@ -1104,19 +1104,26 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
             // 5. Delete appointments related to this treatment
+            // 5. Delete appointments related to this treatment
             var appointments = await _context.Appointments
-                .Where(a =>
-                    appointmentIds.Contains(a.Id))
+                .Include(a => a.AppointmentTreatments)
+                .Where(a => appointmentIds.Contains(a.Id))
                 .ToListAsync();
 
 
-            if (appointments.Any())
+            foreach (var appointment in appointments)
             {
-                _context.Appointments.RemoveRange(appointments);
+                // Clear payment data
+                appointment.TotalCost = 0;
+                appointment.PaidAmount = 0;
+                appointment.RemainingAmount = 0;
+                appointment.PaymentStatus = PaymentStatus.Unpaid;
+
+                // remove links
+                appointment.AppointmentTreatments.Clear();
+
+                _context.Appointments.Remove(appointment);
             }
-
-
-
             // 6. Delete tooth treatments
             if (toothTreatments.Any())
             {
