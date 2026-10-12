@@ -194,6 +194,8 @@ export default function AddPatient() {
               outline: "none",
               cursor: "pointer",
             }} >
+
+            <option value="" disabled>Select Medical Note</option>
             <option value="Hypertension">Hypertension </option>
             <option value="Diabetes">Diabetes </option>
             <option value="Allergie a penicillin">Allergie a penicillin</option>
@@ -210,6 +212,7 @@ export default function AddPatient() {
             <option value="Anticoagulants medicament">Anticoagulants medicament</option>
             <option value="Previous endocarditis / prosthetic">Previous endocarditis / prosthetic</option>
             <option value="heart valve">heart valve</option>
+            <option value="Cholesterol">Cholesterol</option>
           </select>
 
           <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>

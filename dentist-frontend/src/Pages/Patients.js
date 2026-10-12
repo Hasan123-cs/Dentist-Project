@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import PatientHeader from "../Components/PatientHeader";
 import PatientSearch from "../Components/PatientSearch";
 import PatientList from "../Components/PatientList";
+import { useSearchParams } from "react-router-dom";
 
 import { useEffect, useState } from "react";
 
@@ -11,7 +12,11 @@ export default function Patients() {
 
   const [filteredPatients, setFilteredPatients] = useState([]);
 
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+
+  const [search, setSearch] = useState(
+    searchParams.get("search") || ""
+  );
 
   const [error, setError] = useState("");
 

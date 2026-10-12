@@ -5,9 +5,13 @@ import TreatmentStats from "../Components/TreatmentStats";
 import TreatmentList from "../Components/TreatmentList";
 import TreatmentSearch from "../Components/TreatmentSearch";
 import { useState } from "react";
-
+import { useSearchParams } from "react-router-dom";
 export default function Treatments() {
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+
+  const [search, setSearch] = useState(
+    searchParams.get("search") || ""
+  );
   return (
     <Box
       sx={{

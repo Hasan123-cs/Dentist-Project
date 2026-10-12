@@ -27,7 +27,7 @@ export default function PatientProfile() {
 
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(2);
   const [summary, setSummary] = useState({
     balance: 0,
     upcomingAppointments: 0
@@ -207,7 +207,7 @@ export default function PatientProfile() {
 
           <Tab label="Completed Treatments" />
 
-          <Tab label="Images" />
+          {/* <Tab label="Images" /> */}
 
         </Tabs>
       </Paper>
@@ -389,22 +389,46 @@ export default function PatientProfile() {
             <Typography fontSize={22} fontWeight={800} color="#C9A227">
               Treatment Plan
             </Typography>
+            <div sx={{
+              display: "flex", gap: "10px", justifyContent: "space-between",
+              alignItems: "center", width: "100%"
+            }}>
+              <Button
+                variant="contained"
 
-            <Button
-              variant="contained"
+                onClick={() => navigate(`/patients/${patient.id}/add-treatment`)}
+                sx={{
+                  background: "#C9A227",
+                  marginBottom: 3,
+                  fontWeight: 700,
 
-              onClick={() => navigate(`/patients/${patient.id}/add-treatment`)}
-              sx={{
-                background: "#C9A227",
-                marginBottom: 3,
-                fontWeight: 700,
+                  borderRadius: 3,
+                }}
+              >
+                + ADD TREATMENT
+              </Button>
 
-                borderRadius: 3,
-              }}
-            >
-              + ADD TREATMENT
-            </Button>
+            </div>
           </Box>
+          <Button
+            variant="outlined"
+            onClick={() =>
+              navigate(
+                `/treatments?search=${encodeURIComponent(
+                  `${patient.firstName} ${patient.lastName}`
+                )}`
+              )
+            }
+            sx={{
+              mb: 3,
+              borderColor: "#C9A227",
+              color: "#C9A227",
+              fontWeight: 700,
+              borderRadius: 3,
+            }}
+          >
+            VIEW ALL TREATMENTS
+          </Button>
           {treatments.length === 0 ? (
 
             <Typography color="#718096">
@@ -546,7 +570,7 @@ export default function PatientProfile() {
 
 
                   {
-                    treatment.toothNumber!==0 &&
+                    treatment.toothNumber !== 0 &&
 
                     <Grid item xs={12} sm={6}>
 
@@ -664,277 +688,282 @@ export default function PatientProfile() {
 
           )}
         </Paper>
-      )}
+      )
+      }
       {/* COMPLETED TREATMENTS */}
 
-      {tab === 3 && (
+      {
+        tab === 3 && (
 
-        <Paper
-          sx={{
-            mt: 3,
-            p: 4,
-            borderRadius: 4,
-            border: "1px solid #eee3c5"
-          }}
-        >
-
-
-          <Typography
-            fontSize={24}
-            fontWeight={800}
-            color="#C9A227"
-            mb={3}
-          >
-            Completed Treatments
-          </Typography>
-
-
-
-          <Box
+          <Paper
             sx={{
-              background: "#faf8f2",
-              borderRadius: 3,
-              p: 3,
-              mb: 3
+              mt: 3,
+              p: 4,
+              borderRadius: 4,
+              border: "1px solid #eee3c5"
             }}
           >
 
 
-            <Typography fontWeight={800}>
-              Total Cost : $
-
-              {
-                completedTreatments
-                  .reduce(
-                    (sum, t) =>
-                      sum + (t.cost || 0),
-                    0
-                  )
-              }
-
+            <Typography
+              fontSize={24}
+              fontWeight={800}
+              color="#C9A227"
+              mb={3}
+            >
+              Completed Treatments
             </Typography>
 
 
 
-            <Typography fontWeight={800}>
-              Total Paid : $
+            <Box
+              sx={{
+                background: "#faf8f2",
+                borderRadius: 3,
+                p: 3,
+                mb: 3
+              }}
+            >
+
+
+              <Typography fontWeight={800}>
+                Total Cost : $
+
+                {
+                  completedTreatments
+                    .reduce(
+                      (sum, t) =>
+                        sum + (t.cost || 0),
+                      0
+                    )
+                }
+
+              </Typography>
+
+
+
+              <Typography fontWeight={800}>
+                Total Paid : $
+
+                {
+                  completedTreatments
+                    .reduce(
+                      (sum, t) =>
+                        sum + (t.paid || 0),
+                      0
+                    )
+                }
+
+              </Typography>
+
+
+
+              <Typography fontWeight={800}>
+                Total Remaining : $
+
+                {
+                  completedTreatments
+                    .reduce(
+                      (sum, t) =>
+                        sum + (t.remaining || 0),
+                      0
+                    )
+                }
+
+              </Typography>
+
+
+            </Box>
+
+
+
+
+
+            <Grid container spacing={3}>
+
 
               {
                 completedTreatments
-                  .reduce(
-                    (sum, t) =>
-                      sum + (t.paid || 0),
-                    0
-                  )
-              }
-
-            </Typography>
+                  .map((t, index) => (
 
 
-
-            <Typography fontWeight={800}>
-              Total Remaining : $
-
-              {
-                completedTreatments
-                  .reduce(
-                    (sum, t) =>
-                      sum + (t.remaining || 0),
-                    0
-                  )
-              }
-
-            </Typography>
-
-
-          </Box>
-
-
-
-
-
-          <Grid container spacing={3}>
-
-
-            {
-              completedTreatments
-                .map((t, index) => (
-
-
-                  <Grid
-                    item
-                    xs={12}
-                    sm={6}
-                    md={4}
-                    key={index}
-                  >
-
-
-                    <Paper
-                      sx={{
-                        p: 3,
-                        borderRadius: 3,
-                        border: "1px solid #eee3c5"
-                      }}
+                    <Grid
+                      item
+                      xs={12}
+                      sm={6}
+                      md={4}
+                      key={index}
                     >
 
 
-
-                      <Typography
-                        fontSize={20}
-                        fontWeight={800}
-                        color="#092c57"
+                      <Paper
+                        sx={{
+                          p: 3,
+                          borderRadius: 3,
+                          border: "1px solid #eee3c5"
+                        }}
                       >
-                        🦷 {t.treatment}
-                      </Typography>
 
 
 
-                      <Typography>
-                        Tooth: {t.toothNumber}
-                      </Typography>
+                        <Typography
+                          fontSize={20}
+                          fontWeight={800}
+                          color="#092c57"
+                        >
+                          🦷 {t.treatment}
+                        </Typography>
 
 
 
-                      <Typography>
-                        Status: {t.status}
-                      </Typography>
+                        <Typography>
+                          Tooth: {t.toothNumber}
+                        </Typography>
 
 
 
-                      <Typography>
-                        💰 Cost: ${t.cost}
-                      </Typography>
+                        <Typography>
+                          Status: {t.status}
+                        </Typography>
 
 
 
-                      <Typography>
-                        ✅ Paid: ${t.paid}
-                      </Typography>
+                        <Typography>
+                          💰 Cost: ${t.cost}
+                        </Typography>
 
 
 
-                      <Typography>
-                        ⏳ Remaining: ${t.remaining}
-                      </Typography>
+                        <Typography>
+                          ✅ Paid: ${t.paid}
+                        </Typography>
 
 
 
-                    </Paper>
-
-
-                  </Grid>
-
-
-                ))
-
-            }
-
-
-          </Grid>
+                        <Typography>
+                          ⏳ Remaining: ${t.remaining}
+                        </Typography>
 
 
 
-        </Paper>
+                      </Paper>
 
-      )}
+
+                    </Grid>
+
+
+                  ))
+
+              }
+
+
+            </Grid>
+
+
+
+          </Paper>
+
+        )
+      }
 
       {/* IMAGES */}
 
-      {tab === 4 && (
-        <Paper
-          sx={{
-            mt: 3,
+      {/* {
+        tab === 4 && (
+          <Paper
+            sx={{
+              mt: 3,
 
-            p: 4,
+              p: 4,
 
-            width: "100%",
+              width: "100%",
 
-            borderRadius: 4,
+              borderRadius: 4,
 
-            border: "1px solid #eee3c5",
-          }}
-        >
-          <Typography
-            fontSize={22}
-            fontWeight={800}
-            color="#C9A227"
-            textAlign="center"
+              border: "1px solid #eee3c5",
+            }}
           >
-            Patient Images
-          </Typography>
+            <Typography
+              fontSize={22}
+              fontWeight={800}
+              color="#C9A227"
+              textAlign="center"
+            >
+              Patient Images
+            </Typography>
 
-          <Grid container spacing={3} mt={2}>
-            {[
-              "Bitewing X-Ray",
+            <Grid container spacing={3} mt={2}>
+              {[
+                "Bitewing X-Ray",
 
-              "Panoramic X-Ray",
+                "Panoramic X-Ray",
 
-              "Periapical X-Ray",
+                "Periapical X-Ray",
 
-              "Dental Scan",
-            ].map((image, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <Paper
-                  onClick={() => setSelectedImage(image)}
-                  sx={{
-                    height: 280,
-
-                    borderRadius: 3,
-
-                    overflow: "hidden",
-
-                    border: "1px solid #eee3c5",
-
-                    cursor: "pointer",
-                  }}
-                >
-                  <Box
+                "Dental Scan",
+              ].map((image, index) => (
+                <Grid item xs={12} sm={6} md={3} key={index}>
+                  <Paper
+                    onClick={() => setSelectedImage(image)}
                     sx={{
-                      height: 210,
+                      height: 280,
 
-                      background: "#111",
+                      borderRadius: 3,
 
-                      display: "flex",
+                      overflow: "hidden",
 
-                      alignItems: "center",
+                      border: "1px solid #eee3c5",
 
-                      justifyContent: "center",
-
-                      fontSize: 70,
-
-                      color: "#fff",
+                      cursor: "pointer",
                     }}
                   >
-                    🦷
-                  </Box>
-
-                  <Box p={2} textAlign="center">
-                    <Typography fontWeight={700}>{image}</Typography>
-
-                    <Chip
-                      label="X-RAY"
-                      size="small"
+                    <Box
                       sx={{
-                        mt: 1,
+                        height: 210,
 
-                        background: "#faf0c8",
+                        background: "#111",
 
-                        color: "#C9A227",
+                        display: "flex",
 
-                        fontWeight: 700,
+                        alignItems: "center",
+
+                        justifyContent: "center",
+
+                        fontSize: 70,
+
+                        color: "#fff",
                       }}
-                    />
-                  </Box>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </Paper>
-      )}
+                    >
+                      🦷
+                    </Box>
+
+                    <Box p={2} textAlign="center">
+                      <Typography fontWeight={700}>{image}</Typography>
+
+                      <Chip
+                        label="X-RAY"
+                        size="small"
+                        sx={{
+                          mt: 1,
+
+                          background: "#faf0c8",
+
+                          color: "#C9A227",
+
+                          fontWeight: 700,
+                        }}
+                      />
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
+        )
+      } */}
 
       {/* FULL SCREEN IMAGE */}
-
+      {/* 
       <Dialog
         open={Boolean(selectedImage)}
         onClose={() => setSelectedImage(null)}
@@ -958,8 +987,8 @@ export default function PatientProfile() {
             🦷
           </Typography>
         </Box>
-      </Dialog>
-    </Box>
+      </Dialog> */}
+    </Box >
   );
 }
 

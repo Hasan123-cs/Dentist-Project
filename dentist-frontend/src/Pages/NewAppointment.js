@@ -533,15 +533,44 @@ export default function NewAppointment() {
             Treatment Name
         ========================= */}
 
-        <TextField
-          fullWidth
-          name="treatmentName"
-          label="Treatment Name"
+
+        <select name="treatmentName"
+          id="n"
           value={appointment.treatmentName}
           onChange={handleChange}
-          placeholder="Example: Root Canal"
-          sx={{ mb: 2 }}
-        />
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            mt: 3,
+            mb: 2,
+            fontSize: "15px",
+            color: "#333",
+            background: "white",
+            border: "1px solid #ccc",
+            borderRadius: "6px",
+            outline: "none",
+            cursor: "pointer",
+          }} >
+          <option value="" disabled>Select Treatment</option>
+          <option value="Veneers">Veneers</option>
+
+          <option value="Bridge">Bridge </option>
+
+          <option value="Filling">Filling </option>
+          <option value="Gouttiere">Gouttiere</option>
+          <option value="Laser">Laser</option>
+          <option value="Root canal">Root canal
+          </option>
+          <option value="Extraction">Extraction</option>
+          <option value="Crown">Crown</option>
+          <option value="Implant">Implant</option>
+
+          <option value="Pulpotomie">Pulpotomie</option>
+          <option value="Pulpectomie">Pulpectomie</option>
+          <option value="Cpp">Cpp</option>
+          <option value="Scaling">Scaling</option>
+        </select>
+
 
         {/* =========================
             Date
@@ -556,7 +585,7 @@ export default function NewAppointment() {
           InputLabelProps={{
             shrink: true,
           }}
-          sx={{ mb: 2 }}
+          sx={{ mb: 2, mt: 2 }}
         />
 
         {/* =========================
