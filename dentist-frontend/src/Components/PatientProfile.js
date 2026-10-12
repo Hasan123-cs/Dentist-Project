@@ -546,7 +546,7 @@ export default function PatientProfile() {
 
 
                   {
-                    treatment.toothNumber &&
+                    treatment.toothNumber!==0 &&
 
                     <Grid item xs={12} sm={6}>
 

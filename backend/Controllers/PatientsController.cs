@@ -559,7 +559,7 @@ namespace dentist_project.Controllers;
         try
         {
             var treatments =
-                await _service.GetPatientTreatmentsAsync(id);
+                await _service.GetNormalPatientTreatmentsAsync(id);
 
 
             return Ok(treatments);

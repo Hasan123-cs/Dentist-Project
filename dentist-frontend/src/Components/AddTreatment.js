@@ -19,7 +19,7 @@ export default function AddTreatment() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    treatment: "",
+    treatment: "Bridge",
     tooth: "",
     surface: "",
     status: "Pending",
@@ -417,7 +417,9 @@ export default function AddTreatment() {
               outline: "none",
               cursor: "pointer",
             }} >
-            <option value="Bridge">Bridge </option>
+              <option value="Veneers">Veneers</option>
+
+            <option   value="Bridge">Bridge </option>
 
             <option value="Filling">Filling </option>
             <option value="Gouttiere">Gouttiere</option>
@@ -427,7 +429,7 @@ export default function AddTreatment() {
             <option value="Extraction">Extraction</option>
             <option value="Crown">Crown</option>
             <option value="Implant">Implant</option>
-            <option value="Veneers">Veneers</option>
+            
             <option value="Pulpotomie">Pulpotomie</option>
             <option value="Pulpectomie">Pulpectomie</option>
             <option value="Cpp">Cpp</option>
