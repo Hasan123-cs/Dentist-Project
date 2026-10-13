@@ -1053,25 +1053,75 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
         //delte patient 
         public async Task<(bool Success, string Message)> DeleteTreatmentAsync(int id)
         {
-            // 1. Find medical record
+            // =========================================
+            // 1. FIND MEDICAL RECORD
+            // =========================================
+
             var medicalRecord = await _context.MedicalRecords
                 .FirstOrDefaultAsync(m => m.Id == id);
 
 
             if (medicalRecord == null)
             {
-                return (
+                return
+                (
                     false,
                     "Treatment record not found."
                 );
             }
 
 
-            // 2. Get ToothTreatments
+
+
+
+            // =========================================
+            // 2. GET TOOTH TREATMENTS
+            // =========================================
+
             var toothTreatments = await _context.ToothTreatments
-                .Where(t => t.MedicalRecordId == id)
+                .Where(t =>
+                    t.MedicalRecordId == id)
                 .ToListAsync();
 
+
+
+            var toothTreatmentIds = toothTreatments
+                .Select(t => t.Id)
+                .ToList();
+
+
+
+
+
+
+
+            // =========================================
+            // 3. DELETE APPOINTMENT-TOOTH LINKS
+            // =========================================
+
+            var toothTreatmentLinks = await _context
+                .AppointmentTreatmentToothTreatments
+                .Where(x =>
+                    toothTreatmentIds.Contains(x.ToothTreatmentId))
+                .ToListAsync();
+
+
+
+            if (toothTreatmentLinks.Any())
+            {
+                _context.AppointmentTreatmentToothTreatments
+                    .RemoveRange(toothTreatmentLinks);
+            }
+
+
+
+
+
+
+
+            // =========================================
+            // 4. FIND APPOINTMENT TREATMENTS
+            // =========================================
 
             var treatmentIds = toothTreatments
                 .Where(t => t.TreatmentId != null)
@@ -1080,7 +1130,6 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-            // 3. Find appointments linked to this treatment
             var appointmentTreatments = await _context.AppointmentTreatments
                 .Where(at =>
                     treatmentIds.Contains(at.TreatmentId))
@@ -1090,11 +1139,19 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
             var appointmentIds = appointmentTreatments
                 .Select(at => at.AppointmentId)
+                .Distinct()
                 .ToList();
 
 
 
-            // 4. Delete appointment-treatment links
+
+
+
+
+            // =========================================
+            // 5. DELETE APPOINTMENT TREATMENTS
+            // =========================================
+
             if (appointmentTreatments.Any())
             {
                 _context.AppointmentTreatments
@@ -1103,28 +1160,74 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-            // 5. Delete appointments related to this treatment
-            // 5. Delete appointments related to this treatment
+
+
+
+
+            // =========================================
+            // 6. DELETE APPOINTMENTS
+            // =========================================
+
             var appointments = await _context.Appointments
-                .Include(a => a.AppointmentTreatments)
-                .Where(a => appointmentIds.Contains(a.Id))
+                .Where(a =>
+                    appointmentIds.Contains(a.Id))
                 .ToListAsync();
 
 
-            foreach (var appointment in appointments)
+
+            if (appointments.Any())
             {
-                // Clear payment data
-                appointment.TotalCost = 0;
-                appointment.PaidAmount = 0;
-                appointment.RemainingAmount = 0;
-                appointment.PaymentStatus = PaymentStatus.Unpaid;
 
-                // remove links
-                appointment.AppointmentTreatments.Clear();
+                // Remove MedicalRecord -> Appointment reference
+                var linkedMedicalRecords = await _context.MedicalRecords
+                    .Where(m =>
+                        m.AppointmentId != null &&
+                        appointmentIds.Contains(m.AppointmentId.Value))
+                    .ToListAsync();
 
-                _context.Appointments.Remove(appointment);
+
+
+                foreach (var record in linkedMedicalRecords)
+                {
+                    record.AppointmentId = null;
+                }
+
+
+
+                // Save FK changes first because relationship is Restrict
+                await _context.SaveChangesAsync();
+
+
+
+
+                foreach (var appointment in appointments)
+                {
+                    appointment.TotalCost = 0;
+
+                    appointment.PaidAmount = 0;
+
+                    appointment.RemainingAmount = 0;
+
+                    appointment.PaymentStatus =
+                        PaymentStatus.Unpaid;
+                }
+
+
+
+                _context.Appointments
+                    .RemoveRange(appointments);
             }
-            // 6. Delete tooth treatments
+
+
+
+
+
+
+
+            // =========================================
+            // 7. DELETE TOOTH TREATMENTS
+            // =========================================
+
             if (toothTreatments.Any())
             {
                 _context.ToothTreatments
@@ -1133,16 +1236,47 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-            // 7. Delete medical record
-            _context.MedicalRecords.Remove(medicalRecord);
 
 
 
-            await _context.SaveChangesAsync();
+
+            // =========================================
+            // 8. DELETE MEDICAL RECORD
+            // =========================================
+
+            _context.MedicalRecords
+                .Remove(medicalRecord);
 
 
 
-            return (
+
+
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("================ DELETE ERROR ================");
+
+                Console.WriteLine(ex.Message);
+
+                Console.WriteLine("INNER:");
+                Console.WriteLine(ex.InnerException?.Message);
+
+                Console.WriteLine("==============================================");
+
+                throw;
+            }
+
+
+
+
+
+
+            return
+            (
                 true,
                 "Treatment and all related data deleted successfully."
             );
@@ -1420,60 +1554,63 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 )
 
 
-                .Select(x => new
+                .GroupBy(x => new
                 {
-                    id = x.Id,
+                    x.MedicalRecordId,
+                    x.TreatmentId
+                })
+
+
+                .Select(g => new
+                {
+
+                    id = g.First().Id,
 
 
                     treatment =
-                        x.Treatment != null
+                        g.First().Treatment != null
                         ?
-                        x.Treatment.Name
+                        g.First().Treatment.Name
                         :
                         "Unknown",
 
 
 
-                    toothNumber =
-                        x.Tooth != null
-                        ?
-                        x.Tooth.Number
-                        :
-                        0,
-
-
-                    surface =
-                        x.Surface.HasValue
-                        ?
-                        x.Surface.ToString()
-                        :
-                        null,
+                    // ALL TEETH IN ONE CARD
+                    teeth =
+                        g.Where(x => x.Tooth != null)
+                        .Select(x => x.Tooth.Number)
+                        .ToList(),
 
 
 
-                    status = x.Status.ToString(),
+
+                    status =
+                        g.First().Status.ToString(),
 
 
-                    condition = x.Condition.ToString(),
+
+                    condition =
+                        g.First().Condition.ToString(),
 
 
 
                     cost =
-                        x.Treatment != null
+                        g.First().Treatment != null
                         ?
-                        x.Treatment.DefaultPrice
+                        g.First().Treatment.DefaultPrice
                         :
                         0,
 
 
 
                     paid =
-                        x.MedicalRecord.Appointment != null
+                        g.First().MedicalRecord.Appointment != null
                         ?
-                        x.MedicalRecord.Appointment
+                        g.First().MedicalRecord.Appointment
                             .AppointmentTreatments
                             .Where(at =>
-                                at.TreatmentId == x.TreatmentId
+                                at.TreatmentId == g.Key.TreatmentId
                             )
                             .Select(at =>
                                 at.PaidAmount
@@ -1486,20 +1623,20 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
                     remaining =
                         (
-                            x.Treatment != null
+                            g.First().Treatment != null
                             ?
-                            x.Treatment.DefaultPrice
+                            g.First().Treatment.DefaultPrice
                             :
                             0
                         )
                         -
                         (
-                            x.MedicalRecord.Appointment != null
+                            g.First().MedicalRecord.Appointment != null
                             ?
-                            x.MedicalRecord.Appointment
+                            g.First().MedicalRecord.Appointment
                                 .AppointmentTreatments
                                 .Where(at =>
-                                    at.TreatmentId == x.TreatmentId
+                                    at.TreatmentId == g.Key.TreatmentId
                                 )
                                 .Select(at =>
                                     at.PaidAmount
@@ -1511,13 +1648,17 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-                    notes = x.Notes,
+
+                    notes =
+                        g.First().Notes,
 
 
-                    date = x.MedicalRecord.CreatedAt
 
+                    date =
+                        g.First().MedicalRecord.CreatedAt
 
                 })
+
 
                 .OrderByDescending(x => x.date)
 
@@ -1544,64 +1685,73 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
                 .Where(x =>
                     x.MedicalRecord.PatientId == patientId
-                   
                 )
 
 
-                .Select(x => new
+                .GroupBy(x => new
                 {
-                    id = x.Id,
+                    x.MedicalRecordId,
+                    x.TreatmentId
+                })
+
+
+                .Select(g => new
+                {
+                    id = g.First().Id,
 
 
                     treatment =
-                        x.Treatment != null
+                        g.First().Treatment != null
                         ?
-                        x.Treatment.Name
+                        g.First().Treatment.Name
                         :
                         "Unknown",
 
 
 
-                    toothNumber =
-                        x.Tooth != null
-                        ?
-                        x.Tooth.Number
-                        :
-                        0,
+                    // ALL TEETH IN ONE CARD
+                    teeth =
+                        g.Where(x => x.Tooth != null)
+                         .Select(x => x.Tooth.Number)
+                         .ToList(),
+
 
 
                     surface =
-                        x.Surface.HasValue
+                        g.First().Surface.HasValue
                         ?
-                        x.Surface.ToString()
+                        g.First().Surface.ToString()
                         :
                         null,
 
 
 
-                    status = x.Status.ToString(),
+                    status =
+                        g.First().Status.ToString(),
 
 
-                    condition = x.Condition.ToString(),
+
+                    condition =
+                        g.First().Condition.ToString(),
 
 
 
                     cost =
-                        x.Treatment != null
+                        g.First().Treatment != null
                         ?
-                        x.Treatment.DefaultPrice
+                        g.First().Treatment.DefaultPrice
                         :
                         0,
 
 
 
                     paid =
-                        x.MedicalRecord.Appointment != null
+                        g.First().MedicalRecord.Appointment != null
                         ?
-                        x.MedicalRecord.Appointment
+                        g.First().MedicalRecord.Appointment
                             .AppointmentTreatments
                             .Where(at =>
-                                at.TreatmentId == x.TreatmentId
+                                at.TreatmentId == g.Key.TreatmentId
                             )
                             .Select(at =>
                                 at.PaidAmount
@@ -1614,20 +1764,20 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
                     remaining =
                         (
-                            x.Treatment != null
+                            g.First().Treatment != null
                             ?
-                            x.Treatment.DefaultPrice
+                            g.First().Treatment.DefaultPrice
                             :
                             0
                         )
                         -
                         (
-                            x.MedicalRecord.Appointment != null
+                            g.First().MedicalRecord.Appointment != null
                             ?
-                            x.MedicalRecord.Appointment
+                            g.First().MedicalRecord.Appointment
                                 .AppointmentTreatments
                                 .Where(at =>
-                                    at.TreatmentId == x.TreatmentId
+                                    at.TreatmentId == g.Key.TreatmentId
                                 )
                                 .Select(at =>
                                     at.PaidAmount
@@ -1639,13 +1789,17 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-                    notes = x.Notes,
+                    notes =
+                        g.First().Notes,
 
 
-                    date = x.MedicalRecord.CreatedAt
+
+                    date =
+                        g.First().MedicalRecord.CreatedAt
 
 
                 })
+
 
                 .OrderByDescending(x => x.date)
 
@@ -1658,7 +1812,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 .ToList();
         }
         public async Task<List<object>> GetCompletedTreatmentsAsync(
-    int patientId)
+     int patientId)
         {
             var treatments = await _context.ToothTreatments
 
@@ -1668,7 +1822,9 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
                 .Include(t => t.MedicalRecord)
                     .ThenInclude(m => m.Appointment)
-                        .ThenInclude(a => a.AppointmentTreatments)
+                        .ThenInclude(a => a!.AppointmentTreatments)
+                            .ThenInclude(at => at.ToothTreatmentLinks)
+
 
 
                 .Where(t =>
@@ -1678,81 +1834,142 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 )
 
 
-                .Select(t => new
+
+                .GroupBy(t => new
                 {
-                    id = t.Id,
+                    t.MedicalRecordId,
+                    t.TreatmentId
+                })
+
+
+
+                .Select(g => new
+                {
+
+                    id = g.First().MedicalRecordId,
+
+
 
                     treatment =
-                        t.Treatment != null
+                        g.First().Treatment != null
                         ?
-                        t.Treatment.Name
+                        g.First().Treatment!.Name
                         :
                         "Unknown",
 
 
-                    toothNumber =
-                        t.Tooth != null
-                        ?
-                        t.Tooth.Number
-                        :
-                        0,
 
 
-                    status = t.Status.ToString(),
+
+                    // Bridge: 11,12,13
+                    // Filling: 18
+                    teeth =
+                        g.Where(x => x.Tooth != null)
+                        .Select(x => x.Tooth!.Number)
+                        .ToList(),
+
+
+
 
 
                     cost =
-                        t.Treatment != null
+                        g.First().Treatment != null
                         ?
-                        t.Treatment.DefaultPrice
+                        g.First().Treatment!.DefaultPrice
                         :
                         0,
 
 
+
+
+
                     paid =
-    t.MedicalRecord.Appointment != null
-    ?
-    t.MedicalRecord.Appointment
-        .AppointmentTreatments
-        .Where(at =>
-            at.ToothTreatments.Any(tt => tt.Id == t.Id)
-        )
-        .Select(at => at.PaidAmount)
-        .FirstOrDefault()
-    :
-    0,
+                        g.First().MedicalRecord.Appointment != null
+                        ?
+
+                        g.First().MedicalRecord.Appointment
+                            .AppointmentTreatments
+
+                            .Where(at =>
+                                at.TreatmentId == g.Key.TreatmentId
+                            )
+
+                            .Sum(at =>
+                                at.PaidAmount
+                            )
+
+                        :
+                        0,
+
+
+
+
+
+
 
                     remaining =
-(
-    t.Treatment != null
-    ? t.Treatment.DefaultPrice
-    : 0
-)
--
-(
-    t.MedicalRecord.Appointment != null
-    ?
-    t.MedicalRecord.Appointment
-        .AppointmentTreatments
-        .Where(at =>
-            at.ToothTreatments.Any(tt => tt.Id == t.Id)
-        )
-        .Select(at => at.PaidAmount)
-        .FirstOrDefault()
-    :
-    0
-),
+                        (
+                            g.First().Treatment != null
+                            ?
+                            g.First().Treatment!.DefaultPrice
+                            :
+                            0
+                        )
 
-                    date = t.MedicalRecord.CreatedAt,
+                        -
+
+                        (
+                            g.First().MedicalRecord.Appointment != null
+                            ?
+
+                            g.First().MedicalRecord.Appointment
+                                .AppointmentTreatments
+
+                                .Where(at =>
+                                    at.TreatmentId == g.Key.TreatmentId
+                                )
+
+                                .Sum(at =>
+                                    at.PaidAmount
+                                )
+
+                            :
+                            0
+                        ),
 
 
-                    notes = t.Notes
+
+
+
+
+                    status =
+                        g.First().Status.ToString(),
+
+
+
+
+
+                    date =
+                        g.First().MedicalRecord.CreatedAt,
+
+
+
+
+
+                    notes =
+                        g.First().Notes
 
                 })
 
+
+
                 .OrderByDescending(x => x.date)
 
+
+
                 .ToListAsync();
+
+
 
 
             return treatments

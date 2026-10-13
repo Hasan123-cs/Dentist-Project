@@ -337,65 +337,89 @@ export default function TreatmentCard({ treatment, onDelete }) {
 
       {/* DETAILS */}
 
-      <Box mt={2}>
-        <Box display="flex" gap={1} alignItems="center" mb={1}>
-          <MedicalServices
-            fontSize="small"
-            sx={{
-              color: "#C9A227",
-            }}
-          />
+     <Box mt={2}>
 
-          <Typography fontSize={14}>
-            Tooth: <b>{formatTooth(treatment.tooth)}</b>
-          </Typography>
-        </Box>
+  {/* TOOTH */}
+ {treatment.tooth &&
+ treatment.tooth.length > 0 && (
 
-        <Box display="flex" gap={1} alignItems="center" mb={1}>
-          <CalendarMonth
-            fontSize="small"
-            sx={{
-              color: "#C9A227",
-            }}
-          />
+  <Box display="flex" gap={1} alignItems="center" mb={1}>
 
-          <Typography fontSize={14}>{formatDate(treatment.date)}</Typography>
-        </Box>
-        {/* can add later as feature */}
+    <MedicalServices
+      fontSize="small"
+      sx={{
+        color:"#C9A227",
+      }}
+    />
 
-        {/* <Box display="flex" gap={1} alignItems="center" mb={1}>
-          <AccessTime
-            fontSize="small"
-            sx={{
-              color: "#C9A227",
-            }}
-          />
+    <Typography fontSize={14}>
+      Tooth: <b>{treatment.tooth.join(", ")}</b>
+    </Typography>
 
-          <Typography fontSize={14}>
-            {treatment.duration ? `${treatment.duration} min` : "-"}
-          </Typography>
-        </Box> */}
+  </Box>
 
-        <Box display="flex" gap={1} alignItems="center">
-          <AttachMoney
-            fontSize="small"
-            sx={{
-              color: "#C9A227",
-            }}
-          />
+)}
 
-          <Typography>Total Price: ${treatment.totalPrice}</Typography>
 
-          <Typography
-            sx={{
-              color: "#d97706",
-              fontWeight: 700,
-            }}
-          >
-            Remaining: ${treatment.remainingAmount}
-          </Typography>
-        </Box>
-      </Box>
+
+
+
+  {/* DATE */}
+  <Box display="flex" gap={1} alignItems="center" mb={1}>
+
+    <CalendarMonth
+      fontSize="small"
+      sx={{
+        color: "#C9A227",
+      }}
+    />
+
+    <Typography fontSize={14}>
+      {formatDate(treatment.date)}
+    </Typography>
+
+  </Box>
+
+
+
+  {/* PRICE */}
+  
+
+ {/* PRICE */}
+
+<Box display="flex" gap={1} alignItems="center">
+
+  <AttachMoney
+    fontSize="small"
+    sx={{
+      color: "#C9A227",
+    }}
+  />
+
+
+  <Box>
+
+    <Typography>
+      Total Price: ${treatment.cost}
+    </Typography>
+
+
+    <Typography
+      sx={{
+        color: "#d97706",
+        fontWeight: 700,
+      }}
+    >
+      Remaining: ${treatment.remaining}
+    </Typography>
+
+  </Box>
+
+
+</Box>
+
+
+</Box>
 
       {/* NOTES */}
 

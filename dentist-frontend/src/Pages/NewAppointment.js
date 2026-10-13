@@ -59,14 +59,14 @@ export default function NewAppointment() {
 
   const navigate = useNavigate();
 
-  const [appointment, setAppointment] = useState({
+ const [appointment, setAppointment] = useState({
     patientName: "",
     treatmentName: "",
+    toothNumbers: [],
     date: "",
     startTime: "",
     endTime: "",
-  });
-
+});
   // =========================
   // Convert HH:mm to minutes
   // =========================
@@ -436,16 +436,19 @@ export default function NewAppointment() {
       */
 
       const appointmentToSend = {
-        patientName: appointment.patientName.trim(),
 
-        treatmentName: appointment.treatmentName.trim(),
+    patientName: appointment.patientName.trim(),
 
-        date: appointment.date,
+    treatmentName: appointment.treatmentName.trim(),
 
-        startTime: `${appointment.startTime}:00`,
+    toothNumbers: appointment.toothNumbers,
 
-        endTime: `${appointment.endTime}:00`,
-      };
+    date: appointment.date,
+
+    startTime: `${appointment.startTime}:00`,
+
+    endTime: `${appointment.endTime}:00`,
+};
 
       console.log("Appointment being sent:", appointmentToSend);
 
@@ -570,7 +573,27 @@ export default function NewAppointment() {
           <option value="Cpp">Cpp</option>
           <option value="Scaling">Scaling</option>
         </select>
+<TextField
+sx={{ mb: 2, mt: 2 }}
+    fullWidth
+    label="Tooth Numbers (example: 11,12,13)"
+    name="toothNumbers"
+    value={appointment.toothNumbers.join(",")}
+    onChange={(e)=>{
 
+        const teeth = e.target.value
+            .split(",")
+            .map(x => Number(x.trim()))
+            .filter(x => !isNaN(x));
+
+
+        setAppointment({
+            ...appointment,
+            toothNumbers: teeth
+        });
+
+    }}
+/>
 
         {/* =========================
             Date

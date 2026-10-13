@@ -294,6 +294,7 @@ namespace dentist_project.Controllers;
 
         return Ok(treatments);
     }
+    
     [HttpDelete("treatments/{id}")]
     public async Task<IActionResult> DeleteTreatment(int id)
     {
@@ -320,10 +321,36 @@ namespace dentist_project.Controllers;
         }
         catch (Exception ex)
         {
+            Console.WriteLine("================ DELETE TREATMENT ERROR ================");
+
+            Console.WriteLine("MESSAGE:");
+            Console.WriteLine(ex.Message);
+
+
+            Console.WriteLine("---------------- INNER EXCEPTION ----------------");
+
+            Console.WriteLine(
+                ex.InnerException?.Message
+            );
+
+
+            Console.WriteLine("---------------- FULL ERROR ----------------");
+
+            Console.WriteLine(
+                ex.ToString()
+            );
+
+
+            Console.WriteLine("========================================================");
+
+
             return StatusCode(500, new
             {
                 message = "Error deleting treatment.",
-                error = ex.Message
+
+                error = ex.Message,
+
+                inner = ex.InnerException?.Message
             });
         }
     }

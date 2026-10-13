@@ -8,16 +8,19 @@ public class AppointmentTreatment
 
 
     public int AppointmentId { get; set; }
+
     public Appointment Appointment { get; set; } = null!;
 
 
 
     public int TreatmentId { get; set; }
+
     public Treatment Treatment { get; set; } = null!;
 
 
 
     public decimal Price { get; set; }
+
 
 
     // payment for this specific treatment
@@ -39,7 +42,8 @@ public class AppointmentTreatment
 
 
 
-    public ICollection<ToothTreatment> ToothTreatments { get; set; }
-        = new List<ToothTreatment>();
+    // Bridge / multiple teeth support
+    public ICollection<AppointmentTreatmentToothTreatment> ToothTreatmentLinks { get; set; }
+        = new List<AppointmentTreatmentToothTreatment>();
 
 }

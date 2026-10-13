@@ -324,6 +324,29 @@ namespace dentist_project.Migrations
                     b.ToTable("AppointmentTreatments");
                 });
 
+            modelBuilder.Entity("dentist_project.Models.AppointmentTreatmentToothTreatment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentTreatmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ToothTreatmentId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentTreatmentId");
+
+                    b.HasIndex("ToothTreatmentId");
+
+                    b.ToTable("AppointmentTreatmentToothTreatments");
+                });
+
             modelBuilder.Entity("dentist_project.Models.MedicalRecord", b =>
                 {
                     b.Property<int>("Id")
@@ -522,9 +545,6 @@ namespace dentist_project.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AppointmentTreatmentId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Condition")
                         .HasColumnType("integer");
 
@@ -547,8 +567,6 @@ namespace dentist_project.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppointmentTreatmentId");
 
                     b.HasIndex("MedicalRecordId");
 
@@ -680,6 +698,25 @@ namespace dentist_project.Migrations
                     b.Navigation("Treatment");
                 });
 
+            modelBuilder.Entity("dentist_project.Models.AppointmentTreatmentToothTreatment", b =>
+                {
+                    b.HasOne("dentist_project.Models.AppointmentTreatment", "AppointmentTreatment")
+                        .WithMany("ToothTreatmentLinks")
+                        .HasForeignKey("AppointmentTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("dentist_project.Models.ToothTreatment", "ToothTreatment")
+                        .WithMany()
+                        .HasForeignKey("ToothTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppointmentTreatment");
+
+                    b.Navigation("ToothTreatment");
+                });
+
             modelBuilder.Entity("dentist_project.Models.MedicalRecord", b =>
                 {
                     b.HasOne("dentist_project.Models.Appointment", "Appointment")
@@ -743,10 +780,6 @@ namespace dentist_project.Migrations
 
             modelBuilder.Entity("dentist_project.Models.ToothTreatment", b =>
                 {
-                    b.HasOne("dentist_project.Models.AppointmentTreatment", null)
-                        .WithMany("ToothTreatments")
-                        .HasForeignKey("AppointmentTreatmentId");
-
                     b.HasOne("dentist_project.Models.MedicalRecord", "MedicalRecord")
                         .WithMany("ToothTreatments")
                         .HasForeignKey("MedicalRecordId")
@@ -784,7 +817,7 @@ namespace dentist_project.Migrations
 
             modelBuilder.Entity("dentist_project.Models.AppointmentTreatment", b =>
                 {
-                    b.Navigation("ToothTreatments");
+                    b.Navigation("ToothTreatmentLinks");
                 });
 
             modelBuilder.Entity("dentist_project.Models.MedicalRecord", b =>
