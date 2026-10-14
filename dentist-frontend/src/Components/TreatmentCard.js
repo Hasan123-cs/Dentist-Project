@@ -340,8 +340,12 @@ export default function TreatmentCard({ treatment, onDelete }) {
      <Box mt={2}>
 
   {/* TOOTH */}
- {treatment.tooth &&
- treatment.tooth.length > 0 && (
+{(
+  treatment.teeth || treatment.tooth
+) &&
+(
+  (treatment.teeth || treatment.tooth).length > 0
+) && (
 
   <Box display="flex" gap={1} alignItems="center" mb={1}>
 
@@ -353,7 +357,16 @@ export default function TreatmentCard({ treatment, onDelete }) {
     />
 
     <Typography fontSize={14}>
-      Tooth: <b>{treatment.tooth.join(", ")}</b>
+      Tooth:
+      <b>
+        {
+          [
+            ...new Set(
+              treatment.teeth || treatment.tooth
+            )
+          ].join(", ")
+        }
+      </b>
     </Typography>
 
   </Box>
@@ -387,36 +400,6 @@ export default function TreatmentCard({ treatment, onDelete }) {
 
  {/* PRICE */}
 
-<Box display="flex" gap={1} alignItems="center">
-
-  <AttachMoney
-    fontSize="small"
-    sx={{
-      color: "#C9A227",
-    }}
-  />
-
-
-  <Box>
-
-    <Typography>
-      Total Price: ${treatment.cost}
-    </Typography>
-
-
-    <Typography
-      sx={{
-        color: "#d97706",
-        fontWeight: 700,
-      }}
-    >
-      Remaining: ${treatment.remaining}
-    </Typography>
-
-  </Box>
-
-
-</Box>
 
 
 </Box>

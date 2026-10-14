@@ -21,7 +21,7 @@ export default function AddTreatment() {
   const [form, setForm] = useState({
     treatment: "Bridge",
     tooth: "",
-    surface: "",
+    surface: [],
     status: "Pending",
     price: "",
     notes: "",
@@ -33,17 +33,19 @@ export default function AddTreatment() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+ const handleChange = (e) => {
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const { name, value } = e.target;
 
-    setError("");
-  };
+  console.log("VALUE:", value);
 
+  setForm((prev)=>({
+    ...prev,
+    [name]: value
+  }));
+
+  setError("");
+};
   const treatmentsRequireTooth = [
     "filling",
     "root canal",
@@ -84,7 +86,7 @@ export default function AddTreatment() {
   const canSubmit =
     form.treatment.trim() !== "" &&
     !isToothMissing &&
-    (!showSurface || form.surface !== "") &&
+    (!showSurface || form.surface.length > 0) &&
     !loading;
   const isBridge = treatmentName.includes("bridge");
 
@@ -167,7 +169,7 @@ export default function AddTreatment() {
       return false;
     }
 
-    if (!form.surface) {
+  if (form.surface.length === 0) {
       setError("Please select a tooth surface.");
       return false;
     }
@@ -191,7 +193,7 @@ export default function AddTreatment() {
     setForm((prev) => ({
       ...prev,
       tooth: "",
-      surface: "",
+      surface: [],
     }));
 
     setError("");
@@ -211,15 +213,15 @@ export default function AddTreatment() {
   };
 
   const handleRemoveSurface = () => {
-    setShowSurface(false);
+  setShowSurface(false);
 
-    setForm((prev) => ({
-      ...prev,
-      surface: "",
-    }));
+  setForm((prev) => ({
+    ...prev,
+    surface: [],
+  }));
 
-    setError("");
-  };
+  setError("");
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -278,22 +280,28 @@ export default function AddTreatment() {
      * Otherwise:
      * null
      */
-    const surface = showSurface ? form.surface : null;
+    const surface = showSurface ? form.surface : [];
 
     /*
      * Final payload
      */
+const treatmentData = {
 
-    const treatmentData = {
-      patientId: Number(id),
-      treatment: form.treatment.trim(),
-      toothNumbers: toothNumbers,
-      surface: surface,
-      status: form.status,
-      price: form.price === "" ? null : Number(form.price),
-      notes: form.notes.trim() === "" ? null : form.notes.trim(),
-    };
+  patientId: Number(id),
 
+  treatment: form.treatment.trim(),
+
+  toothNumbers: toothNumbers,
+
+  surfaces: surface,
+
+  status: form.status,
+
+  price: form.price === "" ? null : Number(form.price),
+
+  notes: form.notes.trim() === "" ? null : form.notes.trim(),
+
+};
     console.log("Sending treatment:", treatmentData);
 
     try {
@@ -507,26 +515,43 @@ export default function AddTreatment() {
                 </Button>
               ) : (
                 <Box display="flex" alignItems="center" gap={1} mt={2}>
-                  <TextField
-                    select
-                    label="Surface"
-                    name="surface"
-                    value={form.surface}
-                    onChange={handleChange}
-                    fullWidth
-                    required
-                    helperText="Select the affected tooth surface."
-                  >
-                    <MenuItem value="M">M - Mesial</MenuItem>
+                <TextField
+  select
+  label="Surface"
+  name="surface"
+  value={form.surface}
+  onChange={handleChange}
+  fullWidth
+  required
+  helperText="Select the affected tooth surface."
+  slotProps={{
+    select: {
+      multiple: true,
+      renderValue: (selected) => selected.join(", "),
+    },
+  }}
+>
+  <MenuItem value="M">
+    M - Mesial
+  </MenuItem>
 
-                    <MenuItem value="O">O - Occlusal</MenuItem>
+  <MenuItem value="O">
+    O - Occlusal
+  </MenuItem>
 
-                    <MenuItem value="D">D - Distal</MenuItem>
+  <MenuItem value="D">
+    D - Distal
+  </MenuItem>
 
-                    <MenuItem value="B">B - Buccal</MenuItem>
+  <MenuItem value="B">
+    B - Buccal
+  </MenuItem>
 
-                    <MenuItem value="L">L - Lingual</MenuItem>
-                  </TextField>
+  <MenuItem value="L">
+    L - Lingual
+  </MenuItem>
+
+</TextField>
 
                   <IconButton
                     type="button"

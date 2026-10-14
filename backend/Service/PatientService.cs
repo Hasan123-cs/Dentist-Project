@@ -52,7 +52,7 @@ namespace dentist_project.Service
         // DENTAL CHART 
         // DENTAL CHART 
         public async Task<List<DentalChartItemDto>> GetPatientDentalChartAsync(
-            int patientId)
+    int patientId)
         {
             var toothTreatments = await _context.ToothTreatments
 
@@ -74,37 +74,65 @@ namespace dentist_project.Service
 
 
 
-            var latestTreatments = toothTreatments
+            var chart = toothTreatments
 
-                .GroupBy(tt => new
-                {
-                    tt.ToothId,
-                    tt.Surface
-                })
+                .Where(tt => tt.Tooth != null)
 
-                .Select(g => g.First())
+                .GroupBy(tt => tt.Tooth!.Number)
 
-                .Select(tt => new DentalChartItemDto
+                .Select(g =>
                 {
 
-                    ToothNumber = tt.Tooth != null
-                        ? tt.Tooth.Number
-                        : 0,
+                    var latest = g
+                        .OrderByDescending(x => x.Id)
+                        .First();
 
 
-                    Surface = tt.Surface,
+                    var item = new DentalChartItemDto
+                    {
+                        ToothNumber = g.Key,
 
 
-                    Condition = tt.Condition,
+                        Conditions = g
+                            .Where(x => x.Surface == null)
+                            .Select(x => x.Condition)
+                            .Distinct()
+                            .ToList(),
 
 
-                    Status = tt.Status,
+                        Status = latest.Status,
+
+                        TreatmentId = latest.TreatmentId,
+
+                        Notes = latest.Notes,
 
 
-                    TreatmentId = tt.TreatmentId,
+                        Surfaces = new Dictionary<string, ToothCondition>()
+
+                    };
 
 
-                    Notes = tt.Notes
+
+
+                    // Surface treatments
+                    // Example:
+                    // M = Filling
+                    // D = Filling
+                    foreach (var treatment in g)
+                    {
+
+                        if (treatment.Surface.HasValue)
+                        {
+                            item.Surfaces[
+                                treatment.Surface.Value.ToString()
+                            ] = treatment.Condition;
+                        }
+
+                    }
+
+
+
+                    return item;
 
                 })
 
@@ -112,7 +140,7 @@ namespace dentist_project.Service
 
 
 
-            return latestTreatments;
+            return chart;
         }
         // update for each tooth in dental chart 
         public async Task<(bool Success, string Message)> UpdateToothStatusAsync(
@@ -468,10 +496,12 @@ namespace dentist_project.Service
 
             return (true, "Tooth cleared successfully.");
         }
-    
-    // creating the tratments
 
-public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
+        // creating the tratments
+
+
+
+        public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
     int patientId,
     CreateTreatmentDto dto,
     ApplicationUser createdByUser,
@@ -497,6 +527,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 return (false, "Treatment name is required.", null);
             }
 
+
             var treatmentName = dto.Treatment.Trim();
 
 
@@ -504,6 +535,8 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 .FirstOrDefaultAsync(t =>
                     t.Name.ToLower() == treatmentName.ToLower()
                     && t.IsActive);
+
+
 
             if (treatment == null)
             {
@@ -515,38 +548,37 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                     EstimatedMinutes = 0,
                     IsActive = true,
                     HasRecallReminder =
-            treatmentName.Contains(
-    "clean",
-    StringComparison.OrdinalIgnoreCase
-)
+                        treatmentName.Contains(
+                            "clean",
+                            StringComparison.OrdinalIgnoreCase)
                 };
 
                 _context.Treatments.Add(treatment);
 
-                // We need the Treatment ID later
                 await _context.SaveChangesAsync();
             }
             else
             {
                 treatment.DefaultPrice = dto.Price ?? treatment.DefaultPrice;
-                await _context.SaveChangesAsync();
 
+                await _context.SaveChangesAsync();
             }
+
+
 
             var isBridge = treatmentName.Contains(
                 "bridge",
-                StringComparison.OrdinalIgnoreCase
-            );
+                StringComparison.OrdinalIgnoreCase);
 
 
-            
+
             var toothNumbers = dto.ToothNumbers?
                 .Distinct()
                 .ToList()
                 ?? new List<int>();
 
 
-           
+
             if (!isBridge && toothNumbers.Count > 1)
             {
                 return (
@@ -555,6 +587,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                     null
                 );
             }
+
 
 
             if (isBridge && toothNumbers.Count < 3)
@@ -567,17 +600,21 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             }
 
 
+
             var validTeeth = new HashSet<int>
     {
-        11, 12, 13, 14, 15, 16, 17, 18,
-        21, 22, 23, 24, 25, 26, 27, 28,
-        31, 32, 33, 34, 35, 36, 37, 38,
-        41, 42, 43, 44, 45, 46, 47, 48
+        11,12,13,14,15,16,17,18,
+        21,22,23,24,25,26,27,28,
+        31,32,33,34,35,36,37,38,
+        41,42,43,44,45,46,47,48
     };
+
+
 
             var invalidTeeth = toothNumbers
                 .Where(t => !validTeeth.Contains(t))
                 .ToList();
+
 
             if (invalidTeeth.Any())
             {
@@ -587,6 +624,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                     null
                 );
             }
+
 
 
             if (isBridge)
@@ -604,29 +642,35 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             }
 
 
-          
-            ToothSurface? surface = null;
 
-            if (!string.IsNullOrWhiteSpace(dto.Surface))
+            // ===============================
+            // MULTIPLE SURFACES
+            // ===============================
+
+            var surfaces = new List<ToothSurface>();
+
+
+            foreach (var s in dto.Surfaces)
             {
                 if (!Enum.TryParse<ToothSurface>(
-                        dto.Surface.Trim(),
+                        s.Trim(),
                         true,
                         out var parsedSurface))
                 {
                     return (
                         false,
-                        "Invalid tooth surface. Use M, O, D, B or L.",
+                        $"Invalid tooth surface: {s}",
                         null
                     );
                 }
 
-                surface = parsedSurface;
+
+                surfaces.Add(parsedSurface);
             }
 
 
-            
-            if (surface.HasValue && toothNumbers.Count == 0)
+
+            if (surfaces.Any() && toothNumbers.Count == 0)
             {
                 return (
                     false,
@@ -634,10 +678,9 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                     null
                 );
             }
-
             if (!TryParseTreatmentStatus(
-                    dto.Status,
-                    out var status))
+        dto.Status,
+        out var status))
             {
                 return (
                     false,
@@ -647,18 +690,9 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             }
 
 
+
             var condition = GetCondition(treatmentName);
 
-            // For general treatments such as:
-            // Cleaning, Whitening, Consultation, Fluoride, etc.
-            // there is no specific tooth condition.
-            //
-            // We use Healthy as the default condition.
-            //
-            // IMPORTANT:
-            // This does NOT mean the tooth is clinically healthy.
-            // It simply means the treatment itself does not represent
-            // a dental condition such as Cavity, Crown, Filling, etc.
 
             if (condition == null)
             {
@@ -666,49 +700,51 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
             }
 
 
-            // ============================================================
-            // 15. Load Teeth From Database
-            // ============================================================
-            //
-            // IMPORTANT:
-            // We do this BEFORE creating MedicalRecord.
-            // Therefore, if a tooth does not exist, nothing is saved.
+
+            // ===============================
+            // LOAD TEETH
+            // ===============================
 
             var teeth = new List<Tooth>();
+
 
             if (toothNumbers.Count > 0)
             {
                 teeth = await _context.Teeth
-                    .Where(t => toothNumbers.Contains(t.Number))
+                    .Where(t =>
+                        toothNumbers.Contains(t.Number))
                     .ToListAsync();
+
+
 
                 var foundNumbers = teeth
                     .Select(t => t.Number)
                     .ToHashSet();
 
+
+
                 var missingTeeth = toothNumbers
-                    .Where(number => !foundNumbers.Contains(number))
+                    .Where(number =>
+                        !foundNumbers.Contains(number))
                     .ToList();
+
+
 
                 if (missingTeeth.Any())
                 {
                     return (
                         false,
-                        $"Tooth number(s) not found in the database: {string.Join(", ", missingTeeth)}",
+                        $"Tooth number(s) not found: {string.Join(", ", missingTeeth)}",
                         null
                     );
                 }
             }
 
 
-            // ============================================================
-            // 16. Create Medical Record
-            // ============================================================
-            //
-            // Appointment is OPTIONAL.
-            //
-            // This treatment can be created directly from the patient page
-            // without an appointment.
+
+            // ===============================
+            // CREATE MEDICAL RECORD
+            // ===============================
 
             var medicalRecord = new MedicalRecord
             {
@@ -731,12 +767,23 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 CreatedById = createdID
             };
 
+
             _context.MedicalRecords.Add(medicalRecord);
+
 
             await _context.SaveChangesAsync();
 
+
+
+
+            // ===============================
+            // CREATE TOOTH TREATMENTS
+            // ===============================
+
             var toothTreatments = new List<ToothTreatment>();
 
+
+            // General treatment without tooth
             if (toothNumbers.Count == 0)
             {
                 toothTreatments.Add(new ToothTreatment
@@ -756,6 +803,9 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                     Notes = dto.Notes
                 });
             }
+
+
+
             else
             {
                 foreach (var toothNumber in toothNumbers)
@@ -764,35 +814,77 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                         t => t.Number == toothNumber
                     );
 
-                    toothTreatments.Add(new ToothTreatment
+
+
+                    // No surface selected
+                    // Example: Crown, Implant
+                    if (surfaces.Count == 0)
                     {
-                        MedicalRecordId = medicalRecord.Id,
+                        toothTreatments.Add(new ToothTreatment
+                        {
+                            MedicalRecordId = medicalRecord.Id,
 
-                        ToothId = tooth.Id,
+                            ToothId = tooth.Id,
 
-                        TreatmentId = treatment.Id,
+                            TreatmentId = treatment.Id,
 
-                        Status = status,
+                            Status = status,
 
-                        Surface = surface,
+                            Surface = null,
 
-                        Condition = condition.Value,
+                            Condition = condition.Value,
 
-                        Notes = dto.Notes
-                    });
+                            Notes = dto.Notes
+                        });
+                    }
+
+
+
+                    // Multiple surfaces
+                    // Example: Filling M + O + D
+                    else
+                    {
+                        foreach (var surface in surfaces)
+                        {
+                            toothTreatments.Add(new ToothTreatment
+                            {
+                                MedicalRecordId = medicalRecord.Id,
+
+                                ToothId = tooth.Id,
+
+                                TreatmentId = treatment.Id,
+
+                                Status = status,
+
+                                Surface = surface,
+
+                                Condition = condition.Value,
+
+                                Notes = dto.Notes
+                            });
+                        }
+                    }
                 }
             }
 
 
-          
+
+
             _context.ToothTreatments.AddRange(toothTreatments);
+
 
             await _context.SaveChangesAsync();
 
 
-            return (
+
+
+
+            return
+            (
                 true,
+
                 "Treatment created successfully.",
+
                 new
                 {
                     patientId,
@@ -803,7 +895,9 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
                     toothNumbers,
 
-                    surface = surface?.ToString(),
+                    surfaces = surfaces
+                        .Select(s => s.ToString())
+                        .ToList(),
 
                     status = status.ToString(),
 
@@ -815,50 +909,6 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 }
             );
         }
-
-
-      
-        private static bool TryParseTreatmentStatus(
-            string? value,
-            out ToothStatus status)
-        {
-            status = ToothStatus.NeedsTreatment;
-
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return false;
-            }
-
-            switch (value.Trim().ToLower())
-            {
-                case "pending":
-
-                    status = ToothStatus.NeedsTreatment;
-
-                    return true;
-
-
-                case "in progress":
-
-                    status = ToothStatus.InProgress;
-
-                    return true;
-
-
-                case "completed":
-
-                    status = ToothStatus.Completed;
-
-                    return true;
-
-
-                default:
-
-                    return false;
-            }
-        }
-
-
         private static (bool Success, string Message) ValidateBridge(
             List<int> toothNumbers)
         {
@@ -1576,10 +1626,23 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-                    // ALL TEETH IN ONE CARD
+                    // REMOVE DUPLICATED TEETH
                     teeth =
                         g.Where(x => x.Tooth != null)
-                        .Select(x => x.Tooth.Number)
+                        .Select(x => x.Tooth!.Number)
+                        .Distinct()
+                        .ToList(),
+
+
+
+
+                    // ALL SURFACES
+                    // Example:
+                    // M,O,D
+                    surfaces =
+                        g.Where(x => x.Surface != null)
+                        .Select(x => x.Surface!.ToString())
+                        .Distinct()
                         .ToList(),
 
 
@@ -1590,8 +1653,10 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
+
                     condition =
                         g.First().Condition.ToString(),
+
 
 
 
@@ -1604,6 +1669,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
+
                     paid =
                         g.First().MedicalRecord.Appointment != null
                         ?
@@ -1612,12 +1678,12 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                             .Where(at =>
                                 at.TreatmentId == g.Key.TreatmentId
                             )
-                            .Select(at =>
+                            .Sum(at =>
                                 at.PaidAmount
                             )
-                            .FirstOrDefault()
                         :
                         0,
+
 
 
 
@@ -1638,10 +1704,9 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                                 .Where(at =>
                                     at.TreatmentId == g.Key.TreatmentId
                                 )
-                                .Select(at =>
+                                .Sum(at =>
                                     at.PaidAmount
                                 )
-                                .FirstOrDefault()
                             :
                             0
                         ),
@@ -1649,8 +1714,10 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
+
                     notes =
                         g.First().Notes,
+
 
 
 
@@ -1661,6 +1728,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
                 .OrderByDescending(x => x.date)
+
 
                 .ToListAsync();
 
@@ -1709,20 +1777,26 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-                    // ALL TEETH IN ONE CARD
+
+                    // REMOVE DUPLICATED TEETH
                     teeth =
                         g.Where(x => x.Tooth != null)
-                         .Select(x => x.Tooth.Number)
+                         .Select(x => x.Tooth!.Number)
+                         .Distinct()
                          .ToList(),
 
 
 
-                    surface =
-                        g.First().Surface.HasValue
-                        ?
-                        g.First().Surface.ToString()
-                        :
-                        null,
+
+                    // GET ALL SURFACES
+                    // Example:
+                    // M + O
+                    surfaces =
+                        g.Where(x => x.Surface.HasValue)
+                         .Select(x => x.Surface!.Value.ToString())
+                         .Distinct()
+                         .ToList(),
+
 
 
 
@@ -1731,8 +1805,10 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
+
                     condition =
                         g.First().Condition.ToString(),
+
 
 
 
@@ -1742,6 +1818,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                         g.First().Treatment.DefaultPrice
                         :
                         0,
+
 
 
 
@@ -1759,6 +1836,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                             .FirstOrDefault()
                         :
                         0,
+
 
 
 
@@ -1789,19 +1867,21 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
+
                     notes =
                         g.First().Notes,
+
 
 
 
                     date =
                         g.First().MedicalRecord.CreatedAt
 
-
                 })
 
 
                 .OrderByDescending(x => x.date)
+
 
                 .ToListAsync();
 
@@ -1812,7 +1892,7 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                 .ToList();
         }
         public async Task<List<object>> GetCompletedTreatmentsAsync(
-     int patientId)
+    int patientId)
         {
             var treatments = await _context.ToothTreatments
 
@@ -1860,14 +1940,27 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-
-                    // Bridge: 11,12,13
-                    // Filling: 18
+                    // REMOVE DUPLICATED TEETH
+                    // Example:
+                    // Before: [33,33]
+                    // After:  [33]
                     teeth =
                         g.Where(x => x.Tooth != null)
-                        .Select(x => x.Tooth!.Number)
-                        .ToList(),
+                         .Select(x => x.Tooth!.Number)
+                         .Distinct()
+                         .ToList(),
 
+
+
+
+                    // ALL SURFACES
+                    // Example:
+                    // Filling M + O
+                    surfaces =
+                        g.Where(x => x.Surface.HasValue)
+                         .Select(x => x.Surface!.Value.ToString())
+                         .Distinct()
+                         .ToList(),
 
 
 
@@ -1878,7 +1971,6 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
                         g.First().Treatment!.DefaultPrice
                         :
                         0,
-
 
 
 
@@ -1900,8 +1992,6 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
                         :
                         0,
-
-
 
 
 
@@ -1941,9 +2031,15 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
-
                     status =
                         g.First().Status.ToString(),
+
+
+
+
+
+                    condition =
+                        g.First().Condition.ToString(),
 
 
 
@@ -1972,9 +2068,62 @@ public async Task<(bool Success, string Message, object? Data)> CreateTreatment(
 
 
 
+
             return treatments
                 .Cast<object>()
                 .ToList();
+        }
+        private static bool TryParseTreatmentStatus(
+    string status,
+    out ToothStatus result)
+        {
+            result = ToothStatus.NeedsTreatment;
+
+
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                return false;
+            }
+
+
+            switch (status.Trim().ToLower())
+            {
+                case "pending":
+                case "needs treatment":
+                case "needstreatment":
+
+                    result = ToothStatus.NeedsTreatment;
+                    return true;
+
+
+                case "in progress":
+                case "inprogress":
+
+                    result = ToothStatus.InProgress;
+                    return true;
+
+
+                case "completed":
+
+                    result = ToothStatus.Completed;
+                    return true;
+
+
+                case "healthy":
+
+                    result = ToothStatus.Healthy;
+                    return true;
+
+
+                case "extracted":
+
+                    result = ToothStatus.Extracted;
+                    return true;
+
+
+                default:
+                    return false;
+            }
         }
         public async Task<object> GetPatientSummaryAsync(int patientId)
         {

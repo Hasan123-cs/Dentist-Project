@@ -757,13 +757,14 @@ namespace dentist_project.Service
 
 
         public async Task<(bool Success, string Message, object? Data)>
-            GetAppointmentByIdAsync(int id)
+    GetAppointmentByIdAsync(int id)
         {
-
             var appointment =
                 await _db.Appointments
 
                 .Include(a => a.Patient)
+
+                .Include(a => a.CreatedBy)
 
                 .Include(a => a.AppointmentTreatments)
                     .ThenInclude(at => at.Treatment)
@@ -775,7 +776,8 @@ namespace dentist_project.Service
 
             if (appointment == null)
             {
-                return (
+                return
+                (
                     false,
                     "Appointment not found.",
                     null
@@ -784,11 +786,9 @@ namespace dentist_project.Service
 
 
 
-
             var treatment =
                 appointment.AppointmentTreatments
                 .FirstOrDefault();
-
 
 
 
@@ -805,30 +805,60 @@ namespace dentist_project.Service
 
                     patientName =
                         appointment.Patient.FirstName
-                        +
-                        " "
-                        +
-                        appointment.Patient.LastName,
+                        + " "
+                        + appointment.Patient.LastName,
+
 
 
                     treatmentName =
                         treatment?.Treatment?.Name,
 
 
+
+                    createdBy =
+                        appointment.CreatedBy != null
+                        ?
+                        appointment.CreatedBy.FirstName
+                        + " "
+                        + appointment.CreatedBy.LastName
+                        :
+                        "-",
+
+
+
+                    startDateTime =
+                        appointment.StartDateTime,
+
+
+
+                    endDateTime =
+                        appointment.EndDateTime,
+
+
+
                     status =
                         appointment.Status.ToString(),
+
+
+
+                    notes =
+                        appointment.Notes,
+
 
 
                     totalCost =
                         appointment.TotalCost,
 
 
+
                     paidAmount =
                         appointment.PaidAmount,
 
 
+
                     remaining =
                         appointment.RemainingAmount,
+
 
 
                     paymentStatus =

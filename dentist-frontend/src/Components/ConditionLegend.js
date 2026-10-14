@@ -29,7 +29,7 @@ const conditions = [
 
     {
         label:"Implant",
-        color:"#60a5fa"
+        color: "#ef4444"
     },
 
     {

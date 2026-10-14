@@ -1,132 +1,413 @@
 import { Box } from "@mui/material";
 
+
 const colors = {
+
   healthy: "#e8f7ee",
+
   caries: "#e53935",
+
   filling: "#42a5f5",
+
   crown: "#fdd835",
+
   missing: "#bdbdbd",
+
   rootCanal: "#8e24aa",
-  implant: "#8e7dff",
+
+  implant: "#ef4444",
+
   bridge: "#ffb15c",
+
 };
 
+
+
+
+
 export default function ToothCircle({
+
   condition = {},
+
   status,
+
   onSurfaceClick,
+
 }) {
+
+
+
   const isRootCanal =
-    condition.rootCanal === "Root Canal" || condition.rootCanal === "rootCanal";
+    condition.rootCanal === "Root Canal" ||
+    condition.rootCanal === "rootCanal";
+
+
 
   const isBridge =
-    condition.bridge === "Bridge" || condition.bridge === "bridge";
+    condition.bridge === "Bridge" ||
+    condition.bridge === "bridge";
+
+
+
+  const isImplant =
+    condition.implant === "Implant" ||
+    condition.implant === "implant";
+
+
+
+
+
 
   const color = (surface) => {
-    // healthy color
-    if (status === "Healthy" || status === "healthy") {
-      return colors.healthy;
+
+
+    const value = condition[surface];
+
+
+
+    /*
+      Surface treatment priority
+
+      Example:
+      {
+        rootCanal:"Root Canal",
+        D:["filling"]
+      }
+
+      D will show filling
+      other surfaces show root canal
+    */
+
+
+    if (Array.isArray(value)) {
+
+
+      const treatmentColors = value.map(
+
+        (item) =>
+          colors[String(item).toLowerCase()]
+          ||
+          colors.healthy
+
+      );
+
+
+
+      if (treatmentColors.length === 1) {
+
+        return treatmentColors[0];
+
+      }
+
+
+
+      return `linear-gradient(45deg, ${treatmentColors.join(", ")})`;
+
     }
-    // Root Canal is a whole-tooth condition
-    if (isRootCanal) return colors.healthy;
 
-    // Bridge is a whole-tooth condition
-    if (isBridge) return colors.bridge;
 
-    return colors[condition[surface] || "healthy"];
+
+
+
+    // Single surface value
+
+    if (value) {
+
+      return (
+        colors[String(value).toLowerCase()]
+        ||
+        colors.healthy
+      );
+
+    }
+
+
+
+
+
+
+    // Whole tooth treatments
+
+    if (isRootCanal) {
+
+      return colors.rootCanal;
+
+    }
+
+
+
+    if (isBridge) {
+
+      return colors.bridge;
+
+    }
+
+
+
+    if (isImplant) {
+
+      return colors.implant;
+
+    }
+
+
+
+
+
+
+    if (
+      status === "Healthy" ||
+      status === "healthy"
+    ) {
+
+      return colors.healthy;
+
+    }
+
+
+
+    return colors.healthy;
+
   };
+
+
+
+
+
+
+
 
   const handleClick = (surface) => {
-    if (isRootCanal || isBridge) return;
 
-    if (onSurfaceClick) onSurfaceClick(surface);
+
+    /*
+      Bridge and Implant cover whole tooth.
+      Root canal can coexist with fillings/crowns.
+    */
+
+
+    if (
+      isBridge ||
+      isImplant
+    ) {
+
+      return;
+
+    }
+
+
+
+    if (onSurfaceClick) {
+
+      onSurfaceClick(surface);
+
+    }
+
   };
 
+
+
+
+
+
+
+
+
   return (
+
     <Box
+
       sx={{
-        width: 38,
-        height: 38,
-        borderRadius: "50%",
-        border: "1.5px solid #666",
-        overflow: "hidden",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
-        gridTemplateRows: "1fr 1fr 1fr",
-        background: "#fff",
+
+        width:38,
+
+        height:38,
+
+        borderRadius:"50%",
+
+        border:"1.5px solid #666",
+
+        overflow:"hidden",
+
+        display:"grid",
+
+        gridTemplateColumns:"1fr 1fr 1fr",
+
+        gridTemplateRows:"1fr 1fr 1fr",
+
+        background:"#fff",
+
       }}
+
     >
+
+
+
+
       {/* Buccal */}
+
       <Box
-        onClick={(e) => {
+
+        onClick={(e)=>{
+
           e.stopPropagation();
+
           handleClick("B");
+
         }}
+
         sx={{
-          gridColumn: 2,
-          gridRow: 1,
-          background: color("B"),
-          borderBottom: "1px solid #777",
+
+          gridColumn:2,
+
+          gridRow:1,
+
+          background:color("B"),
+
+          borderBottom:"1px solid #777",
+
         }}
+
       />
+
+
+
+
+
+
 
       {/* Mesial */}
+
       <Box
-        onClick={(e) => {
+
+        onClick={(e)=>{
+
           e.stopPropagation();
+
           handleClick("M");
+
         }}
+
         sx={{
-          gridColumn: 1,
-          gridRow: 2,
-          background: color("M"),
-          borderRight: "1px solid #777",
+
+          gridColumn:1,
+
+          gridRow:2,
+
+          background:color("M"),
+
+          borderRight:"1px solid #777",
+
         }}
+
       />
+
+
+
+
+
+
 
       {/* Occlusal */}
+
       <Box
-        onClick={(e) => {
+
+        onClick={(e)=>{
+
           e.stopPropagation();
+
           handleClick("O");
+
         }}
+
         sx={{
-          gridColumn: 2,
-          gridRow: 2,
-          background: color("O"),
-          borderRadius: "50%",
-          border: "1px solid #777",
-          zIndex: 2,
+
+          gridColumn:2,
+
+          gridRow:2,
+
+          background:color("O"),
+
+          borderRadius:"50%",
+
+          border:"1px solid #777",
+
+          zIndex:2,
+
         }}
+
       />
+
+
+
+
+
+
 
       {/* Distal */}
+
       <Box
-        onClick={(e) => {
+
+        onClick={(e)=>{
+
           e.stopPropagation();
+
           handleClick("D");
+
         }}
+
         sx={{
-          gridColumn: 3,
-          gridRow: 2,
-          background: color("D"),
-          borderLeft: "1px solid #777",
+
+          gridColumn:3,
+
+          gridRow:2,
+
+          background:color("D"),
+
+          borderLeft:"1px solid #777",
+
         }}
+
       />
 
+
+
+
+
+
+
       {/* Lingual */}
+
       <Box
-        onClick={(e) => {
+
+        onClick={(e)=>{
+
           e.stopPropagation();
+
           handleClick("L");
+
         }}
+
         sx={{
-          gridColumn: 2,
-          gridRow: 3,
-          background: color("L"),
-          borderTop: "1px solid #777",
+
+          gridColumn:2,
+
+          gridRow:3,
+
+          background:color("L"),
+
+          borderTop:"1px solid #777",
+
         }}
+
       />
+
+
+
+
+
     </Box>
+
   );
+
 }

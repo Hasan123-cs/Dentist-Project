@@ -55,10 +55,14 @@ export default function PatientProfile() {
         );
 
         if (treatmentRes.ok) {
-          const treatmentData = await treatmentRes.json();
-          setTreatments(treatmentData);
-          console.log("Treatments:", treatments);
-        }
+
+    const treatmentData = await treatmentRes.json();
+
+    console.log("TREATMENT API DATA:", treatmentData);
+
+    setTreatments(treatmentData);
+
+}
         const completedRes = await fetch(
           `https://localhost:7166/api/patients/${id}/completed-treatments`
         );
@@ -595,9 +599,12 @@ export default function PatientProfile() {
                   </Typography>
 
 
-                  <Typography color="text.secondary">
-                    {treatment.teeth.join(", ")}
-                  </Typography>
+                 <Typography color="text.secondary">
+  {
+    [...new Set(treatment.teeth)]
+      .join(", ")
+  }
+</Typography>
 
                 </Box>
 
@@ -610,27 +617,33 @@ export default function PatientProfile() {
 
             {/* SURFACE */}
 
-            {
-              treatment.surface &&
+         {
+  treatment.surfaces &&
+  treatment.surfaces.length > 0 &&
+  (
+    <Grid item xs={12} sm={6}>
 
-              <Grid item xs={12} sm={6}>
+      <Box>
 
-                <Box>
-
-                  <Typography fontWeight={700}>
-                    Surface
-                  </Typography>
+        <Typography fontWeight={700}>
+          Surface
+        </Typography>
 
 
-                  <Typography color="text.secondary">
-                    {treatment.surface}
-                  </Typography>
+        <Typography color="text.secondary">
 
-                </Box>
+          {
+            treatment.surfaces.join(", ")
+          }
 
-              </Grid>
-            }
+        </Typography>
 
+
+      </Box>
+
+    </Grid>
+  )
+}
 
 
 
@@ -855,10 +868,10 @@ export default function PatientProfile() {
 
 
 
-                      {t.teeth && t.teeth.length > 0 && (
-    <Typography>
-        Teeth: {t.teeth.join(", ")}
-    </Typography>
+                    {t.teeth && t.teeth.length > 0 && (
+  <Typography>
+    Teeth: {[...new Set(t.teeth)].join(", ")}
+  </Typography>
 )}
 
 

@@ -7,7 +7,7 @@
 
         public List<int> ToothNumbers { get; set; } = new();
 
-        public string? Surface { get; set; }
+        public List<string> Surfaces { get; set; } = new();
 
         public string Status { get; set; } = "Pending";
 
