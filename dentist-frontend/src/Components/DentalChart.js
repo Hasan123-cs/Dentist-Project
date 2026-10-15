@@ -190,13 +190,35 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
           // CONDITION
           // =================================================
 
-          const condition = conditionFromBackend(item.condition);
+          const condition = conditionFromBackend(item.conditions?.[0]);
+          const allConditions = (item.conditions || []).map(conditionFromBackend);
 
           // =================================================
           // STATUS
           // =================================================
 
           const status = statusFromBackend(item.status);
+          // ALL WHOLE-TOOTH CONDITIONS
+
+if (allConditions.includes("rootCanal")) {
+  chartData[toothNumber].rootCanal = "Root Canal";
+}
+
+if (allConditions.includes("crown")) {
+  chartData[toothNumber].crown = "Crown";
+}
+
+if (allConditions.includes("implant")) {
+  chartData[toothNumber].implant = "Implant";
+}
+
+if (allConditions.includes("bridge")) {
+  chartData[toothNumber].bridge = "Bridge";
+}
+
+if (allConditions.includes("missing")) {
+  chartData[toothNumber].missing = "Missing";
+}
 
           // =================================================
           // SURFACE
@@ -482,7 +504,7 @@ Proceed?
 
       const chartData = {};
 
-     response.data.forEach((item) => {
+     refetchResponse.data.forEach((item)  => {
 
     const toothNumber = item.toothNumber;
 
@@ -493,8 +515,28 @@ Proceed?
           chartData[toothNumber] = {};
         }
 
-        const condition = conditionFromBackend(item.condition);
+        const condition = conditionFromBackend(item.conditions?.[0]);
+        const allConditions = (item.conditions || []).map(conditionFromBackend);
         const status = statusFromBackend(item.status);
+        if (allConditions.includes("rootCanal")) {
+  chartData[toothNumber].rootCanal = "Root Canal";
+}
+
+if (allConditions.includes("crown")) {
+  chartData[toothNumber].crown = "Crown";
+}
+
+if (allConditions.includes("implant")) {
+  chartData[toothNumber].implant = "Implant";
+}
+
+if (allConditions.includes("bridge")) {
+  chartData[toothNumber].bridge = "Bridge";
+}
+
+if (allConditions.includes("missing")) {
+  chartData[toothNumber].missing = "Missing";
+}
          const surface = surfaceFromBackend(item.surface);
 
 
@@ -860,40 +902,41 @@ chartData[toothNumber][surface].push(condition);
             chartData[tNumber] = {};
           }
 
-          const cond = conditionFromBackend(item.condition);
-          const stat = statusFromBackend(item.status);
-          const surf = surfaceFromBackend(item.surface);
-
-          if (!surf) {
-            if (cond === "rootCanal") {
-              chartData[tNumber].rootCanal = "Root Canal";
-            }
-
-            if (cond === "missing") {
-              chartData[tNumber].missing = "Missing";
-            }
-
-            if (cond === "bridge") {
-              chartData[tNumber].bridge = "Bridge";
-            }
-if (cond === "crown") {
-    chartData[tNumber].crown = "Crown";
+          const cond = conditionFromBackend(item.conditions?.[0]);
+          const allConditions = (item.conditions || []).map(conditionFromBackend);
+      if (allConditions.includes("rootCanal")) {
+  chartData[tNumber].rootCanal = "Root Canal";
 }
 
-
-if (cond === "implant") {
-    chartData[tNumber].implant = "Implant";
-}
-            chartData[tNumber].status = stat;
-            return;
-          }
-
-          if (!chartData[tNumber][surf]) {
-    chartData[tNumber][surf] = [];
+if (allConditions.includes("crown")) {
+  chartData[tNumber].crown = "Crown";
 }
 
-chartData[tNumber][surf].push(cond);
-          chartData[tNumber].status = stat;
+if (allConditions.includes("implant")) {
+  chartData[tNumber].implant = "Implant";
+}
+
+if (allConditions.includes("bridge")) {
+  chartData[tNumber].bridge = "Bridge";
+}
+
+if (allConditions.includes("missing")) {
+  chartData[tNumber].missing = "Missing";
+}
+const surfaces = item.surfaces || {};
+Object.entries(surfaces).forEach(([surfaceName, surfaceCondition]) => {
+  if (!chartData[tNumber][surfaceName]) {
+    chartData[tNumber][surfaceName] = [];
+  }
+
+  chartData[tNumber][surfaceName].push(
+    conditionFromBackend(surfaceCondition)
+  );
+});
+
+
+         
+
         });
 
         console.log("UI Updated with backend data:", chartData);
