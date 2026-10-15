@@ -11,6 +11,15 @@ import {
   Alert,
 } from "@mui/material";
 import {
+  appointmentReminderArabic,
+  cleaningReminderArabic,
+  appointmentReminderEnglish,
+  cleaningReminderEnglish,
+  cleaningReminderBoth,
+  appointmentReminderBoth
+} from "../translate/whatsappMessages";
+
+import {
   WhatsApp
 } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -71,23 +80,20 @@ export default function AppointmentDetails() {
     const message =
       messageLanguage === "ar"
         ?
-        `مرحباً ${getPatientName()}
-
-نذكركم بأن لديكم موعداً في عيادة الأسنان.
-
-التاريخ: ${formatDate(appointment.startDateTime)}
-الوقت: ${formatTime(appointment.startDateTime)}
-
-شكراً لثقتكم بنا.`
-        :
-        `Hello ${getPatientName()}
-
-This is a reminder that you have a dental appointment.
-
-Date: ${formatDate(appointment.startDateTime)}
-Time: ${formatTime(appointment.startDateTime)}
-
-Thank you for trusting us.`;
+        appointmentReminderArabic(
+          getPatientName(),
+          formatDate(appointment.startDateTime),
+          formatTime(appointment.startDateTime)
+        )
+        : (messageLanguage === "en" ? appointmentReminderEnglish(
+          getPatientName(),
+          formatDate(appointment.startDateTime),
+          formatTime(appointment.startDateTime)
+        ) : appointmentReminderBoth(
+          getPatientName(),
+          formatDate(appointment.startDateTime),
+          formatTime(appointment.startDateTime)
+        ));
 
 
 
@@ -857,7 +863,32 @@ Thank you for trusting us.`;
                 English
               </Button>
 
+              <Button
+                variant="outlined"
+                onClick={() => setMessageLanguage("both")}
+                sx={{
+                  background:
+                    messageLanguage === "both"
+                      ? "#C9A227"
+                      : "transparent",
 
+                  color:
+                    messageLanguage === "both"
+                      ? "#fff"
+                      : "#333",
+
+                  borderColor: "#C9A227",
+
+                  "&:hover": {
+                    background:
+                      messageLanguage === "both"
+                        ? "#b18d20"
+                        : "#faf8f2",
+                  },
+                }}
+              >
+                Both
+              </Button>
 
               <Button
                 variant="contained"

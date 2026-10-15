@@ -674,4 +674,51 @@ namespace dentist_project.Controllers;
         }
     
 }
+
+
+
+
+    [Authorize]
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdatePatient(
+        int id,
+        [FromBody] UpdatePatientDto dto)
+    {
+        var patient = await _context.Patients
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (patient == null)
+        {
+            return NotFound(new
+            {
+                message = "Patient not found."
+            });
+        }
+
+        // Phone is optional
+        // null = do not change
+        // "" = clear phone
+        if (dto.Phone != null)
+        {
+            patient.Phone = dto.Phone.Trim();
+        }
+
+        // Medical Notes are optional
+        // null = do not change
+        // "" = clear notes
+        if (dto.Notes != null)
+        {
+            patient.MedicalHistory = dto.Notes.Trim();
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Patient updated successfully."
+        });
+    }
+
+
+
 }

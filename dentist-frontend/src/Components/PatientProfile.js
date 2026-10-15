@@ -56,13 +56,13 @@ export default function PatientProfile() {
 
         if (treatmentRes.ok) {
 
-    const treatmentData = await treatmentRes.json();
+          const treatmentData = await treatmentRes.json();
 
-    console.log("TREATMENT API DATA:", treatmentData);
+          console.log("TREATMENT API DATA:", treatmentData);
 
-    setTreatments(treatmentData);
+          setTreatments(treatmentData);
 
-}
+        }
         const completedRes = await fetch(
           `https://localhost:7166/api/patients/${id}/completed-treatments`
         );
@@ -331,7 +331,7 @@ export default function PatientProfile() {
                 justifyContent: "center",
               }}
             >
-              <Typography sx={{ color: "red" }}>
+              <Typography sx={{ color: "red", fontWeight: 700, fontSize: 24 }}>
                 {patient.medicalHistory ||
                   patient.allergies ||
                   "No medical notes available."}
@@ -373,98 +373,15 @@ export default function PatientProfile() {
 
       {/* TREATMENT PLAN */}
 
-  {tab === 2 && (
-  <Paper
-    sx={{
-      mt: 3,
-      p: 4,
-      borderRadius: 4,
-      border: "1px solid #eee3c5",
-    }}
-  >
-
-    <Box
-      display="flex"
-      justifyContent="space-between"
-      alignItems="center"
-      mb={2}
-    >
-
-      <Typography
-        fontSize={22}
-        fontWeight={800}
-        color="#C9A227"
-      >
-        Treatment Plan
-      </Typography>
-
-
-      <Button
-        variant="contained"
-        onClick={() =>
-          navigate(`/patients/${patient.id}/add-treatment`)
-        }
-        sx={{
-          background: "#C9A227",
-          fontWeight: 700,
-          borderRadius: 3,
-        }}
-      >
-        + ADD TREATMENT
-      </Button>
-
-    </Box>
-
-
-
-    <Button
-      variant="outlined"
-      onClick={() =>
-        navigate(
-          `/treatments?search=${encodeURIComponent(
-            `${patient.firstName} ${patient.lastName}`
-          )}`
-        )
-      }
-      sx={{
-        mb: 3,
-        borderColor: "#C9A227",
-        color: "#C9A227",
-        fontWeight: 700,
-        borderRadius: 3,
-      }}
-    >
-      VIEW ALL TREATMENTS
-    </Button>
-
-
-
-
-
-    {treatments.length === 0 ? (
-
-      <Typography color="#718096">
-        No treatments added yet.
-      </Typography>
-
-    ) : (
-
-      treatments.map((treatment, index) => (
-
+      {tab === 2 && (
         <Paper
-          key={index}
           sx={{
-            p: 3,
-            mb: 3,
+            mt: 3,
+            p: 4,
             borderRadius: 4,
-            background: "#ffffff",
             border: "1px solid #eee3c5",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
           }}
         >
-
-
-          {/* HEADER */}
 
           <Box
             display="flex"
@@ -473,275 +390,400 @@ export default function PatientProfile() {
             mb={2}
           >
 
-            <Box display="flex" alignItems="center" gap={2}>
-
-              <Avatar
-                sx={{
-                  background:"#faf0c8",
-                  color:"#C9A227",
-                  fontWeight:800
-                }}
-              >
-                🦷
-              </Avatar>
+            <Typography
+              fontSize={22}
+              fontWeight={800}
+              color="#C9A227"
+            >
+              Treatment Plan
+            </Typography>
 
 
-              <Box>
-
-                <Typography
-                  fontSize={20}
-                  fontWeight={800}
-                  color="#092c57"
-                >
-                  {treatment.treatment}
-                </Typography>
-
-
-                <Typography
-                  color="text.secondary"
-                  fontSize={14}
-                >
-                  Treatment Record
-                </Typography>
-
-              </Box>
-
-            </Box>
-
-
-
-
-            <Chip
-              label={treatment.status}
+            <Button
+              variant="contained"
+              onClick={() =>
+                navigate(`/patients/${patient.id}/add-treatment`)
+              }
               sx={{
-                fontWeight:700,
-
-                background:
-                  treatment.status === "Completed"
-                  ? "#dcfce7"
-                  :
-                  treatment.status === "InProgress"
-                  ? "#fef3c7"
-                  :
-                  "#e0f2fe",
-
-                color:
-                  treatment.status === "Completed"
-                  ? "#166534"
-                  :
-                  treatment.status === "InProgress"
-                  ? "#92400e"
-                  :
-                  "#0369a1"
+                mb: 3,
+                background: "#C9A227",
+                fontWeight: 700,
+                borderRadius: 3,
               }}
-            />
+            >
+              + ADD TREATMENT
+            </Button>
 
           </Box>
 
 
 
-
-
-          {/* DATE */}
-
-          <Box
+          <Button
+            variant="outlined"
+            onClick={() =>
+              navigate(
+                `/treatments?search=${encodeURIComponent(
+                  `${patient.firstName} ${patient.lastName}`
+                )}`
+              )
+            }
             sx={{
-              background:"#faf8f2",
-              p:2,
-              borderRadius:3,
-              mb:2
+              mb: 3,
+              mt: 3,
+              borderColor: "#C9A227",
+              color: "#C9A227",
+              fontWeight: 700,
+              borderRadius: 3,
             }}
           >
+            VIEW ALL TREATMENTS
+          </Button>
 
-            <Typography fontWeight={700}>
-              📅 Date
+
+
+
+
+          {treatments.length === 0 ? (
+
+            <Typography color="#718096">
+              No treatments added yet.
             </Typography>
 
+          ) : (
 
-            <Typography color="text.secondary">
+            treatments.map((treatment, index) => (
 
-              {new Date(treatment.date)
-                .toLocaleDateString(
-                  "en-GB",
-                  {
-                    day:"2-digit",
-                    month:"long",
-                    year:"numeric"
-                  }
-                )}
-
-            </Typography>
-
-          </Box>
-
+              <Paper
+                key={index}
+                sx={{
+                  p: 3,
+                  mb: 3,
+                  borderRadius: 4,
+                  background: "#ffffff",
+                  border: "1px solid #eee3c5",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                }}
+              >
 
 
+                {/* HEADER */}
+
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}
+                >
+
+                  <Box display="flex" alignItems="center" gap={2}>
+
+                    <Avatar
+                      sx={{
+                        background: "#faf0c8",
+                        color: "#C9A227",
+                        fontWeight: 800
+                      }}
+                    >
+                      🦷
+                    </Avatar>
+
+
+                    <Box>
+
+                      <Typography
+                        fontSize={20}
+                        fontWeight={800}
+                        color="#092c57"
+                      >
+                        {treatment.treatment}
+                      </Typography>
+
+
+                      <Typography
+                        color="text.secondary"
+                        fontSize={14}
+                      >
+                        Treatment Record
+                      </Typography>
+
+                    </Box>
+
+                  </Box>
 
 
 
-          {/* DETAILS */}
 
-          <Grid container spacing={2}>
+                  <Chip
+                    label={treatment.status}
+                    sx={{
+                      fontWeight: 700,
 
+                      background:
+                        treatment.status === "Completed"
+                          ? "#dcfce7"
+                          :
+                          treatment.status === "InProgress"
+                            ? "#fef3c7"
+                            :
+                            "#e0f2fe",
 
-            {/* TEETH */}
-
-            {
-              treatment.teeth &&
-              treatment.teeth.length > 0 &&
-
-              <Grid item xs={12} sm={6}>
-
-                <Box>
-
-                  <Typography fontWeight={700}>
-                    🦷 Teeth
-                  </Typography>
-
-
-                 <Typography color="text.secondary">
-  {
-    [...new Set(treatment.teeth)]
-      .join(", ")
-  }
-</Typography>
+                      color:
+                        treatment.status === "Completed"
+                          ? "#166534"
+                          :
+                          treatment.status === "InProgress"
+                            ? "#92400e"
+                            :
+                            "#0369a1"
+                    }}
+                  />
 
                 </Box>
 
-              </Grid>
-            }
 
 
 
 
+                {/* DATE */}
 
-            {/* SURFACE */}
+                <Box
+                  sx={{
+                    background: "#faf8f2",
+                    p: 2,
+                    borderRadius: 3,
+                    mb: 2
+                  }}
+                >
 
-         {
-  treatment.surfaces &&
-  treatment.surfaces.length > 0 &&
-  (
-    <Grid item xs={12} sm={6}>
-
-      <Box>
-
-        <Typography fontWeight={700}>
-          Surface
-        </Typography>
-
-
-        <Typography color="text.secondary">
-
-          {
-            treatment.surfaces.join(", ")
-          }
-
-        </Typography>
+                  <Typography fontWeight={700}>
+                    📅 Date
+                  </Typography>
 
 
-      </Box>
+                  <Typography color="text.secondary">
 
-    </Grid>
-  )
-}
+                    {new Date(treatment.date)
+                      .toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric"
+                        }
+                      )}
 
+                  </Typography>
 
-
-
-            {/* CONDITION */}
-
-            <Grid item xs={12} sm={6}>
-
-              <Box>
-
-                <Typography fontWeight={700}>
-                  Condition
-                </Typography>
-
-
-                <Typography color="text.secondary">
-                  {treatment.condition}
-                </Typography>
-
-              </Box>
-
-            </Grid>
+                </Box>
 
 
 
 
 
 
-            {/* PRICE */}
+                {/* DETAILS */}
 
-           {/* PRICE */}
-
-<Grid item xs={12} sm={6}>
-
-  <Box>
-
-    <Typography fontWeight={700}>
-      💰 Price
-    </Typography>
+                <Grid container spacing={2}>
 
 
-    <Typography
-      color="#C9A227"
-      fontWeight={800}
-    >
-      ${treatment.cost}
-    </Typography>
+                  {/* TEETH */}
 
-  </Box>
+                  {
+                    treatment.teeth &&
+                    treatment.teeth.length > 0 &&
 
-</Grid>
+                    <Grid item xs={12} sm={6}>
 
+                      <Box>
 
-          </Grid>
-
-
+                        <Typography fontWeight={700}>
+                          🦷 Teeth
+                        </Typography>
 
 
+                        <Typography color="text.secondary">
+                          {
+                            [...new Set(treatment.teeth)]
+                              .join(", ")
+                          }
+                        </Typography>
+
+                      </Box>
+
+                    </Grid>
+                  }
 
 
 
-          {/* NOTES */}
-
-          {
-            treatment.notes &&
-
-            <Box
-              sx={{
-                mt:2,
-                p:2,
-                borderRadius:3,
-                background:"#f8fafc"
-              }}
-            >
-
-              <Typography fontWeight={700}>
-                Notes
-              </Typography>
 
 
-              <Typography color="text.secondary">
-                {treatment.notes}
-              </Typography>
+                  {/* SURFACE */}
 
-            </Box>
+                  {
+                    treatment.surfaces &&
+                    treatment.surfaces.length > 0 &&
+                    (
+                      <Grid item xs={12} sm={6}>
 
-          }
+                        <Box>
+
+                          <Typography fontWeight={700}>
+                            Surface
+                          </Typography>
 
 
+                          <Typography color="text.secondary">
+
+                            {
+                              treatment.surfaces.join(", ")
+                            }
+
+                          </Typography>
+
+
+                        </Box>
+
+                      </Grid>
+                    )
+                  }
+
+
+
+
+                  {/* CONDITION */}
+
+                  <Grid item xs={12} sm={6}>
+
+                    <Box>
+
+                      <Typography fontWeight={700}>
+                        Condition
+                      </Typography>
+
+
+                      <Typography color="text.secondary">
+                        {treatment.condition}
+                      </Typography>
+
+                    </Box>
+
+                  </Grid>
+
+
+
+
+
+
+                  {/* PRICE */}
+
+                  {/* PRICE */}
+
+                  <Grid item xs={12} sm={6}>
+
+                    <Box>
+
+                      <Typography fontWeight={700}>
+                        💰 Price
+                      </Typography>
+
+
+                      <Typography
+                        color="#C9A227"
+                        fontWeight={800}
+                      >
+                        ${treatment.cost}
+                      </Typography>
+
+                    </Box>
+
+                  </Grid>
+
+
+
+
+                  <Grid item xs={12} sm={6}>
+
+                    <Box>
+
+                      <Typography fontWeight={700}>
+                        ✅ Paid
+                      </Typography>
+
+
+                      <Typography
+                        color="#C9A227"
+                        fontWeight={800}
+                      >
+                        ${treatment.paid}
+                      </Typography>
+
+                    </Box>
+
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+
+                    <Box>
+
+                      <Typography fontWeight={700}>
+                        ⏳ Remaining
+                      </Typography>
+
+
+                      <Typography
+                        color="#C9A227"
+                        fontWeight={800}
+                      >
+                        ${treatment.remaining}
+                      </Typography>
+
+                    </Box>
+
+                  </Grid>
+                </Grid>
+
+
+
+
+
+
+
+                {/* NOTES */}
+
+                {
+                  treatment.notes &&
+
+                  <Box
+                    sx={{
+                      mt: 2,
+                      p: 2,
+                      borderRadius: 3,
+                      background: "#f8fafc"
+                    }}
+                  >
+
+                    <Typography fontWeight={700}>
+                      Notes
+                    </Typography>
+
+
+                    <Typography color="text.secondary">
+                      {treatment.notes}
+                    </Typography>
+
+                  </Box>
+
+                }
+
+
+
+              </Paper>
+
+            ))
+
+          )}
 
         </Paper>
-
-      ))
-
-    )}
-
-  </Paper>
-)}
+      )}
       {/* COMPLETED TREATMENTS */}
 
       {
@@ -868,11 +910,11 @@ export default function PatientProfile() {
 
 
 
-                    {t.teeth && t.teeth.length > 0 && (
-  <Typography>
-    Teeth: {[...new Set(t.teeth)].join(", ")}
-  </Typography>
-)}
+                        {t.teeth && t.teeth.length > 0 && (
+                          <Typography>
+                            Teeth: {[...new Set(t.teeth)].join(", ")}
+                          </Typography>
+                        )}
 
 
 
