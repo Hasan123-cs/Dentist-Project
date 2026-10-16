@@ -60,7 +60,7 @@ export default function CleaningWhatsapp(){
  
         const response = await fetch(
  
-          `https://localhost:7166/api/recallreminders/${id}`,
+          `${process.env.REACT_APP_API_URL}/api/recallreminders/${id}`,
  
           {
  

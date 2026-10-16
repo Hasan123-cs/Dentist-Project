@@ -59,7 +59,7 @@ export default function WhatsAppReminders() {
 
 
       const response = await fetch(
-        "https://localhost:7166/api/notifications/reminders",
+        `${process.env.REACT_APP_API_URL}/api/notifications/reminders`,
         {
           headers: {
             Authorization: `Bearer ${token}`

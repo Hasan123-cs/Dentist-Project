@@ -310,7 +310,7 @@ const treatmentData = {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `https://localhost:7166/api/patients/${id}/treatments`,
+        `${process.env.REACT_APP_API_URL}/api/patients/${id}/treatments`,
         {
           method: "POST",
 

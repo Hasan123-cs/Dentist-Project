@@ -57,7 +57,7 @@ export default function AppointmentDetails() {
 
 
     const phoneResponse = await axios.get(
-      `https://localhost:7166/api/patients/${id}/patient-phone`,
+      `${process.env.REACT_APP_API_URL}/api/patients/${id}/patient-phone`,
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -120,7 +120,7 @@ export default function AppointmentDetails() {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        `https://localhost:7166/api/appointments/${id}`,
+        `${process.env.REACT_APP_API_URL}/api/appointments/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -318,7 +318,7 @@ export default function AppointmentDetails() {
       const token = localStorage.getItem("token");
 
       const response = await axios.put(
-        `https://localhost:7166/api/appointments/${id}/complete`,
+        `${process.env.REACT_APP_API_URL}/api/appointments/${id}/complete`,
         {
           paymentStatus: paymentStatus,
           paidAmount: amount,
@@ -373,7 +373,7 @@ export default function AppointmentDetails() {
       const token = localStorage.getItem("token");
 
       const response = await axios.put(
-        `https://localhost:7166/api/appointments/${id}/cancel`,
+        `${process.env.REACT_APP_API_URL}/api/appointments/${id}/cancel`,
         {},
         {
           headers: {

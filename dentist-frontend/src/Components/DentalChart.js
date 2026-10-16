@@ -167,7 +167,7 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
         const token = localStorage.getItem("token");
 
         const response = await axios.get(
-          `https://localhost:7166/api/DentalChart/patient/${patientId}`,
+          `${process.env.REACT_APP_API_URL}/api/DentalChart/patient/${patientId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -200,25 +200,25 @@ export default function DentalChart({ patientId, conditions, setConditions }) {
           const status = statusFromBackend(item.status);
           // ALL WHOLE-TOOTH CONDITIONS
 
-if (allConditions.includes("rootCanal")) {
-  chartData[toothNumber].rootCanal = "Root Canal";
-}
+          if (allConditions.includes("rootCanal")) {
+            chartData[toothNumber].rootCanal = "Root Canal";
+          }
 
-if (allConditions.includes("crown")) {
-  chartData[toothNumber].crown = "Crown";
-}
+          if (allConditions.includes("crown")) {
+            chartData[toothNumber].crown = "Crown";
+          }
 
-if (allConditions.includes("implant")) {
-  chartData[toothNumber].implant = "Implant";
-}
+          if (allConditions.includes("implant")) {
+            chartData[toothNumber].implant = "Implant";
+          }
 
-if (allConditions.includes("bridge")) {
-  chartData[toothNumber].bridge = "Bridge";
-}
+          if (allConditions.includes("bridge")) {
+            chartData[toothNumber].bridge = "Bridge";
+          }
 
-if (allConditions.includes("missing")) {
-  chartData[toothNumber].missing = "Missing";
-}
+          if (allConditions.includes("missing")) {
+            chartData[toothNumber].missing = "Missing";
+          }
 
           // =================================================
           // SURFACE
@@ -244,137 +244,137 @@ if (allConditions.includes("missing")) {
           // Missing
           // =================================================
 
-       // =================================================
-// MULTIPLE SURFACES
-// =================================================
+          // =================================================
+          // MULTIPLE SURFACES
+          // =================================================
 
-if (surfaces && Object.keys(surfaces).length > 0) {
-
-
-    // keep whole tooth condition
-    // Example: RootCanal + Filling surfaces
-
-    if (condition === "rootCanal") {
-
-        chartData[toothNumber].rootCanal =
-            "Root Canal";
-
-    }
+          if (surfaces && Object.keys(surfaces).length > 0) {
 
 
-    if (condition === "crown") {
+            // keep whole tooth condition
+            // Example: RootCanal + Filling surfaces
 
-        chartData[toothNumber].crown =
-            "Crown";
+            if (condition === "rootCanal") {
 
-    }
+              chartData[toothNumber].rootCanal =
+                "Root Canal";
 
-
-    if (condition === "implant") {
-
-        chartData[toothNumber].implant =
-            "Implant";
-
-    }
+            }
 
 
-    if (condition === "bridge") {
+            if (condition === "crown") {
 
-        chartData[toothNumber].bridge =
-            "Bridge";
+              chartData[toothNumber].crown =
+                "Crown";
 
-    }
-
-
-
-    // save surfaces
-
-    Object.entries(surfaces).forEach(
-        ([surfaceName, surfaceCondition]) => {
+            }
 
 
-            const convertedCondition =
-                conditionFromBackend(surfaceCondition);
+            if (condition === "implant") {
+
+              chartData[toothNumber].implant =
+                "Implant";
+
+            }
 
 
+            if (condition === "bridge") {
 
-            if (!chartData[toothNumber][surfaceName]) {
-
-                chartData[toothNumber][surfaceName] = [];
+              chartData[toothNumber].bridge =
+                "Bridge";
 
             }
 
 
 
-            chartData[toothNumber][surfaceName]
-                .push(convertedCondition);
+            // save surfaces
+
+            Object.entries(surfaces).forEach(
+              ([surfaceName, surfaceCondition]) => {
 
 
-        }
-    );
+                const convertedCondition =
+                  conditionFromBackend(surfaceCondition);
 
 
 
-    chartData[toothNumber].status = status;
+                if (!chartData[toothNumber][surfaceName]) {
+
+                  chartData[toothNumber][surfaceName] = [];
+
+                }
 
 
-    return;
 
-}
-
-// =================================================
-// WHOLE TOOTH
-// =================================================
-
-if (!surface) {
+                chartData[toothNumber][surfaceName]
+                  .push(convertedCondition);
 
 
-    if (condition === "rootCanal") {
-
-        chartData[toothNumber].rootCanal =
-            "Root Canal";
-
-    }
+              }
+            );
 
 
-    if (condition === "missing") {
 
-        chartData[toothNumber].missing =
-            "Missing";
-
-    }
+            chartData[toothNumber].status = status;
 
 
-    if (condition === "bridge") {
+            return;
 
-        chartData[toothNumber].bridge =
-            "Bridge";
+          }
 
-    }
+          // =================================================
+          // WHOLE TOOTH
+          // =================================================
 
-
-    if (condition === "crown") {
-
-        chartData[toothNumber].crown =
-            "Crown";
-
-    }
+          if (!surface) {
 
 
-    if (condition === "implant") {
+            if (condition === "rootCanal") {
 
-        chartData[toothNumber].implant =
-            "Implant";
+              chartData[toothNumber].rootCanal =
+                "Root Canal";
 
-    }
-
-
-    chartData[toothNumber].status = status;
+            }
 
 
-    return;
+            if (condition === "missing") {
 
-}
+              chartData[toothNumber].missing =
+                "Missing";
+
+            }
+
+
+            if (condition === "bridge") {
+
+              chartData[toothNumber].bridge =
+                "Bridge";
+
+            }
+
+
+            if (condition === "crown") {
+
+              chartData[toothNumber].crown =
+                "Crown";
+
+            }
+
+
+            if (condition === "implant") {
+
+              chartData[toothNumber].implant =
+                "Implant";
+
+            }
+
+
+            chartData[toothNumber].status = status;
+
+
+            return;
+
+          }
 
           // =================================================
           // SURFACE CONDITION
@@ -384,11 +384,11 @@ if (!surface) {
           // M -> cavity
           // =================================================
 
-         if (!chartData[toothNumber][surface]) {
-    chartData[toothNumber][surface] = [];
-}
+          if (!chartData[toothNumber][surface]) {
+            chartData[toothNumber][surface] = [];
+          }
 
-chartData[toothNumber][surface].push(condition);
+          chartData[toothNumber][surface].push(condition);
 
           // Save status
           chartData[toothNumber].status = status;
@@ -475,7 +475,7 @@ Proceed?
       // ============================================
 
       const response = await axios.put(
-        "https://localhost:7166/api/DentalChart/bridge",
+        `${process.env.REACT_APP_API_URL}/api/DentalChart/bridge`,
         bridgeData,
         {
           headers: {
@@ -494,7 +494,7 @@ Proceed?
       // ============================================
 
       const refetchResponse = await axios.get(
-        `https://localhost:7166/api/DentalChart/patient/${patientId}`,
+        `${process.env.REACT_APP_API_URL}/api/DentalChart/patient/${patientId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -504,12 +504,12 @@ Proceed?
 
       const chartData = {};
 
-     refetchResponse.data.forEach((item)  => {
+      refetchResponse.data.forEach((item) => {
 
-    const toothNumber = item.toothNumber;
+        const toothNumber = item.toothNumber;
 
-    const conditions =
-        item.conditions || [];
+        const conditions =
+          item.conditions || [];
 
         if (!chartData[toothNumber]) {
           chartData[toothNumber] = {};
@@ -519,148 +519,148 @@ Proceed?
         const allConditions = (item.conditions || []).map(conditionFromBackend);
         const status = statusFromBackend(item.status);
         if (allConditions.includes("rootCanal")) {
-  chartData[toothNumber].rootCanal = "Root Canal";
-}
+          chartData[toothNumber].rootCanal = "Root Canal";
+        }
 
-if (allConditions.includes("crown")) {
-  chartData[toothNumber].crown = "Crown";
-}
+        if (allConditions.includes("crown")) {
+          chartData[toothNumber].crown = "Crown";
+        }
 
-if (allConditions.includes("implant")) {
-  chartData[toothNumber].implant = "Implant";
-}
+        if (allConditions.includes("implant")) {
+          chartData[toothNumber].implant = "Implant";
+        }
 
-if (allConditions.includes("bridge")) {
-  chartData[toothNumber].bridge = "Bridge";
-}
+        if (allConditions.includes("bridge")) {
+          chartData[toothNumber].bridge = "Bridge";
+        }
 
-if (allConditions.includes("missing")) {
-  chartData[toothNumber].missing = "Missing";
-}
-         const surface = surfaceFromBackend(item.surface);
+        if (allConditions.includes("missing")) {
+          chartData[toothNumber].missing = "Missing";
+        }
+        const surface = surfaceFromBackend(item.surface);
 
 
-const surfaces = item.surfaces;
+        const surfaces = item.surfaces;
 
         // Whole tooth condition
-      // MULTIPLE SURFACES
-// =================================================
-// MULTIPLE SURFACES + WHOLE TOOTH CONDITION
-// =================================================
+        // MULTIPLE SURFACES
+        // =================================================
+        // MULTIPLE SURFACES + WHOLE TOOTH CONDITION
+        // =================================================
 
-if (surfaces && Object.keys(surfaces).length > 0) {
-
-
-    // Save whole tooth condition first
-
-    if (condition === "rootCanal") {
-
-        chartData[toothNumber].rootCanal =
-            "Root Canal";
-
-    }
+        if (surfaces && Object.keys(surfaces).length > 0) {
 
 
-    if (condition === "crown") {
+          // Save whole tooth condition first
 
-        chartData[toothNumber].crown =
-            "Crown";
+          if (condition === "rootCanal") {
 
-    }
+            chartData[toothNumber].rootCanal =
+              "Root Canal";
 
-
-    if (condition === "implant") {
-
-        chartData[toothNumber].implant =
-            "Implant";
-
-    }
+          }
 
 
-    if (condition === "bridge") {
+          if (condition === "crown") {
 
-        chartData[toothNumber].bridge =
-            "Bridge";
+            chartData[toothNumber].crown =
+              "Crown";
 
-    }
-
-
-
-    // Save surfaces
-
-    Object.entries(surfaces).forEach(
-        ([surfaceName, surfaceCondition]) => {
+          }
 
 
-            const convertedCondition =
+          if (condition === "implant") {
+
+            chartData[toothNumber].implant =
+              "Implant";
+
+          }
+
+
+          if (condition === "bridge") {
+
+            chartData[toothNumber].bridge =
+              "Bridge";
+
+          }
+
+
+
+          // Save surfaces
+
+          Object.entries(surfaces).forEach(
+            ([surfaceName, surfaceCondition]) => {
+
+
+              const convertedCondition =
                 conditionFromBackend(surfaceCondition);
 
 
 
-            if (!chartData[toothNumber][surfaceName]) {
+              if (!chartData[toothNumber][surfaceName]) {
 
                 chartData[toothNumber][surfaceName] = [];
 
-            }
+              }
 
 
 
-            chartData[toothNumber][surfaceName]
+              chartData[toothNumber][surfaceName]
                 .push(convertedCondition);
 
 
+            }
+          );
+
+
+
+          chartData[toothNumber].status = status;
+
+
+          return;
+
         }
-    );
 
 
 
-    chartData[toothNumber].status = status;
+        if (!surface) {
+
+          if (condition === "rootCanal") {
+            chartData[toothNumber].rootCanal = "Root Canal";
+          }
 
 
-    return;
-
-}
-
-
-
-if (!surface) {
-
-    if (condition === "rootCanal") {
-        chartData[toothNumber].rootCanal = "Root Canal";
-    }
+          if (condition === "missing") {
+            chartData[toothNumber].missing = "Missing";
+          }
 
 
-    if (condition === "missing") {
-        chartData[toothNumber].missing = "Missing";
-    }
+          if (condition === "bridge") {
+            chartData[toothNumber].bridge = "Bridge";
+          }
 
 
-    if (condition === "bridge") {
-        chartData[toothNumber].bridge = "Bridge";
-    }
+          if (condition === "crown") {
+            chartData[toothNumber].crown = "Crown";
+          }
 
 
-    if (condition === "crown") {
-        chartData[toothNumber].crown = "Crown";
-    }
+          if (condition === "implant") {
+            chartData[toothNumber].implant = "Implant";
+          }
 
 
-    if (condition === "implant") {
-        chartData[toothNumber].implant = "Implant";
-    }
+          chartData[toothNumber].status = status;
 
-
-    chartData[toothNumber].status = status;
-
-    return;
-}
+          return;
+        }
 
         // Surface condition
         if (!chartData[toothNumber][surface]) {
-    chartData[toothNumber][surface] = [];
-}
+          chartData[toothNumber][surface] = [];
+        }
 
-chartData[toothNumber][surface].push(condition);
+        chartData[toothNumber][surface].push(condition);
         chartData[toothNumber].status = status;
       });
 
@@ -743,7 +743,7 @@ chartData[toothNumber][surface].push(condition);
         token ? `${token.substring(0, 20)}...` : "NO TOKEN",
       );
 
-      const url = `https://localhost:7166/api/DentalChart/tooth/${patientId}/${toothNumber}`;
+      const url = `${process.env.REACT_APP_API_URL}/api/DentalChart/tooth/${patientId}/${toothNumber}`;
 
       console.log("DELETE URL:", url);
       console.log("Sending DELETE request...");
@@ -862,7 +862,7 @@ chartData[toothNumber][surface].push(condition);
       const token = localStorage.getItem("token");
 
       const response = await axios.put(
-        "https://localhost:7166/api/DentalChart/tooth",
+        `${process.env.REACT_APP_API_URL}/api/DentalChart/tooth`,
         toothData,
         {
           headers: {
@@ -883,7 +883,7 @@ chartData[toothNumber][surface].push(condition);
         const token = localStorage.getItem("token");
 
         const refetchResponse = await axios.get(
-          `https://localhost:7166/api/DentalChart/patient/${patientId}`,
+          `${process.env.REACT_APP_API_URL} / api / DentalChart / patient / ${patientId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -904,38 +904,38 @@ chartData[toothNumber][surface].push(condition);
 
           const cond = conditionFromBackend(item.conditions?.[0]);
           const allConditions = (item.conditions || []).map(conditionFromBackend);
-      if (allConditions.includes("rootCanal")) {
-  chartData[tNumber].rootCanal = "Root Canal";
-}
+          if (allConditions.includes("rootCanal")) {
+            chartData[tNumber].rootCanal = "Root Canal";
+          }
 
-if (allConditions.includes("crown")) {
-  chartData[tNumber].crown = "Crown";
-}
+          if (allConditions.includes("crown")) {
+            chartData[tNumber].crown = "Crown";
+          }
 
-if (allConditions.includes("implant")) {
-  chartData[tNumber].implant = "Implant";
-}
+          if (allConditions.includes("implant")) {
+            chartData[tNumber].implant = "Implant";
+          }
 
-if (allConditions.includes("bridge")) {
-  chartData[tNumber].bridge = "Bridge";
-}
+          if (allConditions.includes("bridge")) {
+            chartData[tNumber].bridge = "Bridge";
+          }
 
-if (allConditions.includes("missing")) {
-  chartData[tNumber].missing = "Missing";
-}
-const surfaces = item.surfaces || {};
-Object.entries(surfaces).forEach(([surfaceName, surfaceCondition]) => {
-  if (!chartData[tNumber][surfaceName]) {
-    chartData[tNumber][surfaceName] = [];
-  }
+          if (allConditions.includes("missing")) {
+            chartData[tNumber].missing = "Missing";
+          }
+          const surfaces = item.surfaces || {};
+          Object.entries(surfaces).forEach(([surfaceName, surfaceCondition]) => {
+            if (!chartData[tNumber][surfaceName]) {
+              chartData[tNumber][surfaceName] = [];
+            }
 
-  chartData[tNumber][surfaceName].push(
-    conditionFromBackend(surfaceCondition)
-  );
-});
+            chartData[tNumber][surfaceName].push(
+              conditionFromBackend(surfaceCondition)
+            );
+          });
 
 
-         
+
 
         });
 

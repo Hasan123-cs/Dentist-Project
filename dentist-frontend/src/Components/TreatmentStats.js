@@ -27,7 +27,7 @@ export default function TreatmentStats() {
         }
 
         const response = await fetch(
-          "https://localhost:7166/api/patients/all-treatments",
+          `${process.env.REACT_APP_API_URL}/api/patients/all-treatments`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -46,7 +46,7 @@ export default function TreatmentStats() {
         setTreatments(Array.isArray(data) ? data : []);
 
         const revenueResponse = await fetch(
-          "https://localhost:7166/api/patients/dashboard-revenue",
+          `${process.env.REACT_APP_API_URL}/api/patients/dashboard-revenue`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

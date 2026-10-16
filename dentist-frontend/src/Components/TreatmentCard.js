@@ -42,7 +42,7 @@ export default function TreatmentCard({ treatment, onDelete }) {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `https://localhost:7166/api/patients/treatments/${treatment.id}/status`,
+        `${process.env.REACT_APP_API_URL}/api/patients/treatments/${treatment.id}/status`,
         {
           method: "PUT",
           headers: {
@@ -76,7 +76,7 @@ export default function TreatmentCard({ treatment, onDelete }) {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `https://localhost:7166/api/patients/treatments/${treatment.id}`,
+        `${process.env.REACT_APP_API_URL}/api/patients/treatments/${treatment.id}`,
         {
           method: "DELETE",
           headers: {

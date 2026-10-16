@@ -113,7 +113,7 @@ export default function WeeklyCalendar({
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://localhost:7166/api/appointments/${appointment.id}/time`,
+        `${process.env.REACT_APP_API_URL}/api/appointments/${appointment.id}/time`,
 
         {
           startDateTime: newStart.toISOString(),

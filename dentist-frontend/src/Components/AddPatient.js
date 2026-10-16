@@ -44,7 +44,7 @@ export default function AddPatient() {
       form.notes = form.notes + " " + notesss;
       console.log(form.notes)
 
-      const response = await fetch("https://localhost:7166/api/Patients", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/Patients`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

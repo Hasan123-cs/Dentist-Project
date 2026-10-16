@@ -32,7 +32,7 @@ export default function DentistDashboard() {
     const fetchDashboardData = async () => {
       try {
         const response = await fetch(
-          "https://localhost:7166/api/dashboard",
+          `${process.env.REACT_APP_API_URL}/api/dashboard`,
 
           {
             headers: {

@@ -15,8 +15,8 @@ export default function TreatmentList({ search }) {
         const token = localStorage.getItem("token");
 
         const url = search
-          ? `https://localhost:7166/api/patients/search-treatments?keyword=${search}`
-          : "https://localhost:7166/api/patients/all-treatments";
+          ? `${process.env.REACT_APP_API_URL}/api/patients/search-treatments?keyword=${search}`
+          : `${process.env.REACT_APP_API_URL}/api/patients/all-treatments`;
 
         const response = await fetch(url, {
           headers: {

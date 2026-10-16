@@ -45,7 +45,7 @@ export default function Appointments() {
 
     try {
       const response = await axios.get(
-        `https://localhost:7166/api/appointments?start=${start}&end=${end}`,
+        `${process.env.REACT_APP_API_URL}/api/appointments?start=${start}&end=${end}`,
 
         {
           headers: {
@@ -82,7 +82,7 @@ export default function Appointments() {
 
     try {
       const response = await axios.put(
-        `https://localhost:7166/api/appointments/${id}/cancel`,
+        `${process.env.REACT_APP_API_URL}/api/appointments/${id}/cancel`,
         {},
         {
           headers: {

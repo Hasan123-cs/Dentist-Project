@@ -40,7 +40,7 @@ import {
   ArrowForward,
 } from "@mui/icons-material";
 
-const API_URL = "https://localhost:7166/api/Patients";
+const API_URL = `${process.env.REACT_APP_API_URL}/api/Patients`;
 
 const medicalOptions = [
   "Hypertension",

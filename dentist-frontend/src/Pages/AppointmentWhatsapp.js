@@ -61,7 +61,7 @@ export default function AppointmentWhatsapp(){
  
         const response = await fetch(
  
-          `https://localhost:7166/api/appointments/${id}`,
+          `${process.env.REACT_APP_API_URL}/api/appointments/${id}`,
  
           {
  

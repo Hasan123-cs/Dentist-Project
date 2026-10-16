@@ -42,7 +42,7 @@ export default function PatientProfile() {
   useEffect(() => {
     const getPatient = async () => {
       try {
-        const res = await fetch(`https://localhost:7166/api/patients/${id}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/patients/${id}`);
 
         if (res.ok) {
           const data = await res.json();
@@ -51,7 +51,7 @@ export default function PatientProfile() {
         }
 
         const treatmentRes = await fetch(
-          `https://localhost:7166/api/patients/${id}/treatments`
+          `${process.env.REACT_APP_API_URL}/api/patients/${id}/treatments`
         );
 
         if (treatmentRes.ok) {
@@ -64,7 +64,7 @@ export default function PatientProfile() {
 
         }
         const completedRes = await fetch(
-          `https://localhost:7166/api/patients/${id}/completed-treatments`
+          `${process.env.REACT_APP_API_URL}/api/patients/${id}/completed-treatments`
         );
 
 
@@ -76,7 +76,7 @@ export default function PatientProfile() {
 
         }
         const summaryRes = await fetch(
-          `https://localhost:7166/api/patients/${id}/summary`
+          `${process.env.REACT_APP_API_URL}/api/patients/${id}/summary`
         );
 
         if (summaryRes.ok) {

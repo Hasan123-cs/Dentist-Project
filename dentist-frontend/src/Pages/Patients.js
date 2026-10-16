@@ -23,7 +23,7 @@ export default function Patients() {
   useEffect(() => {
     const getPatients = async () => {
       try {
-        const fetchApi = await fetch("https://localhost:7166/api/patients");
+        const fetchApi = await fetch(`${process.env.REACT_APP_API_URL}/api/patients`);
 
         if (!fetchApi.ok) {
           setError("Data not Found");
