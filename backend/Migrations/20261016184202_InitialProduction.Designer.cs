@@ -12,8 +12,8 @@ using dentist_project.Data;
 namespace dentist_project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260915151612_x")]
-    partial class x
+    [Migration("20261016184202_InitialProduction")]
+    partial class InitialProduction
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -243,9 +243,6 @@ namespace dentist_project.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("AmountPaid")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -259,11 +256,17 @@ namespace dentist_project.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("integer");
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("RemainingAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<bool>("ReminderSent")
                         .HasColumnType("boolean");
@@ -297,11 +300,20 @@ namespace dentist_project.Migrations
                     b.Property<int>("AppointmentId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<int>("TreatmentId")
                         .HasColumnType("integer");
@@ -313,6 +325,29 @@ namespace dentist_project.Migrations
                     b.HasIndex("TreatmentId");
 
                     b.ToTable("AppointmentTreatments");
+                });
+
+            modelBuilder.Entity("dentist_project.Models.AppointmentTreatmentToothTreatment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentTreatmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ToothTreatmentId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentTreatmentId");
+
+                    b.HasIndex("ToothTreatmentId");
+
+                    b.ToTable("AppointmentTreatmentToothTreatments");
                 });
 
             modelBuilder.Entity("dentist_project.Models.MedicalRecord", b =>
@@ -370,6 +405,18 @@ namespace dentist_project.Migrations
                     b.Property<int?>("AppointmentId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ApprovedById")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsSent")
                         .HasColumnType("boolean");
 
@@ -380,6 +427,9 @@ namespace dentist_project.Migrations
                     b.Property<int>("PatientId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("ReminderDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("SentAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -389,6 +439,8 @@ namespace dentist_project.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
+
+                    b.HasIndex("ApprovedById");
 
                     b.HasIndex("PatientId");
 
@@ -545,6 +597,9 @@ namespace dentist_project.Migrations
                     b.Property<int>("EstimatedMinutes")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("HasRecallReminder")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -646,6 +701,25 @@ namespace dentist_project.Migrations
                     b.Navigation("Treatment");
                 });
 
+            modelBuilder.Entity("dentist_project.Models.AppointmentTreatmentToothTreatment", b =>
+                {
+                    b.HasOne("dentist_project.Models.AppointmentTreatment", "AppointmentTreatment")
+                        .WithMany("ToothTreatmentLinks")
+                        .HasForeignKey("AppointmentTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("dentist_project.Models.ToothTreatment", "ToothTreatment")
+                        .WithMany()
+                        .HasForeignKey("ToothTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppointmentTreatment");
+
+                    b.Navigation("ToothTreatment");
+                });
+
             modelBuilder.Entity("dentist_project.Models.MedicalRecord", b =>
                 {
                     b.HasOne("dentist_project.Models.Appointment", "Appointment")
@@ -679,6 +753,10 @@ namespace dentist_project.Migrations
                         .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("dentist_project.Models.ApplicationUser", "ApprovedBy")
+                        .WithMany()
+                        .HasForeignKey("ApprovedById");
+
                     b.HasOne("dentist_project.Models.Patient", "Patient")
                         .WithMany("Notifications")
                         .HasForeignKey("PatientId")
@@ -686,6 +764,8 @@ namespace dentist_project.Migrations
                         .IsRequired();
 
                     b.Navigation("Appointment");
+
+                    b.Navigation("ApprovedBy");
 
                     b.Navigation("Patient");
                 });
@@ -736,6 +816,11 @@ namespace dentist_project.Migrations
             modelBuilder.Entity("dentist_project.Models.Appointment", b =>
                 {
                     b.Navigation("AppointmentTreatments");
+                });
+
+            modelBuilder.Entity("dentist_project.Models.AppointmentTreatment", b =>
+                {
+                    b.Navigation("ToothTreatmentLinks");
                 });
 
             modelBuilder.Entity("dentist_project.Models.MedicalRecord", b =>

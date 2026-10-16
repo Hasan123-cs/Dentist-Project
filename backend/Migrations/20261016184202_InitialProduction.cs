@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace dentist_project.Migrations
 {
     /// <inheritdoc />
-    public partial class version1 : Migration
+    public partial class InitialProduction : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -99,7 +99,8 @@ namespace dentist_project.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     DefaultPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     EstimatedMinutes = table.Column<int>(type: "integer", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    HasRecallReminder = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -225,7 +226,8 @@ namespace dentist_project.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),
                     TotalCost = table.Column<decimal>(type: "numeric", nullable: false),
-                    AmountPaid = table.Column<decimal>(type: "numeric", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    RemainingAmount = table.Column<decimal>(type: "numeric", nullable: false),
                     PaymentStatus = table.Column<int>(type: "integer", nullable: false),
                     ReminderSent = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -279,6 +281,9 @@ namespace dentist_project.Migrations
                     AppointmentId = table.Column<int>(type: "integer", nullable: false),
                     TreatmentId = table.Column<int>(type: "integer", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Notes = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -305,7 +310,7 @@ namespace dentist_project.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PatientId = table.Column<int>(type: "integer", nullable: false),
-                    AppointmentId = table.Column<int>(type: "integer", nullable: false),
+                    AppointmentId = table.Column<int>(type: "integer", nullable: true),
                     Diagnosis = table.Column<string>(type: "text", nullable: true),
                     TreatmentPlan = table.Column<string>(type: "text", nullable: true),
                     CreatedById = table.Column<string>(type: "text", nullable: false),
@@ -346,8 +351,13 @@ namespace dentist_project.Migrations
                     AppointmentId = table.Column<int>(type: "integer", nullable: true),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     Message = table.Column<string>(type: "text", nullable: false),
+                    ReminderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsApproved = table.Column<bool>(type: "boolean", nullable: false),
+                    ApprovedById = table.Column<string>(type: "text", nullable: true),
+                    ApprovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsSent = table.Column<bool>(type: "boolean", nullable: false),
-                    SentAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    SentAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -358,6 +368,11 @@ namespace dentist_project.Migrations
                         principalTable: "Appointments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Notifications_AspNetUsers_ApprovedById",
+                        column: x => x.ApprovedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Notifications_Patients_PatientId",
                         column: x => x.PatientId,
@@ -373,9 +388,11 @@ namespace dentist_project.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     MedicalRecordId = table.Column<int>(type: "integer", nullable: false),
-                    ToothId = table.Column<int>(type: "integer", nullable: false),
-                    TreatmentId = table.Column<int>(type: "integer", nullable: false),
+                    ToothId = table.Column<int>(type: "integer", nullable: true),
+                    TreatmentId = table.Column<int>(type: "integer", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
+                    Surface = table.Column<int>(type: "integer", nullable: true),
+                    Condition = table.Column<int>(type: "integer", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -401,6 +418,32 @@ namespace dentist_project.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "AppointmentTreatmentToothTreatments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AppointmentTreatmentId = table.Column<int>(type: "integer", nullable: false),
+                    ToothTreatmentId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppointmentTreatmentToothTreatments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppointmentTreatmentToothTreatments_AppointmentTreatments_A~",
+                        column: x => x.AppointmentTreatmentId,
+                        principalTable: "AppointmentTreatments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AppointmentTreatmentToothTreatments_ToothTreatments_ToothTr~",
+                        column: x => x.ToothTreatmentId,
+                        principalTable: "ToothTreatments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_CreatedById",
                 table: "Appointments",
@@ -420,6 +463,16 @@ namespace dentist_project.Migrations
                 name: "IX_AppointmentTreatments_TreatmentId",
                 table: "AppointmentTreatments",
                 column: "TreatmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppointmentTreatmentToothTreatments_AppointmentTreatmentId",
+                table: "AppointmentTreatmentToothTreatments",
+                column: "AppointmentTreatmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppointmentTreatmentToothTreatments_ToothTreatmentId",
+                table: "AppointmentTreatmentToothTreatments",
+                column: "ToothTreatmentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -479,6 +532,11 @@ namespace dentist_project.Migrations
                 column: "AppointmentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_ApprovedById",
+                table: "Notifications",
+                column: "ApprovedById");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_PatientId",
                 table: "Notifications",
                 column: "PatientId");
@@ -514,7 +572,7 @@ namespace dentist_project.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AppointmentTreatments");
+                name: "AppointmentTreatmentToothTreatments");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
@@ -536,6 +594,9 @@ namespace dentist_project.Migrations
 
             migrationBuilder.DropTable(
                 name: "RecallReminders");
+
+            migrationBuilder.DropTable(
+                name: "AppointmentTreatments");
 
             migrationBuilder.DropTable(
                 name: "ToothTreatments");
