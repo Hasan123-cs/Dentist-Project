@@ -1,3 +1,4 @@
+
 using dentist_project.Data;
 using dentist_project.Models;
 using dentist_project.Service;
@@ -8,71 +9,93 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DotNetEnv;
 
-Env.Load();
+// Load .env for local development
+// Railway supplies environment variables automatically
+if (File.Exists(".env"))
+{
+    Env.Load();
+}
+
 var builder = WebApplication.CreateBuilder(args);
-//builder.WebHost.UseUrls("http://0.0.0.0:8080");
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-//builder.Services.AddHttpClient<WhatsAppService>();
+
+// CORS - React local + Netlify production
+var allowedOrigins = new List<string>
+{
+    "http://localhost:3000"
+};
+
+var frontendUrl = builder.Configuration["FRONTEND_URL"];
+
+if (!string.IsNullOrWhiteSpace(frontendUrl))
+{
+    allowedOrigins.Add(frontendUrl.TrimEnd('/'));
+}
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:3000")
+            .WithOrigins(allowedOrigins.ToArray())
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
-var connectionString =
-    builder.Configuration.GetConnectionString("DefaultConnection");
 
-var password = Environment.GetEnvironmentVariable("DB_PASSWORD");
+// PostgreSQL - full connection string from environment
+var connectionString = builder.Configuration
+    .GetConnectionString("DefaultConnection");
 
-connectionString = connectionString!.Replace(
-    "{DB_PASSWORD}",
-    password
-);
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection is missing."
+    );
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(
-        connectionString
-    );
+    options.UseNpgsql(connectionString);
 });
-// services injected 
+
+// Application services
 builder.Services.AddScoped<AppointmentsService>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<PatientService>();
-//builder.Services.AddScoped<NotificationService>();
-// i use host because is not a service calledf from controller its run from background
-//builder.Services.AddHostedService<NotificationBackgroundService>();
 builder.Services.AddScoped<DashboardService>();
-// identity 
+
+// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 6;
-
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-
-// Cookie Settings
+// Cookie settings
 builder.Services.ConfigureApplicationCookie(options =>
 {
-
     options.Cookie.HttpOnly = true;
-
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
-
     options.SlidingExpiration = true;
 });
-// jwt 
+
+// JWT
+var jwtKey = builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key is missing."
+    );
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme =
@@ -80,37 +103,30 @@ builder.Services.AddAuthentication(options =>
 
     options.DefaultChallengeScheme =
         JwtBearerDefaults.AuthenticationScheme;
-
 })
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-
         ValidateAudience = true,
-
         ValidateLifetime = true,
-
         ValidateIssuerSigningKey = true,
 
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-
         ValidAudience = builder.Configuration["Jwt:Audience"],
 
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(
-                builder.Configuration["Jwt:Key"]!
-            )
+            Encoding.UTF8.GetBytes(jwtKey)
         )
     };
 });
 
-
 builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
-// auto migrate the database
+// Database migrations
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider
@@ -119,34 +135,46 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-
-// seeding the teeth data 
+// Seed teeth
 using (var scope = app.Services.CreateScope())
 {
-    var x = scope.ServiceProvider.GetRequiredService<DashboardService>();
-    await x.SeedTeethAsync();
-}
-// configure the seeding data 
-using (var scope = app.Services.CreateScope())
-{
-    var x  = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
-    var userManager =scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager =scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await  x.SeedUsersAsync(userManager,roleManager);
+    var dashboardService = scope.ServiceProvider
+        .GetRequiredService<DashboardService>();
+
+    await dashboardService.SeedTeethAsync();
 }
 
-// Configure the HTTP request pipeline.
+// Seed users and roles
+using (var scope = app.Services.CreateScope())
+{
+    var authenticationService = scope.ServiceProvider
+        .GetRequiredService<AuthenticationService>();
+
+    var userManager = scope.ServiceProvider
+        .GetRequiredService<UserManager<ApplicationUser>>();
+
+    var roleManager = scope.ServiceProvider
+        .GetRequiredService<RoleManager<IdentityRole>>();
+
+    await authenticationService.SeedUsersAsync(
+        userManager,
+        roleManager
+    );
+}
+
+// Swagger - development only
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseHttpsRedirection();
-
     app.UseSwaggerUI();
 }
 
+// HTTP pipeline
 app.UseCors("ReactPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
-app.Run();
 
+app.MapControllers();
+
+app.Run();
