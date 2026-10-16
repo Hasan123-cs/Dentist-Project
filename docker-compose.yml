@@ -26,6 +26,7 @@ services:
 
 
 
+
   backend:
     build:
       context: ./backend
@@ -37,14 +38,15 @@ services:
 
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
       DB_PASSWORD: ${DB_PASSWORD}
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=dentistdb;Username=dentist;Password=${DB_PASSWORD}"
 
     depends_on:
       postgres:
         condition: service_healthy
 
     restart: always
-
 
 
   frontend:

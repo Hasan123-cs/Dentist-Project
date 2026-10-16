@@ -17,7 +17,7 @@ if (File.Exists(".env"))
 }
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -127,14 +127,19 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Database migrations
-using (var scope = app.Services.CreateScope())
+var runMigrations =
+    builder.Configuration.GetValue<bool>("RUN_MIGRATIONS");
+
+if (runMigrations)
 {
-    var db = scope.ServiceProvider
-        .GetRequiredService<AppDbContext>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider
+            .GetRequiredService<AppDbContext>();
 
-    db.Database.Migrate();
+        db.Database.Migrate();
+    }
 }
-
 // Seed teeth
 using (var scope = app.Services.CreateScope())
 {

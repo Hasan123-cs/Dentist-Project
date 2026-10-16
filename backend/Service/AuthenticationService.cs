@@ -121,7 +121,7 @@ namespace dentist_project.Service
 
                 var result = await userManager.CreateAsync(
                     doctor,
-                    "Amany@123"
+                    _configuration["Seed:DoctorPassword"]!
                 );
 
                 if (result.Succeeded)
@@ -156,7 +156,7 @@ namespace dentist_project.Service
 
                 var result = await userManager.CreateAsync(
                     assistant,
-                    "Assistant@123"
+                    _configuration["Seed:AssistantPassword"]!
                 );
 
 
