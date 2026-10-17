@@ -12,8 +12,8 @@ using dentist_project.Data;
 namespace dentist_project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261016184202_InitialProduction")]
-    partial class InitialProduction
+    [Migration("20261017091245_xss")]
+    partial class xss
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -280,6 +280,9 @@ namespace dentist_project.Migrations
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("numeric");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
@@ -374,11 +377,17 @@ namespace dentist_project.Migrations
                     b.Property<string>("Diagnosis")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Prescription")
                         .HasColumnType("text");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("TreatmentPlan")
                         .HasColumnType("text");

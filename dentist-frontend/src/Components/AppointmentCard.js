@@ -41,6 +41,7 @@ export default function AppointmentCard({ appointment, onDragStart }) {
 
   const isShort = duration <= 30;
   const isMedium = duration <= 60;
+  const isCheckup = appointment.appointmentType?.toLowerCase() === "checkup";
 
   const handleDetails = () => {
     navigate(`/appointmentDetails/${appointment.id}`);
@@ -82,6 +83,7 @@ export default function AppointmentCard({ appointment, onDragStart }) {
         }}
       >
         {appointment.patientName || "No Name"}
+        {isCheckup ? " · Checkup" : ""}
       </Typography>
 
       {/* TIME */}

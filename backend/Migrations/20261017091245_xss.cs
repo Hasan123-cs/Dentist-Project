@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace dentist_project.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialProduction : Migration
+    public partial class xss : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -223,6 +223,7 @@ namespace dentist_project.Migrations
                     CreatedById = table.Column<string>(type: "text", nullable: false),
                     StartDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EndDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),
                     TotalCost = table.Column<decimal>(type: "numeric", nullable: false),
@@ -313,6 +314,8 @@ namespace dentist_project.Migrations
                     AppointmentId = table.Column<int>(type: "integer", nullable: true),
                     Diagnosis = table.Column<string>(type: "text", nullable: true),
                     TreatmentPlan = table.Column<string>(type: "text", nullable: true),
+                    TotalCost = table.Column<decimal>(type: "numeric", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "numeric", nullable: false),
                     CreatedById = table.Column<string>(type: "text", nullable: false),
                     Prescription = table.Column<string>(type: "text", nullable: true),
                     ClinicalNotes = table.Column<string>(type: "text", nullable: true),

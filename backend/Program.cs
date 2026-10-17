@@ -17,7 +17,7 @@ if (File.Exists(".env"))
 }
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
+//builder.WebHost.UseUrls("http://0.0.0.0:8080");
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -127,8 +127,8 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Database migrations
-var runMigrations =
-    builder.Configuration.GetValue<bool>("RUN_MIGRATIONS");
+var runMigrations = true;
+    //builder.Configuration.GetValue<bool>("RUN_MIGRATIONS");
 
 if (runMigrations)
 {

@@ -13,6 +13,8 @@
 
         public decimal? Price { get; set; }
 
+        public decimal PaidAmount { get; set; }
+
         public string? Notes { get; set; }
     }
 }

@@ -24,6 +24,7 @@ export default function AddTreatment() {
     surface: [],
     status: "Pending",
     price: "",
+    paidAmount: "0",
     notes: "",
   });
 
@@ -87,6 +88,9 @@ export default function AddTreatment() {
     form.treatment.trim() !== "" &&
     !isToothMissing &&
     (!showSurface || form.surface.length > 0) &&
+    Number(form.paidAmount || 0) >= 0 &&
+    (form.price === "" ||
+      Number(form.paidAmount || 0) <= Number(form.price)) &&
     !loading;
   const isBridge = treatmentName.includes("bridge");
 
@@ -227,7 +231,16 @@ export default function AddTreatment() {
     e.preventDefault();
 
     setError("");
-    if (form.treatment == "Extraction") {
+    if (
+      Number(form.paidAmount || 0) < 0 ||
+      (form.price !== "" &&
+        Number(form.paidAmount || 0) > Number(form.price))
+    ) {
+      setError("Paid amount cannot exceed the treatment price.");
+      return;
+    }
+
+    if (form.treatment === "Extraction") {
       form.treatment = "missing";
     }
     /*
@@ -299,6 +312,8 @@ const treatmentData = {
 
   price: form.price === "" ? null : Number(form.price),
 
+  paidAmount: Number(form.paidAmount || 0),
+
   notes: form.notes.trim() === "" ? null : form.notes.trim(),
 
 };
@@ -351,14 +366,14 @@ const treatmentData = {
         width: "100%",
         minHeight: "100vh",
         background: "#faf8f2",
-        p: 4,
+        p: { xs: 1, sm: 2, md: 4 },
       }}
     >
       <Paper
         sx={{
           maxWidth: 700,
           mx: "auto",
-          p: 4,
+          p: { xs: 2, sm: 3, md: 4 },
           borderRadius: 4,
           border: "1px solid #eee3c5",
           background: "#fff",
@@ -414,7 +429,8 @@ const treatmentData = {
             onChange={handleChange}
             style={{
               width: "100%",
-              maxWidth: "300px",
+              maxWidth: "100%",
+              minHeight: "48px",
               padding: "8px 12px",
               mt: 3,
               fontSize: "15px",
@@ -636,6 +652,17 @@ const treatmentData = {
             }}
           />
 
+          <TextField
+            label="Paid Now"
+            name="paidAmount"
+            type="number"
+            value={form.paidAmount}
+            onChange={handleChange}
+            inputProps={{ min: 0, step: "0.01" }}
+            helperText="Must not be greater than the treatment price."
+            fullWidth
+          />
+
           {/* =========================
               NOTES
           ========================== */}
@@ -655,7 +682,15 @@ const treatmentData = {
               BUTTONS
           ========================== */}
 
-          <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column-reverse", sm: "row" },
+              justifyContent: "flex-end",
+              gap: 1.5,
+              mt: 2,
+            }}
+          >
             <Button
               variant="outlined"
               disabled={loading}
@@ -663,6 +698,8 @@ const treatmentData = {
               sx={{
                 borderColor: "#C9A227",
                 color: "#C9A227",
+                minHeight: 48,
+                width: { xs: "100%", sm: "auto" },
               }}
             >
               CANCEL
@@ -675,6 +712,8 @@ const treatmentData = {
               sx={{
                 background: "#C9A227",
                 fontWeight: 700,
+                minHeight: 48,
+                width: { xs: "100%", sm: "auto" },
 
                 "&:hover": {
                   background: "#b18c1f",

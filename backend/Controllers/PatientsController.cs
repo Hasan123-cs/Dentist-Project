@@ -189,6 +189,17 @@ namespace dentist_project.Controllers;
                 data = result.Data
             });
         }
+        catch (DbUpdateException ex)
+        {
+            Console.WriteLine("========== CREATE TREATMENT DATABASE ERROR ==========");
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("======================================================");
+
+            return StatusCode(500, new
+            {
+                message = "Treatment could not be saved. Apply pending database migrations, then try again."
+            });
+        }
         catch (Exception ex)
         {
             Console.WriteLine("========== CREATE TREATMENT ERROR ==========");
@@ -202,6 +213,45 @@ namespace dentist_project.Controllers;
             });
         }
     }
+    [Authorize]
+    [HttpPost("{id:int}/treatments/{medicalRecordId:int}/payments")]
+    public async Task<IActionResult> AddTreatmentPayment(
+        int id,
+        int medicalRecordId,
+        [FromBody] RegisterTreatmentPaymentDto dto)
+    {
+        try
+        {
+            var result = await _service.AddTreatmentPaymentAsync(
+                id,
+                medicalRecordId,
+                dto.Amount);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("========== TREATMENT PAYMENT ERROR ==========");
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("==============================================");
+
+            return StatusCode(500, new
+            {
+                message = "Error registering treatment payment.",
+                error = ex.Message
+            });
+        }
+    }
+
     [HttpGet("all-treatments")]
    
     public async Task<IActionResult> GetAllTreatments()
@@ -253,11 +303,7 @@ namespace dentist_project.Controllers;
 
 
 
-         price =
-             m.ToothTreatments
-                 .Where(t => t.Treatment != null)
-                 .Select(t => t.Treatment!.DefaultPrice)
-                 .FirstOrDefault(),
+         price = m.TotalCost,
          notes = m.ClinicalNotes,
 
 
@@ -265,28 +311,11 @@ namespace dentist_project.Controllers;
 
 
          // PAYMENT FROM LAST APPOINTMENT
-         totalPrice =
-    m.ToothTreatments
-        .Where(t => t.Treatment != null)
-        .Select(t => t.Treatment!.DefaultPrice)
-        .FirstOrDefault(),
+         totalPrice = m.TotalCost,
 
-
-
-         remainingAmount =
-    _context.Appointments
-        .Where(a =>
-            a.PatientId == m.PatientId
-        )
-        .OrderByDescending(a => a.StartDateTime)
-        .Select(a => (decimal?)a.RemainingAmount)
-        .FirstOrDefault()
-    ??
-    m.ToothTreatments
-        .Where(t => t.Treatment != null)
-        .Select(t => (decimal?)t.Treatment!.DefaultPrice)
-        .FirstOrDefault()
-    ?? 0
+         remainingAmount = m.TotalCost > m.PaidAmount
+             ? m.TotalCost - m.PaidAmount
+             : 0m
 
      })
      .ToListAsync();
@@ -354,6 +383,7 @@ namespace dentist_project.Controllers;
             });
         }
     }
+    [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeletePatient(int id)
     {
@@ -379,6 +409,10 @@ namespace dentist_project.Controllers;
         }
         catch (Exception ex)
         {
+            Console.WriteLine("========== DELETE PATIENT ERROR ==========");
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("===========================================");
+
             return StatusCode(500, new
             {
                 message = "Error deleting patient.",
@@ -520,11 +554,7 @@ namespace dentist_project.Controllers;
 
 
 
-                price =
-                    m.ToothTreatments
-                        .Where(t => t.Treatment != null)
-                        .Select(t => t.Treatment!.DefaultPrice)
-                        .FirstOrDefault(),
+                price = m.TotalCost,
 
 
 
@@ -536,26 +566,11 @@ namespace dentist_project.Controllers;
 
 
 
-                totalPrice =
-    m.ToothTreatments
-        .Where(t => t.Treatment != null)
-        .Select(t => t.Treatment!.DefaultPrice)
-        .FirstOrDefault(),
+                totalPrice = m.TotalCost,
 
-                remainingAmount =
-    _context.Appointments
-        .Where(a =>
-            a.PatientId == m.PatientId
-        )
-        .OrderByDescending(a => a.StartDateTime)
-        .Select(a => (decimal?)a.RemainingAmount)
-        .FirstOrDefault()
-    ??
-    m.ToothTreatments
-        .Where(t => t.Treatment != null)
-        .Select(t => (decimal?)t.Treatment!.DefaultPrice)
-        .FirstOrDefault()
-    ?? 0
+                remainingAmount = m.TotalCost > m.PaidAmount
+                    ? m.TotalCost - m.PaidAmount
+                    : 0m
 
             })
 
@@ -571,8 +586,8 @@ namespace dentist_project.Controllers;
     [HttpGet("dashboard-revenue")]
     public async Task<IActionResult> GetDashboardRevenue()
     {
-        var totalRevenue = await _context.Appointments
-            .SumAsync(a => a.PaidAmount);
+        var totalRevenue = await _context.MedicalRecords
+            .SumAsync(record => record.PaidAmount);
 
         return Ok(new
         {
@@ -640,18 +655,11 @@ namespace dentist_project.Controllers;
         }
 
 
-        if (appointment.Patient == null)
-        {
-            return NotFound(new
-            {
-                message = "Patient not found"
-            });
-        }
-
+        var phone = appointment.ContactPhone ?? appointment.Patient?.Phone;
 
         return Ok(new
         {
-            phone = appointment.Patient.Phone
+            phone
         });
     }
     [HttpGet("{id}/completed-treatments")]

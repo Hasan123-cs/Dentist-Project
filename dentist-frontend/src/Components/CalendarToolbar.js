@@ -59,7 +59,13 @@ export default function CalendarToolbar({
           </Typography>
         </Box>
 
-        <Box display="flex" alignItems="center" gap={2}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent={{ xs: "center", sm: "flex-start" }}
+          width={{ xs: "100%", sm: "auto" }}
+          gap={{ xs: 0.5, sm: 2 }}
+        >
           <IconButton
             onClick={() => {
               setCurrentDate(currentDate.subtract(1, "week"));
@@ -71,7 +77,11 @@ export default function CalendarToolbar({
             <ChevronLeft />
           </IconButton>
 
-          <Typography fontWeight={700} color="#3d2f12">
+          <Typography
+            fontWeight={700}
+            color="#3d2f12"
+            sx={{ fontSize: { xs: 12, sm: 16 }, whiteSpace: "nowrap" }}
+          >
             {startOfWeek.format("MMM D")}
 
             {" - "}
@@ -103,6 +113,7 @@ export default function CalendarToolbar({
             onClick={() => setView("day")}
             fullWidth
             sx={{
+              minHeight: 44,
               color: view === "day" ? "#fff" : "#8a7a55",
 
               background: view === "day" ? "#C9A227" : "transparent",
@@ -117,6 +128,7 @@ export default function CalendarToolbar({
             onClick={() => setView("3days")}
             fullWidth
             sx={{
+              minHeight: 44,
               color: view === "3days" ? "#fff" : "#8a7a55",
 
               background: view === "3days" ? "#C9A227" : "transparent",
@@ -131,6 +143,7 @@ export default function CalendarToolbar({
             onClick={() => setView("week")}
             fullWidth
             sx={{
+              minHeight: 44,
               color: view === "week" ? "#fff" : "#8a7a55",
 
               background: view === "week" ? "#C9A227" : "transparent",

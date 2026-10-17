@@ -9,6 +9,11 @@ import {
   Tabs,
   Tab,
   Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
 } from "@mui/material";
 
 import ClinicalSummary from "../Components/ClinicalSummary";
@@ -38,6 +43,85 @@ export default function PatientProfile() {
   const [treatments, setTreatments] = useState([]);
   const [completedTreatments, setCompletedTreatments] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [paymentDialog, setPaymentDialog] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSaving, setPaymentSaving] = useState(false);
+
+  const handleAddPayment = async () => {
+    const amount = Number(paymentAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setPaymentError("Enter a payment amount greater than zero.");
+      return;
+    }
+
+    setPaymentSaving(true);
+    setPaymentError("");
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/patients/${id}/treatments/${paymentDialog.medicalRecordId}/payments`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ amount }),
+        },
+      );
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Unable to save this payment.");
+      }
+
+      setTreatments((current) =>
+        current.map((treatment) => {
+          if (treatment.medicalRecordId !== paymentDialog.medicalRecordId) {
+            return treatment;
+          }
+
+          const paid = Number(treatment.paid || 0) + amount;
+          const remaining = Math.max(Number(treatment.cost || 0) - paid, 0);
+          return {
+            ...treatment,
+            paid,
+            remaining,
+            paymentStatus: remaining === 0 ? "Paid" : "Partially Paid",
+          };
+        }),
+      );
+      setPaymentDialog(null);
+      setPaymentAmount("");
+
+      try {
+        const treatmentsResponse = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/patients/${id}/treatments`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        if (treatmentsResponse.ok) {
+          setTreatments(await treatmentsResponse.json());
+        } else {
+          console.error("Payment saved, but treatment data refresh failed.");
+        }
+      } catch (refreshError) {
+        console.error("Payment saved, but treatment data refresh failed.", refreshError);
+      }
+    } catch (err) {
+      setPaymentError(err.message || "Unable to save this payment.");
+    } finally {
+      setPaymentSaving(false);
+    }
+  };
 
   useEffect(() => {
     const getPatient = async () => {
@@ -106,6 +190,7 @@ export default function PatientProfile() {
     <Box
       sx={{
         width: "100%",
+        minWidth: 0,
 
         background: "#faf8f2",
 
@@ -118,7 +203,7 @@ export default function PatientProfile() {
 
       <Paper
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
 
           borderRadius: 4,
 
@@ -127,13 +212,28 @@ export default function PatientProfile() {
           mb: 3,
         }}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" gap={3} alignItems="center">
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              gap: { xs: 1.5, sm: 3 },
+              alignItems: "center",
+              minWidth: 0,
+            }}
+          >
             <Avatar
               sx={{
-                width: 85,
+                width: { xs: 56, sm: 85 },
 
-                height: 85,
+                height: { xs: 56, sm: 85 },
 
                 background: "#eef2f7",
 
@@ -152,7 +252,7 @@ export default function PatientProfile() {
             </Avatar>
 
             <Box>
-              <Typography fontSize={24} fontWeight={800} color="#092c57">
+              <Typography fontSize={{ xs: 20, sm: 24 }} fontWeight={800} color="#092c57">
                 {patient.firstName} {patient.lastName}
               </Typography>
 
@@ -201,7 +301,13 @@ export default function PatientProfile() {
           mb: 3,
         }}
       >
-        <Tabs value={tab} onChange={(e, v) => setTab(v)}>
+        <Tabs
+          value={tab}
+          onChange={(e, v) => setTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+        >
 
           <Tab label="Overview" />
 
@@ -348,7 +454,7 @@ export default function PatientProfile() {
           sx={{
             mt: 3,
 
-            p: 4,
+            p: { xs: 2, sm: 3, md: 4 },
 
             borderRadius: 4,
 
@@ -377,17 +483,22 @@ export default function PatientProfile() {
         <Paper
           sx={{
             mt: 3,
-            p: 4,
+            p: { xs: 2, sm: 3, md: 4 },
             borderRadius: 4,
             border: "1px solid #eee3c5",
+            minWidth: 0,
           }}
         >
 
           <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: { xs: "stretch", sm: "center" },
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 1.5,
+              mb: 2,
+            }}
           >
 
             <Typography
@@ -405,10 +516,11 @@ export default function PatientProfile() {
                 navigate(`/patients/${patient.id}/add-treatment`)
               }
               sx={{
-                mb: 3,
                 background: "#C9A227",
                 fontWeight: 700,
                 borderRadius: 3,
+                minHeight: 48,
+                width: { xs: "100%", sm: "auto" },
               }}
             >
               + ADD TREATMENT
@@ -434,11 +546,42 @@ export default function PatientProfile() {
               color: "#C9A227",
               fontWeight: 700,
               borderRadius: 3,
+              minHeight: 48,
+              width: { xs: "100%", sm: "auto" },
             }}
           >
             VIEW ALL TREATMENTS
           </Button>
 
+          {treatments.length > 0 && (
+            <Paper
+              sx={{
+                p: { xs: 2, sm: 2.5 },
+                mb: 3,
+                background: "#faf8f2",
+                border: "1px solid #eee3c5",
+                borderRadius: 3,
+              }}
+            >
+              <Typography fontWeight={800} color="#092c57" mb={1}>
+                Treatment Plan Balance
+              </Typography>
+              <Grid container spacing={1}>
+                {[
+                  ["Total", treatments.reduce((sum, item) => sum + Number(item.cost || 0), 0)],
+                  ["Paid", treatments.reduce((sum, item) => sum + Number(item.paid || 0), 0)],
+                  ["Outstanding", treatments.reduce((sum, item) => sum + Number(item.remaining || 0), 0)],
+                ].map(([label, amount]) => (
+                  <Grid item xs={12} sm={4} key={label}>
+                    <Typography color="text.secondary">{label}</Typography>
+                    <Typography fontWeight={800} color="#C9A227">
+                      ${Number(amount).toFixed(2)}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          )}
 
 
 
@@ -456,7 +599,7 @@ export default function PatientProfile() {
               <Paper
                 key={index}
                 sx={{
-                  p: 3,
+                  p: { xs: 2, sm: 3 },
                   mb: 3,
                   borderRadius: 4,
                   background: "#ffffff",
@@ -469,10 +612,14 @@ export default function PatientProfile() {
                 {/* HEADER */}
 
                 <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mb={2}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    flexWrap: "wrap",
+                    gap: 1.5,
+                    mb: 2,
+                  }}
                 >
 
                   <Box display="flex" alignItems="center" gap={2}>
@@ -513,30 +660,37 @@ export default function PatientProfile() {
 
 
 
-                  <Chip
-                    label={treatment.status}
-                    sx={{
-                      fontWeight: 700,
-
-                      background:
-                        treatment.status === "Completed"
-                          ? "#dcfce7"
-                          :
-                          treatment.status === "InProgress"
-                            ? "#fef3c7"
-                            :
-                            "#e0f2fe",
-
-                      color:
-                        treatment.status === "Completed"
-                          ? "#166534"
-                          :
-                          treatment.status === "InProgress"
-                            ? "#92400e"
-                            :
-                            "#0369a1"
-                    }}
-                  />
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    <Chip
+                      label={treatment.status}
+                      sx={{
+                        fontWeight: 700,
+                        background:
+                          treatment.status === "Completed"
+                            ? "#dcfce7"
+                            : treatment.status === "InProgress"
+                              ? "#fef3c7"
+                              : "#e0f2fe",
+                        color:
+                          treatment.status === "Completed"
+                            ? "#166534"
+                            : treatment.status === "InProgress"
+                              ? "#92400e"
+                              : "#0369a1",
+                      }}
+                    />
+                    <Chip
+                      label={treatment.paymentStatus || "Unpaid"}
+                      color={
+                        treatment.paymentStatus === "Paid"
+                          ? "success"
+                          : treatment.paymentStatus === "Partially Paid"
+                            ? "warning"
+                            : "default"
+                      }
+                      variant="outlined"
+                    />
+                  </Box>
 
                 </Box>
 
@@ -611,6 +765,7 @@ export default function PatientProfile() {
                       </Box>
 
                     </Grid>
+
                   }
 
 
@@ -741,6 +896,26 @@ export default function PatientProfile() {
                   </Grid>
                 </Grid>
 
+                {Number(treatment.remaining) > 0 && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setPaymentDialog(treatment);
+                      setPaymentAmount("");
+                      setPaymentError("");
+                    }}
+                    sx={{
+                      mt: 2,
+                      minHeight: 48,
+                      width: { xs: "100%", sm: "auto" },
+                      borderColor: "#C9A227",
+                      color: "#8a6d1d",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Add Payment
+                  </Button>
+                )}
 
 
 
@@ -1084,6 +1259,70 @@ export default function PatientProfile() {
           </Typography>
         </Box>
       </Dialog> */}
+      <Dialog
+        open={Boolean(paymentDialog)}
+        onClose={() => {
+          if (!paymentSaving) {
+            setPaymentDialog(null);
+            setPaymentError("");
+          }
+        }}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Add Treatment Payment</DialogTitle>
+        <DialogContent>
+          {paymentDialog && (
+            <Typography color="text.secondary" mb={2}>
+              {paymentDialog.treatment} · Remaining balance: $
+              {Number(paymentDialog.remaining || 0).toFixed(2)}
+            </Typography>
+          )}
+          {paymentError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {paymentError}
+            </Alert>
+          )}
+          <TextField
+            autoFocus
+            fullWidth
+            label="Payment Amount"
+            type="number"
+            value={paymentAmount}
+            onChange={(event) => setPaymentAmount(event.target.value)}
+            inputProps={{
+              min: 0,
+              max: paymentDialog?.remaining,
+              step: "0.01",
+              inputMode: "decimal",
+            }}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, flexDirection: { xs: "column-reverse", sm: "row" }, gap: 1 }}>
+          <Button
+            fullWidth
+            disabled={paymentSaving}
+            onClick={() => setPaymentDialog(null)}
+            sx={{ minHeight: 48, width: { xs: "100%", sm: "auto" } }}
+          >
+            Cancel
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            disabled={paymentSaving || !paymentAmount}
+            onClick={handleAddPayment}
+            sx={{
+              minHeight: 48,
+              width: { xs: "100%", sm: "auto" },
+              background: "#C9A227",
+            }}
+          >
+            {paymentSaving ? "Saving..." : "Save Payment"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box >
   );
 }

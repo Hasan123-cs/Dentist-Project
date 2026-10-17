@@ -42,8 +42,11 @@ namespace dentist_project.Service
 
                     CreatedAt = p.CreatedAt,
 
-                    Balance = p.Appointments
-                        .Sum(a => a.RemainingAmount)
+                    Balance = p.MedicalRecords
+                        .Sum(record =>
+                            record.TotalCost > record.PaidAmount
+                                ? record.TotalCost - record.PaidAmount
+                                : 0m)
                 })
                 .ToListAsync();
 
@@ -527,6 +530,16 @@ namespace dentist_project.Service
                 return (false, "Treatment name is required.", null);
             }
 
+            if (dto.Price < 0 || dto.PaidAmount < 0)
+            {
+                return (false, "Price and paid amount cannot be negative.", null);
+            }
+
+            if (dto.Price.HasValue && dto.PaidAmount > dto.Price.Value)
+            {
+                return (false, "Paid amount cannot exceed the treatment price.", null);
+            }
+
 
             var treatmentName = dto.Treatment.Trim();
 
@@ -536,15 +549,21 @@ namespace dentist_project.Service
                     t.Name.ToLower() == treatmentName.ToLower()
                     && t.IsActive);
 
-
+            decimal planTotalCost;
 
             if (treatment == null)
             {
+                planTotalCost = dto.Price ?? 0;
+                if (dto.PaidAmount > planTotalCost)
+                {
+                    return (false, "Paid amount cannot exceed the treatment price.", null);
+                }
+
                 treatment = new Treatment
                 {
                     Name = treatmentName,
                     Description = null,
-                    DefaultPrice = dto.Price ?? 0,
+                    DefaultPrice = planTotalCost,
                     EstimatedMinutes = 0,
                     IsActive = true,
                     HasRecallReminder =
@@ -554,14 +573,14 @@ namespace dentist_project.Service
                 };
 
                 _context.Treatments.Add(treatment);
-
-                await _context.SaveChangesAsync();
             }
             else
             {
-                treatment.DefaultPrice = dto.Price ?? treatment.DefaultPrice;
-
-                await _context.SaveChangesAsync();
+                planTotalCost = dto.Price ?? treatment.DefaultPrice;
+                if (planTotalCost < 0 || dto.PaidAmount > planTotalCost)
+                {
+                    return (false, "Paid amount cannot exceed the treatment price.", null);
+                }
             }
 
 
@@ -650,7 +669,7 @@ namespace dentist_project.Service
             var surfaces = new List<ToothSurface>();
 
 
-            foreach (var s in dto.Surfaces)
+            foreach (var s in dto.Surfaces ?? new List<string>())
             {
                 if (!Enum.TryParse<ToothSurface>(
                         s.Trim(),
@@ -750,11 +769,17 @@ namespace dentist_project.Service
             {
                 PatientId = patientId,
 
+                Patient = patient,
+
                 AppointmentId = null,
 
                 Diagnosis = null,
 
                 TreatmentPlan = treatmentName,
+
+                TotalCost = planTotalCost,
+
+                PaidAmount = dto.PaidAmount,
 
                 Prescription = null,
 
@@ -771,9 +796,6 @@ namespace dentist_project.Service
             _context.MedicalRecords.Add(medicalRecord);
 
 
-            await _context.SaveChangesAsync();
-
-
 
 
             // ===============================
@@ -788,11 +810,11 @@ namespace dentist_project.Service
             {
                 toothTreatments.Add(new ToothTreatment
                 {
-                    MedicalRecordId = medicalRecord.Id,
+                    MedicalRecord = medicalRecord,
 
                     ToothId = null,
 
-                    TreatmentId = treatment.Id,
+                    Treatment = treatment,
 
                     Status = status,
 
@@ -822,11 +844,11 @@ namespace dentist_project.Service
                     {
                         toothTreatments.Add(new ToothTreatment
                         {
-                            MedicalRecordId = medicalRecord.Id,
+                            MedicalRecord = medicalRecord,
 
                             ToothId = tooth.Id,
 
-                            TreatmentId = treatment.Id,
+                            Treatment = treatment,
 
                             Status = status,
 
@@ -848,11 +870,11 @@ namespace dentist_project.Service
                         {
                             toothTreatments.Add(new ToothTreatment
                             {
-                                MedicalRecordId = medicalRecord.Id,
+                                MedicalRecord = medicalRecord,
 
                                 ToothId = tooth.Id,
 
-                                TreatmentId = treatment.Id,
+                                Treatment = treatment,
 
                                 Status = status,
 
@@ -1333,6 +1355,8 @@ namespace dentist_project.Service
         }
         public async Task<(bool Success, string Message)> DeletePatientAsync(int id)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
             var patient = await _context.Patients
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -1346,11 +1370,27 @@ namespace dentist_project.Service
             }
 
 
-            // 1. Delete Tooth Treatments
             var medicalRecords = await _context.MedicalRecords
                 .Where(m => m.PatientId == id)
                 .ToListAsync();
 
+            var appointments = await _context.Appointments
+                .Where(a => a.PatientId == id)
+                .ToListAsync();
+
+            var appointmentIds = appointments
+                .Select(a => a.Id)
+                .ToList();
+
+            foreach (var record in medicalRecords)
+            {
+                record.AppointmentId = null;
+            }
+
+            if (medicalRecords.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
 
             var medicalRecordIds = medicalRecords
                 .Select(m => m.Id)
@@ -1372,28 +1412,12 @@ namespace dentist_project.Service
 
 
 
-            // 2. Delete Medical Records
-
             if (medicalRecords.Any())
             {
                 _context.MedicalRecords.RemoveRange(
                     medicalRecords
                 );
             }
-
-
-
-            // 3. Delete Appointment Treatments
-
-            var appointments = await _context.Appointments
-                .Where(a => a.PatientId == id)
-                .ToListAsync();
-
-
-            var appointmentIds = appointments
-                .Select(a => a.Id)
-                .ToList();
-
 
             var appointmentTreatments =
                 await _context.AppointmentTreatments
@@ -1412,8 +1436,6 @@ namespace dentist_project.Service
 
 
 
-            // 4. Delete Appointments
-
             if (appointments.Any())
             {
                 _context.Appointments.RemoveRange(
@@ -1423,13 +1445,11 @@ namespace dentist_project.Service
 
 
 
-            // 5. Finally delete patient
-
             _context.Patients.Remove(patient);
 
 
-
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
 
             return (
@@ -1616,6 +1636,8 @@ namespace dentist_project.Service
 
                     id = g.First().Id,
 
+                    medicalRecordId = g.First().MedicalRecordId,
+
 
                     treatment =
                         g.First().Treatment != null
@@ -1659,57 +1681,24 @@ namespace dentist_project.Service
 
 
 
+                    cost = g.First().MedicalRecord.TotalCost,
 
-                    cost =
-                        g.First().Treatment != null
-                        ?
-                        g.First().Treatment.DefaultPrice
-                        :
-                        0,
-
-
-
-
-                    paid =
-                        g.First().MedicalRecord.Appointment != null
-                        ?
-                        g.First().MedicalRecord.Appointment
-                            .AppointmentTreatments
-                            .Where(at =>
-                                at.TreatmentId == g.Key.TreatmentId
-                            )
-                            .Sum(at =>
-                                at.PaidAmount
-                            )
-                        :
-                        0,
-
-
-
+                    paid = g.First().MedicalRecord.PaidAmount,
 
                     remaining =
-                        (
-                            g.First().Treatment != null
-                            ?
-                            g.First().Treatment.DefaultPrice
-                            :
-                            0
-                        )
-                        -
-                        (
-                            g.First().MedicalRecord.Appointment != null
-                            ?
-                            g.First().MedicalRecord.Appointment
-                                .AppointmentTreatments
-                                .Where(at =>
-                                    at.TreatmentId == g.Key.TreatmentId
-                                )
-                                .Sum(at =>
-                                    at.PaidAmount
-                                )
-                            :
-                            0
-                        ),
+                        g.First().MedicalRecord.TotalCost
+                            > g.First().MedicalRecord.PaidAmount
+                            ? g.First().MedicalRecord.TotalCost
+                                - g.First().MedicalRecord.PaidAmount
+                            : 0m,
+
+                    paymentStatus =
+                        g.First().MedicalRecord.PaidAmount <= 0
+                            ? "Unpaid"
+                            : g.First().MedicalRecord.PaidAmount
+                                >= g.First().MedicalRecord.TotalCost
+                                ? "Paid"
+                                : "Partially Paid",
 
 
 
@@ -1738,6 +1727,70 @@ namespace dentist_project.Service
                 .Cast<object>()
                 .ToList();
         }
+        public async Task<(bool Success, string Message, object? Data)>
+            AddTreatmentPaymentAsync(int patientId, int medicalRecordId, decimal amount)
+        {
+            if (amount <= 0)
+            {
+                return (false, "Payment amount must be greater than zero.", null);
+            }
+
+            var updatedRows = await _context.MedicalRecords
+                .Where(record =>
+                    record.Id == medicalRecordId
+                    && record.PatientId == patientId
+                    && record.PaidAmount + amount <= record.TotalCost)
+                .ExecuteUpdateAsync(updates =>
+                    updates.SetProperty(
+                        record => record.PaidAmount,
+                        record => record.PaidAmount + amount));
+
+            if (updatedRows == 0)
+            {
+                var existingRecord = await _context.MedicalRecords
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(record =>
+                        record.Id == medicalRecordId
+                        && record.PatientId == patientId);
+
+                if (existingRecord == null)
+                {
+                    return (false, "Treatment plan not found.", null);
+                }
+
+                return (
+                    false,
+                    $"Payment amount cannot exceed the remaining balance of {Math.Max(existingRecord.TotalCost - existingRecord.PaidAmount, 0):0.00}.",
+                    null);
+            }
+
+            var updatedRecord = await _context.MedicalRecords
+                .AsNoTracking()
+                .FirstAsync(record =>
+                    record.Id == medicalRecordId
+                    && record.PatientId == patientId);
+
+            var remaining = Math.Max(
+                updatedRecord.TotalCost - updatedRecord.PaidAmount,
+                0);
+            var paymentStatus = updatedRecord.PaidAmount <= 0
+                ? "Unpaid"
+                : updatedRecord.PaidAmount >= updatedRecord.TotalCost
+                    ? "Paid"
+                    : "Partially Paid";
+
+            return (
+                true,
+                "Treatment payment registered successfully.",
+                new
+                {
+                    updatedRecord.TotalCost,
+                    updatedRecord.PaidAmount,
+                    Remaining = remaining,
+                    PaymentStatus = paymentStatus
+                });
+        }
+
         public async Task<List<object>> GetNormalPatientTreatmentsAsync(int patientId)
         {
             var treatments = await _context.ToothTreatments
@@ -1766,6 +1819,8 @@ namespace dentist_project.Service
                 .Select(g => new
                 {
                     id = g.First().Id,
+
+                    medicalRecordId = g.First().MedicalRecordId,
 
 
                     treatment =
@@ -1812,58 +1867,24 @@ namespace dentist_project.Service
 
 
 
-                    cost =
-                        g.First().Treatment != null
-                        ?
-                        g.First().Treatment.DefaultPrice
-                        :
-                        0,
+                    cost = g.First().MedicalRecord.TotalCost,
 
-
-
-
-                    paid =
-                        g.First().MedicalRecord.Appointment != null
-                        ?
-                        g.First().MedicalRecord.Appointment
-                            .AppointmentTreatments
-                            .Where(at =>
-                                at.TreatmentId == g.Key.TreatmentId
-                            )
-                            .Select(at =>
-                                at.PaidAmount
-                            )
-                            .FirstOrDefault()
-                        :
-                        0,
-
-
-
+                    paid = g.First().MedicalRecord.PaidAmount,
 
                     remaining =
-                        (
-                            g.First().Treatment != null
-                            ?
-                            g.First().Treatment.DefaultPrice
-                            :
-                            0
-                        )
-                        -
-                        (
-                            g.First().MedicalRecord.Appointment != null
-                            ?
-                            g.First().MedicalRecord.Appointment
-                                .AppointmentTreatments
-                                .Where(at =>
-                                    at.TreatmentId == g.Key.TreatmentId
-                                )
-                                .Select(at =>
-                                    at.PaidAmount
-                                )
-                                .FirstOrDefault()
-                            :
-                            0
-                        ),
+                        g.First().MedicalRecord.TotalCost
+                            > g.First().MedicalRecord.PaidAmount
+                            ? g.First().MedicalRecord.TotalCost
+                                - g.First().MedicalRecord.PaidAmount
+                            : 0m,
+
+                    paymentStatus =
+                        g.First().MedicalRecord.PaidAmount <= 0
+                            ? "Unpaid"
+                            : g.First().MedicalRecord.PaidAmount
+                                >= g.First().MedicalRecord.TotalCost
+                                ? "Paid"
+                                : "Partially Paid",
 
 
 
@@ -1965,67 +1986,25 @@ namespace dentist_project.Service
 
 
 
-                    cost =
-                        g.First().Treatment != null
-                        ?
-                        g.First().Treatment!.DefaultPrice
-                        :
-                        0,
+                    cost = g.First().MedicalRecord.TotalCost,
 
-
-
-
-                    paid =
-                        g.First().MedicalRecord.Appointment != null
-                        ?
-
-                        g.First().MedicalRecord.Appointment
-                            .AppointmentTreatments
-
-                            .Where(at =>
-                                at.TreatmentId == g.Key.TreatmentId
-                            )
-
-                            .Sum(at =>
-                                at.PaidAmount
-                            )
-
-                        :
-                        0,
-
-
-
-
+                    paid = g.First().MedicalRecord.PaidAmount,
 
                     remaining =
-                        (
-                            g.First().Treatment != null
-                            ?
-                            g.First().Treatment!.DefaultPrice
-                            :
-                            0
-                        )
+                        g.First().MedicalRecord.TotalCost
+                            > g.First().MedicalRecord.PaidAmount
+                            ? g.First().MedicalRecord.TotalCost
+                                - g.First().MedicalRecord.PaidAmount
+                            : 0m,
 
-                        -
-
-                        (
-                            g.First().MedicalRecord.Appointment != null
-                            ?
-
-                            g.First().MedicalRecord.Appointment
-                                .AppointmentTreatments
-
-                                .Where(at =>
-                                    at.TreatmentId == g.Key.TreatmentId
-                                )
-
-                                .Sum(at =>
-                                    at.PaidAmount
-                                )
-
-                            :
-                            0
-                        ),
+                    paymentStatus =
+                        g.First().MedicalRecord.TotalCost <= 0 ||
+                        g.First().MedicalRecord.PaidAmount <= 0
+                            ? "Unpaid"
+                            : g.First().MedicalRecord.PaidAmount
+                                >= g.First().MedicalRecord.TotalCost
+                                ? "Paid"
+                                : "Partially Paid",
 
 
 
@@ -2144,7 +2123,12 @@ namespace dentist_project.Service
 
             return new
             {
-                balance = lastAppointment?.RemainingAmount ?? 0,
+                balance = await _context.MedicalRecords
+                    .Where(record => record.PatientId == patientId)
+                    .SumAsync(record =>
+                        record.TotalCost > record.PaidAmount
+                            ? record.TotalCost - record.PaidAmount
+                            : 0m),
 
                 upcomingAppointments = upcomingAppointments,
 

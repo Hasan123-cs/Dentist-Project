@@ -66,7 +66,10 @@ export default function AppointmentDetails() {
     );
 
 
-    const patientPhone = phoneResponse.data.phone;
+    const patientPhone = String(phoneResponse.data.phone || "").replace(
+      /\D/g,
+      "",
+    );
 
 
     if (!patientPhone) {
@@ -136,20 +139,8 @@ export default function AppointmentDetails() {
         setPaymentStatus(data.paymentStatus);
       }
 
-      // Backend returns amountPaid as the remaining amount.
-      //
-      // Example:
-      // totalCost = 19
-      // amountPaid = 9
-      //
-      // Actual paid = 19 - 9 = 10
-
-      if (data.totalCost !== undefined && data.amountPaid !== undefined) {
-        const total = Number(data.totalCost);
-        const remaining = Number(data.amountPaid);
-
-        const actualPaid = Math.max(total - remaining, 0);
-
+      if (data.paidAmount !== undefined) {
+        const actualPaid = Number(data.paidAmount);
         setPaidAmount(actualPaid > 0 ? actualPaid.toString() : "");
       }
     } catch (err) {
@@ -210,6 +201,10 @@ export default function AppointmentDetails() {
   const getTreatmentName = () => {
     if (!appointment) return "-";
 
+    if (appointment.appointmentType?.toLowerCase() === "checkup") {
+      return "Checkup / Consultation";
+    }
+
     if (appointment.treatmentName) {
       return appointment.treatmentName;
     }
@@ -244,21 +239,14 @@ export default function AppointmentDetails() {
     setError("");
     setSuccess("");
 
-    const total = Number(appointment?.totalCost || 0);
+    const outstandingAmount = Number(appointment?.remaining || 0);
+    const hasExistingPayment =
+      Number(appointment?.paidAmount || 0) > 0 && outstandingAmount > 0;
 
-    const currentRemaining = Number(appointment?.amountPaid || 0);
-
-    const currentPaid = Math.max(total - currentRemaining, 0);
-
-    // If appointment is still unpaid,
-    // start with empty amount.
-    if (appointment?.paymentStatus?.toLowerCase() === "unpaid") {
-      setPaidAmount("");
-    } else {
-      setPaidAmount(currentPaid > 0 ? currentPaid.toString() : "");
-    }
-
-    setPaymentStatus(appointment?.paymentStatus || "Unpaid");
+    setPaymentStatus(hasExistingPayment ? "Paid" : "Unpaid");
+    setPaidAmount(
+      hasExistingPayment ? outstandingAmount.toFixed(2) : "",
+    );
 
     setShowCompletionForm(true);
   };
@@ -287,7 +275,7 @@ export default function AppointmentDetails() {
 
     let amount = 0;
 
-    if (paymentStatus === "Paid") {
+    if (paymentStatus !== "Unpaid") {
       amount = Number(paidAmount);
 
       if (paidAmount === "" || Number.isNaN(amount)) {
@@ -743,7 +731,9 @@ export default function AppointmentDetails() {
                       : "#b45309",
                 }}
               >
-                {appointment.paymentStatus || "Unpaid"}
+                {appointment.paymentStatus === "PartiallyPaid"
+                  ? "Partially Paid"
+                  : appointment.paymentStatus || "Unpaid"}
               </Typography>
             </Box>
 
@@ -952,12 +942,14 @@ export default function AppointmentDetails() {
                   >
                     <MenuItem value="Unpaid">Unpaid</MenuItem>
 
+                    <MenuItem value="PartiallyPaid">Partially Paid</MenuItem>
+
                     <MenuItem value="Paid">Paid</MenuItem>
                   </TextField>
 
                   {/* PAID AMOUNT */}
 
-                  {paymentStatus === "Paid" && (
+                  {paymentStatus !== "Unpaid" && (
                     <TextField
                       fullWidth
                       label="Amount Paid"
@@ -975,7 +967,7 @@ export default function AppointmentDetails() {
 
                   {/* LIVE REMAINING */}
 
-                  {paymentStatus === "Paid" &&
+                  {paymentStatus !== "Unpaid" &&
                     paidAmount !== "" &&
                     !Number.isNaN(Number(paidAmount)) && (
                       <Box

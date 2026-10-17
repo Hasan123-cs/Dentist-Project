@@ -88,26 +88,30 @@ export default function Sidebar({ open, onClose }) {
 
     let isAssistant = false;
 
-
-
     if (token) {
-
-        const payload = JSON.parse(
-            atob(token.split(".")[1])
-        );
-
-
-        const role =
-            payload[
-            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-            ];
-
-
-        console.log("SIDEBAR ROLE:", role);
-
-
-        isAssistant = role === "Assistant";
-
+        try {
+            const encodedPayload = token.split(".")[1]
+                .replace(/-/g, "+")
+                .replace(/_/g, "/");
+            const paddedPayload = encodedPayload.padEnd(
+                Math.ceil(encodedPayload.length / 4) * 4,
+                "="
+            );
+            const payloadBytes = Uint8Array.from(
+                atob(paddedPayload),
+                (character) => character.charCodeAt(0)
+            );
+            const payload = JSON.parse(
+                new TextDecoder().decode(payloadBytes)
+            );
+            const role =
+                payload[
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                ];
+            isAssistant = role === "Assistant";
+        } catch (error) {
+            console.error("Unable to read the signed-in user role.", error);
+        }
     }
 
 
@@ -239,23 +243,18 @@ export default function Sidebar({ open, onClose }) {
             >
 
 
-                {!isAssistant && (
-
-                    <Avatar
-
-                        src={amanyImage}
-
-                        sx={{
-
-                            width: 55,
-
-                            height: 55
-
-                        }}
-
-                    />
-
-                )}
+                <Avatar
+                    src={amanyImage}
+                    alt="Dr. Amany Nseif"
+                    sx={{
+                        width: 55,
+                        height: 55,
+                        flexShrink: 0,
+                        objectFit: "cover",
+                    }}
+                >
+                    AN
+                </Avatar>
 
 
 

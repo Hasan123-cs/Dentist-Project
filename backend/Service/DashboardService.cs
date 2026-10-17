@@ -65,9 +65,11 @@ namespace dentist_project.Service
 
                 // outstanding balance
                 dashboard.OutstandingBalance =
-                await _db.Appointments
-                .SumAsync(x =>
-                    x.TotalCost - x.PaidAmount
+                await _db.MedicalRecords
+                .SumAsync(record =>
+                    record.TotalCost > record.PaidAmount
+                        ? record.TotalCost - record.PaidAmount
+                        : 0m
                 );
 
             }
@@ -94,10 +96,15 @@ namespace dentist_project.Service
     .ToString("HH:mm"),
 
 
-               Name =x.Patient.FirstName+ " "+ x.Patient.LastName,
+               Name = x.ContactName
+                   ?? (x.Patient != null
+                       ? x.Patient.FirstName + " " + x.Patient.LastName
+                       : "Walk-in checkup"),
 
 
-               Type =x.AppointmentTreatments.Select(t => t.Treatment.Name).FirstOrDefault()?? "General",
+               Type = x.Type == AppointmentType.Checkup
+                   ? "Checkup / Consultation"
+                   : x.AppointmentTreatments.Select(t => t.Treatment.Name).FirstOrDefault() ?? "General",
 
 
                Status =x.Status.ToString()

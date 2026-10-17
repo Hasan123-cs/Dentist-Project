@@ -250,13 +250,19 @@ namespace dentist_project.Migrations
                     b.Property<DateTime>("EndDateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ContactName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactPhone")
+                        .HasColumnType("text");
+
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
                     b.Property<decimal>("PaidAmount")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("PatientId")
+                    b.Property<int?>("PatientId")
                         .HasColumnType("integer");
 
                     b.Property<int>("PaymentStatus")
@@ -276,6 +282,9 @@ namespace dentist_project.Migrations
 
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("numeric");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -371,11 +380,17 @@ namespace dentist_project.Migrations
                     b.Property<string>("Diagnosis")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Prescription")
                         .HasColumnType("text");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("TreatmentPlan")
                         .HasColumnType("text");
@@ -672,7 +687,7 @@ namespace dentist_project.Migrations
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired(false);
 
                     b.Navigation("CreatedBy");
 

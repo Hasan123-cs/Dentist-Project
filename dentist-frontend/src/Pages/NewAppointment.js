@@ -5,6 +5,7 @@ import {
   Paper,
   Typography,
   Alert,
+  MenuItem,
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
@@ -61,6 +62,8 @@ export default function NewAppointment() {
 
   const [appointment, setAppointment] = useState({
     patientName: "",
+    patientPhone: "",
+    appointmentType: "Treatment",
     treatmentName: "",
     toothNumbers: [],
     date: "",
@@ -333,11 +336,22 @@ export default function NewAppointment() {
         return;
       }
 
+      if (
+        appointment.appointmentType === "Checkup" &&
+        !appointment.patientPhone.trim()
+      ) {
+        setError("Please enter a phone number for the checkup.");
+        return;
+      }
+
       // =========================
       // Treatment validation
       // =========================
 
-      if (!appointment.treatmentName.trim()) {
+      if (
+        appointment.appointmentType === "Treatment" &&
+        !appointment.treatmentName.trim()
+      ) {
         setError("Please enter treatment name.");
         return;
       }
@@ -439,9 +453,22 @@ export default function NewAppointment() {
 
         patientName: appointment.patientName.trim(),
 
-        treatmentName: appointment.treatmentName.trim(),
+        patientPhone:
+          appointment.appointmentType === "Checkup"
+            ? appointment.patientPhone.trim()
+            : null,
 
-        toothNumbers: appointment.toothNumbers,
+        appointmentType: appointment.appointmentType,
+
+        treatmentName:
+          appointment.appointmentType === "Treatment"
+            ? appointment.treatmentName.trim()
+            : null,
+
+        toothNumbers:
+          appointment.appointmentType === "Treatment"
+            ? appointment.toothNumbers
+            : [],
 
         date: appointment.date,
 
@@ -494,15 +521,17 @@ export default function NewAppointment() {
   return (
     <Box
       sx={{
-        p: 4,
+        p: { xs: 1, sm: 2, md: 4 },
         background: "#faf8f2",
         minHeight: "100vh",
       }}
     >
       <Paper
         sx={{
-          p: 4,
+          p: { xs: 2, sm: 3, md: 4 },
           borderRadius: 4,
+          maxWidth: 760,
+          mx: "auto",
         }}
       >
         <Typography fontSize={28} fontWeight={800} mb={3}>
@@ -526,74 +555,95 @@ export default function NewAppointment() {
         <TextField
           fullWidth
           name="patientName"
-          label="Patient Name"
+          label={
+            appointment.appointmentType === "Checkup"
+              ? "Patient / Contact Name"
+              : "Patient Name"
+          }
           value={appointment.patientName}
           onChange={handleChange}
           sx={{ mb: 2 }}
         />
 
-        {/* =========================
-            Treatment Name
-        ========================= */}
+        {appointment.appointmentType === "Checkup" && (
+          <TextField
+            fullWidth
+            name="patientPhone"
+            label="Phone Number"
+            type="tel"
+            value={appointment.patientPhone}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+        )}
 
-
-        <select name="treatmentName"
-          id="n"
-          value={appointment.treatmentName}
-          onChange={handleChange}
-          style={{
-            width: "100%",
-            padding: "8px 12px",
-            mt: 3,
-            mb: 2,
-            fontSize: "15px",
-            color: "#333",
-            background: "white",
-            border: "1px solid #ccc",
-            borderRadius: "6px",
-            outline: "none",
-            cursor: "pointer",
-          }} >
-          <option value="" disabled>Select Treatment</option>
-          <option value="Veneers">Veneers</option>
-
-          <option value="Bridge">Bridge </option>
-
-          <option value="Filling">Filling </option>
-          <option value="Gouttiere">Gouttiere</option>
-          <option value="Laser">Laser</option>
-          <option value="Root canal">Root canal
-          </option>
-          <option value="Extraction">Extraction</option>
-          <option value="Crown">Crown</option>
-          <option value="Implant">Implant</option>
-
-          <option value="Pulpotomie">Pulpotomie</option>
-          <option value="Pulpectomie">Pulpectomie</option>
-          <option value="Cpp">Cpp</option>
-          <option value="Scaling">Scaling</option>
-        </select>
         <TextField
-          sx={{ mb: 2, mt: 2 }}
+          select
           fullWidth
-          label="Tooth Numbers (example: 11,12,13)"
-          name="toothNumbers"
-          value={appointment.toothNumbers.join(",")}
-          onChange={(e) => {
-
-            const teeth = e.target.value
-              .split(",")
-              .map(x => Number(x.trim()))
-              .filter(x => !isNaN(x));
-
-
+          name="appointmentType"
+          label="Appointment Type"
+          value={appointment.appointmentType}
+          onChange={(event) => {
             setAppointment({
               ...appointment,
-              toothNumbers: teeth
+              appointmentType: event.target.value,
+              treatmentName: "",
+              toothNumbers: [],
             });
-
+            setError("");
           }}
-        />
+          sx={{ mb: 2 }}
+        >
+          <MenuItem value="Treatment">Treatment</MenuItem>
+          <MenuItem value="Checkup">Checkup / Consultation</MenuItem>
+        </TextField>
+
+        {appointment.appointmentType === "Treatment" && (
+          <>
+            <TextField
+              select
+              fullWidth
+              name="treatmentName"
+              label="Treatment"
+              value={appointment.treatmentName}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="Veneers">Veneers</MenuItem>
+              <MenuItem value="Bridge">Bridge</MenuItem>
+              <MenuItem value="Filling">Filling</MenuItem>
+              <MenuItem value="Gouttiere">Gouttiere</MenuItem>
+              <MenuItem value="Laser">Laser</MenuItem>
+              <MenuItem value="Root canal">Root canal</MenuItem>
+              <MenuItem value="Extraction">Extraction</MenuItem>
+              <MenuItem value="Crown">Crown</MenuItem>
+              <MenuItem value="Implant">Implant</MenuItem>
+              <MenuItem value="Pulpotomie">Pulpotomie</MenuItem>
+              <MenuItem value="Pulpectomie">Pulpectomie</MenuItem>
+              <MenuItem value="Cpp">Cpp</MenuItem>
+              <MenuItem value="Scaling">Scaling</MenuItem>
+            </TextField>
+
+            <TextField
+              sx={{ mb: 2 }}
+              fullWidth
+              label="Tooth Numbers (example: 11,12,13)"
+              name="toothNumbers"
+              value={appointment.toothNumbers.join(",")}
+              onChange={(event) => {
+                const teeth = event.target.value
+                  .split(",")
+                  .map((tooth) => Number(tooth.trim()))
+                  .filter((tooth) => !Number.isNaN(tooth));
+
+                setAppointment({
+                  ...appointment,
+                  toothNumbers: teeth,
+                });
+              }}
+            />
+          </>
+        )}
 
         {/* =========================
             Date
@@ -696,13 +746,22 @@ export default function NewAppointment() {
         {/* =========================
             Save
         ========================= */}
-        <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginBottom: "20px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column-reverse", sm: "row" },
+            justifyContent: "space-between",
+            gap: 1.5,
+            mb: 2.5,
+          }}
+        >
           <Button
             onClick={handleSubmit}
             variant="contained"
             disabled={
               !appointment.patientName.trim() ||
-              !appointment.treatmentName.trim() ||
+              (appointment.appointmentType === "Treatment" &&
+                !appointment.treatmentName.trim()) ||
               !appointment.date ||
               !appointment.startTime ||
               !appointment.endTime ||
@@ -711,6 +770,8 @@ export default function NewAppointment() {
             }
             sx={{
               background: "#C9A227",
+              minHeight: 48,
+              width: { xs: "100%", sm: "auto" },
 
               "&:hover": {
                 background: "#b8911f",
@@ -731,11 +792,13 @@ export default function NewAppointment() {
               fontWeight: 700,
               borderRadius: 2,
               px: 2,
+              minHeight: 48,
+              width: { xs: "100%", sm: "auto" },
             }}
           >
             ← BACK
           </Button>
-        </div>
+        </Box>
       </Paper>
 
 

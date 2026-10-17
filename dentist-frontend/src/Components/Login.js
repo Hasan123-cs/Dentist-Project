@@ -34,6 +34,7 @@ export default function Login() {
     try {
       disable = true;
       document.getElementById("login-button").innerHTML = "Logging in...";
+      console.log("API URL:", process.env.REACT_APP_API_URL);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
         method: "POST",
         headers: {

@@ -46,15 +46,27 @@ namespace dentist_project.Service
 
                     a.PatientId,
 
-                    PatientFirstName = a.Patient.FirstName,
+                    PatientFirstName = a.Patient != null
+                        ? a.Patient.FirstName
+                        : null,
 
-                    PatientLastName = a.Patient.LastName,
+                    PatientLastName = a.Patient != null
+                        ? a.Patient.LastName
+                        : null,
 
-                    Phone = a.Patient.Phone,
+                    a.ContactName,
+
+                    ContactPhone = a.ContactPhone,
+
+                    PatientPhone = a.Patient != null
+                        ? a.Patient.Phone
+                        : null,
 
                     a.StartDateTime,
 
                     a.EndDateTime,
+
+                    a.Type,
 
                     a.Status,
 
@@ -83,10 +95,11 @@ namespace dentist_project.Service
 
                     PatientId = a.PatientId,
 
-                    PatientName =
-                        $"{a.PatientFirstName} {a.PatientLastName}".Trim(),
+                    PatientName = !string.IsNullOrWhiteSpace(a.ContactName)
+                        ? a.ContactName
+                        : $"{a.PatientFirstName} {a.PatientLastName}".Trim(),
 
-                    Phone = a.Phone,
+                    Phone = a.ContactPhone ?? a.PatientPhone,
 
 
                     StartDateTime =
@@ -110,6 +123,9 @@ namespace dentist_project.Service
 
                     Status =
                         a.Status.ToString(),
+
+                    AppointmentType =
+                        a.Type.ToString(),
 
 
                     TotalCost =
@@ -278,30 +294,60 @@ namespace dentist_project.Service
       CreateAppointmentDto dto,
       string userId)
         {
+            if (string.IsNullOrWhiteSpace(dto.PatientName))
+            {
+                return (false, "Patient name is required.");
+            }
+
+            if (!Enum.TryParse<AppointmentType>(
+                    dto.AppointmentType,
+                    true,
+                    out var appointmentType))
+            {
+                return (false, "Invalid appointment type.");
+            }
+
             var patient = await _db.Patients
                 .FirstOrDefaultAsync(p =>
                     (p.FirstName + " " + p.LastName).ToLower()
                     ==
                     dto.PatientName.Trim().ToLower());
 
-
-            if (patient == null)
+            if (appointmentType == AppointmentType.Treatment && patient == null)
+            {
                 return (false, "Patient not found.");
+            }
 
+            if (appointmentType == AppointmentType.Checkup &&
+                string.IsNullOrWhiteSpace(dto.PatientPhone))
+            {
+                return (false, "Phone number is required for a checkup appointment.");
+            }
 
+            var contactName = dto.PatientName.Trim();
+            var contactPhone = string.IsNullOrWhiteSpace(dto.PatientPhone)
+                ? patient?.Phone
+                : dto.PatientPhone.Trim();
 
-            var treatment = await _db.Treatments
-                .FirstOrDefaultAsync(t =>
-                    t.Name.ToLower()
-                    ==
-                    dto.TreatmentName.Trim().ToLower()
-                    &&
-                    t.IsActive);
+            Treatment? treatment = null;
+            if (appointmentType == AppointmentType.Treatment)
+            {
+                if (string.IsNullOrWhiteSpace(dto.TreatmentName))
+                {
+                    return (false, "Treatment name is required.");
+                }
 
+                treatment = await _db.Treatments
+                    .FirstOrDefaultAsync(t =>
+                        t.Name.ToLower()
+                        ==
+                        dto.TreatmentName.Trim().ToLower()
+                        &&
+                        t.IsActive);
 
-
-            if (treatment == null)
-                return (false, "Treatment not found.");
+                if (treatment == null)
+                    return (false, "Treatment not found.");
+            }
 
 
 
@@ -376,46 +422,28 @@ namespace dentist_project.Service
             // FIND SELECTED TOOTH TREATMENTS
             // =====================================
 
-            var selectedToothTreatments =
-                await _db.ToothTreatments
-
-                .Include(tt => tt.MedicalRecord)
-
-                .Include(tt => tt.Tooth)
-
-                .Where(tt =>
-
-                    tt.MedicalRecord.PatientId == patient.Id
-
-                    &&
-
-                    tt.TreatmentId == treatment.Id
-
-                    &&
-
-                    (
-                        (
-                            tt.Tooth != null
-                            &&
-                            dto.ToothNumbers != null
-                            &&
-                            dto.ToothNumbers.Contains(tt.Tooth.Number)
-                        )
-
-                        ||
-
-                        (
-                            tt.Tooth == null
-                        )
-                    )
-
-                    &&
-
-                    tt.Status != ToothStatus.Completed
-
-                )
-
-                .ToListAsync();
+            var selectedToothTreatments = new List<ToothTreatment>();
+            if (treatment != null)
+            {
+                selectedToothTreatments =
+                    await _db.ToothTreatments
+                        .Include(tt => tt.MedicalRecord)
+                        .Include(tt => tt.Tooth)
+                        .Where(tt =>
+                            tt.MedicalRecord.PatientId == patient!.Id
+                            && tt.TreatmentId == treatment.Id
+                            && (
+                                dto.ToothNumbers == null ||
+                                dto.ToothNumbers.Count == 0 ||
+                                (
+                                    tt.Tooth != null
+                                    && dto.ToothNumbers.Contains(tt.Tooth.Number)
+                                )
+                                || tt.Tooth == null
+                            )
+                            && tt.Status != ToothStatus.Completed)
+                        .ToListAsync();
+            }
 
 
 
@@ -438,15 +466,38 @@ namespace dentist_project.Service
             Console.WriteLine("======================");
 
 
+            var linkedTreatmentPlans = selectedToothTreatments
+                .Select(toothTreatment => toothTreatment.MedicalRecord)
+                .DistinctBy(record => record.Id)
+                .ToList();
 
+            if (appointmentType == AppointmentType.Treatment &&
+                linkedTreatmentPlans.Count == 0)
+            {
+                return (
+                    false,
+                    $"This patient does not have an active {treatment!.Name} treatment plan for the selected tooth. Create the treatment plan first, or choose Checkup / Consultation.");
+            }
 
+            var appointmentTotalCost = linkedTreatmentPlans.Count > 0
+                ? linkedTreatmentPlans.Sum(record => record.TotalCost)
+                : 0;
 
+            var appointmentPaidAmount = linkedTreatmentPlans.Count > 0
+                ? linkedTreatmentPlans.Sum(record => record.PaidAmount)
+                : 0;
 
-
+            var appointmentRemainingAmount = Math.Max(
+                appointmentTotalCost - appointmentPaidAmount,
+                0);
 
             var appointment = new Appointment
             {
-                PatientId = patient.Id,
+                PatientId = patient?.Id,
+
+                ContactName = contactName,
+
+                ContactPhone = contactPhone,
 
                 CreatedById = userId,
 
@@ -454,82 +505,49 @@ namespace dentist_project.Service
 
                 EndDateTime = endDateTime,
 
+                Type = appointmentType,
+
                 Status = AppointmentStatus.Pending,
 
-                TotalCost = treatment.DefaultPrice,
+                TotalCost = appointmentTotalCost,
 
-                PaidAmount = 0,
+                PaidAmount = appointmentPaidAmount,
 
-                RemainingAmount = treatment.DefaultPrice,
+                RemainingAmount = appointmentRemainingAmount,
 
-                PaymentStatus = Enums.PaymentStatus.Unpaid
+                PaymentStatus = appointmentTotalCost > 0 &&
+                    appointmentRemainingAmount <= 0
+                    ? Enums.PaymentStatus.Paid
+                    : appointmentPaidAmount > 0
+                        ? Enums.PaymentStatus.PartiallyPaid
+                        : Enums.PaymentStatus.Unpaid
             };
 
 
-
-
-
-
-
-
-
-            var appointmentTreatment =
-                new AppointmentTreatment
+            if (treatment != null)
+            {
+                var appointmentTreatment = new AppointmentTreatment
                 {
                     Appointment = appointment,
-
                     TreatmentId = treatment.Id,
-
-                    Price = treatment.DefaultPrice,
-
-                    PaidAmount = 0,
-
+                    Price = appointmentTotalCost,
+                    PaidAmount = appointmentPaidAmount,
                     Status = TreatmentStatus.Planned
                 };
 
+                foreach (var toothTreatment in selectedToothTreatments)
+                {
+                    appointmentTreatment.ToothTreatmentLinks.Add(
+                        new AppointmentTreatmentToothTreatment
+                        {
+                            AppointmentTreatment = appointmentTreatment,
+                            ToothTreatment = toothTreatment,
+                            ToothTreatmentId = toothTreatment.Id
+                        });
+                }
 
-
-
-
-
-
-
-
-            // =====================================
-            // CREATE APPOINTMENT <-> TOOTH LINKS
-            // =====================================
-
-            foreach (var toothTreatment in selectedToothTreatments)
-            {
-                appointmentTreatment.ToothTreatmentLinks.Add(
-                    new AppointmentTreatmentToothTreatment
-                    {
-                        AppointmentTreatment = appointmentTreatment,
-
-                        ToothTreatment = toothTreatment,
-
-                        ToothTreatmentId = toothTreatment.Id
-                    }
-                );
+                appointment.AppointmentTreatments.Add(appointmentTreatment);
             }
-
-
-
-
-
-            Console.WriteLine(
-                $"LINK COUNT: {appointmentTreatment.ToothTreatmentLinks.Count}"
-            );
-
-
-
-
-
-
-
-            appointment.AppointmentTreatments.Add(
-                appointmentTreatment
-            );
 
 
 
@@ -609,29 +627,22 @@ namespace dentist_project.Service
 
 
 
-            var notification = new Notification
+            if (patient != null)
             {
-                PatientId = patient.Id,
+                var notification = new Notification
+                {
+                    PatientId = patient.Id,
+                    AppointmentId = appointment.Id,
+                    Type = NotificationType.AppointmentReminder,
+                    Message =
+                        $"Appointment : {appointment.StartDateTime.ToLocalTime():yyyy-MM-dd HH:mm}",
+                    IsSent = false,
+                    IsApproved = false
+                };
 
-                AppointmentId = appointment.Id,
-
-                Type = NotificationType.AppointmentReminder,
-
-                Message =
-                    $"Appointment : {appointment.StartDateTime.ToLocalTime():yyyy-MM-dd HH:mm}",
-
-                IsSent = false,
-
-                IsApproved = false
-            };
-
-
-
-            _db.Notifications.Add(notification);
-
-
-
-            await _db.SaveChangesAsync();
+                _db.Notifications.Add(notification);
+                await _db.SaveChangesAsync();
+            }
 
 
 
@@ -649,12 +660,13 @@ namespace dentist_project.Service
                 int appointmentId,
                 CompleteAppointmentDto dto)
         {
-
-
             var appointment =
                 await _db.Appointments
 
                 .Include(a => a.AppointmentTreatments)
+                    .ThenInclude(treatment => treatment.ToothTreatmentLinks)
+                        .ThenInclude(link => link.ToothTreatment)
+                            .ThenInclude(toothTreatment => toothTreatment.MedicalRecord)
 
                 .FirstOrDefaultAsync(a =>
                     a.Id == appointmentId);
@@ -670,28 +682,58 @@ namespace dentist_project.Service
                 );
             }
 
+            var treatmentPlans = appointment.AppointmentTreatments
+                .SelectMany(treatment => treatment.ToothTreatmentLinks)
+                .Select(link => link.ToothTreatment.MedicalRecord)
+                .DistinctBy(record => record.Id)
+                .Where(record => record.TotalCost > 0)
+                .ToList();
 
+            if (treatmentPlans.Count > 0)
+            {
+                appointment.TotalCost = treatmentPlans.Sum(record => record.TotalCost);
+                appointment.PaidAmount = treatmentPlans.Sum(record => record.PaidAmount);
+                appointment.RemainingAmount = treatmentPlans.Sum(record =>
+                    Math.Max(record.TotalCost - record.PaidAmount, 0));
+            }
 
+            if (dto.PaidAmount < 0)
+            {
+                return (false, "Paid amount cannot be negative.", null);
+            }
 
+            if (dto.PaidAmount > appointment.RemainingAmount)
+            {
+                return (
+                    false,
+                    $"Paid amount cannot exceed the remaining balance of {appointment.RemainingAmount:0.00}.",
+                    null);
+            }
+
+            var remainingPayment = dto.PaidAmount;
+            foreach (var plan in treatmentPlans.OrderBy(record => record.Id))
+            {
+                if (remainingPayment <= 0)
+                {
+                    break;
+                }
+
+                var planBalance = Math.Max(plan.TotalCost - plan.PaidAmount, 0);
+                var paymentForPlan = Math.Min(planBalance, remainingPayment);
+                plan.PaidAmount += paymentForPlan;
+                remainingPayment -= paymentForPlan;
+            }
 
             appointment.PaidAmount += dto.PaidAmount;
-
-
-            appointment.RemainingAmount -=
-                dto.PaidAmount;
-
-
-
-            appointment.PaymentStatus =
-                dto.PaidAmount > 0
-                ?
-                Enums.PaymentStatus.Paid
-                :
-                Enums.PaymentStatus.Unpaid;
-
-
-
-
+            appointment.RemainingAmount = Math.Max(
+                appointment.RemainingAmount - dto.PaidAmount,
+                0);
+            appointment.PaymentStatus = appointment.TotalCost > 0 &&
+                appointment.RemainingAmount <= 0
+                ? Enums.PaymentStatus.Paid
+                : appointment.PaidAmount > 0
+                    ? Enums.PaymentStatus.PartiallyPaid
+                    : Enums.PaymentStatus.Unpaid;
 
             foreach (var treatment in appointment.AppointmentTreatments)
             {
@@ -769,6 +811,11 @@ namespace dentist_project.Service
                 .Include(a => a.AppointmentTreatments)
                     .ThenInclude(at => at.Treatment)
 
+                .Include(a => a.AppointmentTreatments)
+                    .ThenInclude(at => at.ToothTreatmentLinks)
+                        .ThenInclude(link => link.ToothTreatment)
+                            .ThenInclude(toothTreatment => toothTreatment.MedicalRecord)
+
                 .FirstOrDefaultAsync(a =>
                     a.Id == id);
 
@@ -790,6 +837,28 @@ namespace dentist_project.Service
                 appointment.AppointmentTreatments
                 .FirstOrDefault();
 
+            var treatmentPlans = appointment.AppointmentTreatments
+                .SelectMany(appointmentTreatment => appointmentTreatment.ToothTreatmentLinks)
+                .Select(link => link.ToothTreatment.MedicalRecord)
+                .DistinctBy(record => record.Id)
+                .Where(record => record.TotalCost > 0)
+                .ToList();
+
+            var totalCost = treatmentPlans.Count > 0
+                ? treatmentPlans.Sum(record => record.TotalCost)
+                : appointment.TotalCost;
+            var paidAmount = treatmentPlans.Count > 0
+                ? treatmentPlans.Sum(record => record.PaidAmount)
+                : appointment.PaidAmount;
+            var remainingAmount = treatmentPlans.Count > 0
+                ? treatmentPlans.Sum(record =>
+                    Math.Max(record.TotalCost - record.PaidAmount, 0))
+                : appointment.RemainingAmount;
+            var paymentStatus = totalCost > 0 && remainingAmount <= 0
+                ? Enums.PaymentStatus.Paid
+                : paidAmount > 0
+                    ? Enums.PaymentStatus.PartiallyPaid
+                    : Enums.PaymentStatus.Unpaid;
 
 
             return
@@ -803,17 +872,13 @@ namespace dentist_project.Service
                     id = appointment.Id,
 
 
-                    patientName =
-                        appointment.Patient.FirstName
-                        + " "
-                        + appointment.Patient.LastName,
-
-
-
-                    treatmentName =
-                        treatment?.Treatment?.Name,
-
-
+                    patientName = !string.IsNullOrWhiteSpace(appointment.ContactName)
+                        ? appointment.ContactName
+                        : appointment.Patient == null
+                            ? "Unknown patient"
+                            : appointment.Patient.FirstName
+                                + " "
+                                + appointment.Patient.LastName,
 
                     createdBy =
                         appointment.CreatedBy != null
@@ -839,6 +904,13 @@ namespace dentist_project.Service
                     status =
                         appointment.Status.ToString(),
 
+                    appointmentType =
+                        appointment.Type.ToString(),
+
+                    treatmentName =
+                        appointment.Type == AppointmentType.Checkup
+                            ? "Checkup / Consultation"
+                            : treatment?.Treatment?.Name,
 
 
                     notes =
@@ -846,23 +918,21 @@ namespace dentist_project.Service
 
 
 
-                    totalCost =
-                        appointment.TotalCost,
+                    totalCost,
 
 
 
-                    paidAmount =
-                        appointment.PaidAmount,
+                    paidAmount,
 
 
 
                     remaining =
-                        appointment.RemainingAmount,
+                        remainingAmount,
 
 
 
                     paymentStatus =
-                        appointment.PaymentStatus.ToString()
+                        paymentStatus.ToString()
                 }
             );
         }

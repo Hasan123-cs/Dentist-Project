@@ -4,13 +4,16 @@ namespace dentist_project.Models;
 public class Appointment
 {
     public int Id { get; set; }
-    public int PatientId { get; set; }
-    public Patient Patient { get; set; } = null!;
+    public int? PatientId { get; set; }
+    public Patient? Patient { get; set; }
+    public string? ContactName { get; set; }
+    public string? ContactPhone { get; set; }
     // Doctor or Assistant who created the appointment
     public string CreatedById { get; set; } = null!;
     public ApplicationUser CreatedBy { get; set; } = null!;
     public DateTime StartDateTime { get; set; }
     public DateTime EndDateTime { get; set; }
+    public AppointmentType Type { get; set; } = AppointmentType.Treatment;
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
     public string? Notes { get; set; }
     public decimal TotalCost { get; set; }

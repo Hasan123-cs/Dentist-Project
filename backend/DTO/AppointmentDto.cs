@@ -3,9 +3,9 @@
     public class AppointmentDto
     {
         public int Id { get; set; }
-        public int PatientId { get; set; }
+        public int? PatientId { get; set; }
         public string PatientName { get; set; } = null!;
-        public string Phone { get; set; } = null!;
+        public string? Phone { get; set; }
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
         // For React Calendar
@@ -13,6 +13,7 @@
         public string StartTime { get; set; } = null!;
         public string EndTime { get; set; } = null!;
         public string Status { get; set; } = null!;
+        public string AppointmentType { get; set; } = "Treatment";
         public decimal TotalCost { get; set; }
         public string? Notes { get; set; }
         // static

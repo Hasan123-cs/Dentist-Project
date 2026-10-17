@@ -71,6 +71,8 @@ export default function PatientCard({ patient, onDelete }) {
   const [editOpen, setEditOpen] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [editError, setEditError] = useState("");
   const [loadFailed, setLoadFailed] = useState(false);
 
@@ -346,22 +348,49 @@ export default function PatientCard({ patient, onDelete }) {
 
   // DELETE PATIENT
   const handleDelete = async () => {
+    if (deleting) return;
+
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this patient?"
     );
 
     if (!confirmDelete) return;
 
+    setDeleting(true);
+    setDeleteError("");
+
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("You are not authenticated. Please sign in again.");
+      }
+
       const response = await fetch(
         `${API_URL}/${patient.id}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
+      const responseText = await response.text();
+      let data = {};
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          data = {};
+        }
+      }
+
       if (!response.ok) {
-        throw new Error("Delete failed");
+        throw new Error(
+          data.message ||
+          data.error ||
+          `Could not delete patient (HTTP ${response.status}).`
+        );
       }
 
       onDelete(patient.id);
@@ -370,6 +399,9 @@ export default function PatientCard({ patient, onDelete }) {
         "Delete patient error:",
         error
       );
+      setDeleteError(error.message || "Unable to delete patient.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -446,6 +478,12 @@ export default function PatientCard({ patient, onDelete }) {
           </Box>
 
           {/* PATIENT ID */}
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 1 }}>
+              {deleteError}
+            </Alert>
+          )}
+
           <Typography
             fontWeight={800}
             sx={{
@@ -570,14 +608,18 @@ export default function PatientCard({ patient, onDelete }) {
         </Button>
 
         {/* DELETE PATIENT */}
-        <IconButton
+        <Button
           onClick={handleDelete}
+          disabled={deleting}
+          startIcon={deleting ? <CircularProgress size={18} /> : <DeleteIcon />}
           sx={{
             color: "red",
+            minHeight: 44,
+            alignSelf: "flex-end",
           }}
         >
-          <DeleteIcon />
-        </IconButton>
+          {deleting ? "DELETING..." : "DELETE PATIENT"}
+        </Button>
       </Paper>
 
       {/* EDIT PATIENT DIALOG */}
