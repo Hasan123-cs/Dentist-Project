@@ -27,14 +27,14 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState("");
-  let disable = !email || !password ? true : false;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const disable = !email || !password || isSubmitting;
   // === states ===
   //handlers
   async function handleLogin() {
+    setIsSubmitting(true);
+    setErrors("");
     try {
-      disable = true;
-      document.getElementById("login-button").innerHTML = "Logging in...";
-      console.log("API URL:", process.env.REACT_APP_API_URL);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
         method: "POST",
         headers: {
@@ -45,26 +45,45 @@ export default function Login() {
           password: password,
         }),
       });
-      const data = await response.json();
+
+      const responseText = await response.text();
+      let data = {};
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        data = { message: responseText };
+      }
+
       if (!response.ok) {
-        setErrors(data.message || "Invalid email or password");
+        setErrors(
+          typeof data === "string"
+            ? data
+            : data.message || "Invalid email or password",
+        );
         return;
       }
-      console.log("Login success:", data);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
+
+      const token = data.token || data.Token;
+      if (!token) {
+        setErrors("The server did not return an authentication token.");
+        return;
+      }
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(data.user || {
+        id: data.userId || data.UserId,
+        email: data.email || data.Email,
+        fullName: data.fullName || data.FullName,
+        roles: data.roles || data.Roles || [],
+      }));
       navigate("/dashboard");
     } catch (error) {
       console.log(error);
 
-      setErrors("Something went wrong. Try again.");
+      setErrors("Unable to connect to the server. Check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-    document.getElementById("login-button").innerHTML = "Login";
-
-    disable = false;
 
   }
 
@@ -230,7 +249,7 @@ export default function Login() {
           onClick={handleLogin}
           disabled={disable}
         >
-          Login
+          {isSubmitting ? "Logging in..." : "Login"}
         </Button>
         <span style={{
           color: "red",

@@ -1,4 +1,4 @@
-import { Box, Grid } from "@mui/material";
+import { Alert, Box, Button, Grid } from "@mui/material";
 
 import Header from "../Components/Header";
 import StatCard from "../Components/StatsCard";
@@ -19,6 +19,8 @@ import {
 export default function DentistDashboard() {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
+  const [loadError, setLoadError] = useState("");
+  const [reloadCount, setReloadCount] = useState(0);
   // const storedUser = localStorage.getItem("user");
 
   // const user = storedUser ? JSON.parse(storedUser) : {};
@@ -31,6 +33,7 @@ export default function DentistDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        setLoadError("");
         const response = await fetch(
           `${process.env.REACT_APP_API_URL}/api/dashboard`,
 
@@ -43,9 +46,15 @@ export default function DentistDashboard() {
 
         if (!response.ok) {
           const errorText = await response.text();
+          if (response.status === 401) {
+            localStorage.removeItem("token");
+            navigate("/login", { replace: true });
+            return;
+          }
 
-          console.log(errorText);
-
+          setLoadError(
+            `Dashboard could not load (${response.status}). ${errorText || "Please try again."}`,
+          );
           return;
         }
 
@@ -55,20 +64,43 @@ export default function DentistDashboard() {
 
         setDashboardData(data);
       } catch (error) {
-        navigate("/error?message=" + encodeURIComponent(error.message));
+        console.error("Dashboard request failed:", error);
+        setLoadError(
+          "Could not connect to the production API. Check your connection and try again.",
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, [navigate, token]);
+  }, [navigate, token, reloadCount]);
   const isDoctor =
     dashboardData?.userName === "Amany";
   if (loading) {
     return (
       <Box p={4} color="#092c57">
         Loading Dashboard...
+      </Box>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <Box p={{ xs: 2, sm: 4 }} color="#092c57">
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {loadError}
+        </Alert>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setLoading(true);
+            setLoadError("");
+            setReloadCount((count) => count + 1);
+          }}
+        >
+          Retry
+        </Button>
       </Box>
     );
   }
