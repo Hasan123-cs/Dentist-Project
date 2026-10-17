@@ -127,8 +127,8 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Database migrations
-var runMigrations = true;
-    //builder.Configuration.GetValue<bool>("RUN_MIGRATIONS");
+var runMigrations =
+    builder.Configuration.GetValue<bool>("RUN_MIGRATIONS");
 
 if (runMigrations)
 {
