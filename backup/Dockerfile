@@ -1,13 +1,13 @@
 
-FROM alpine:3.22
+FROM postgres:18-bookworm
 
-RUN apk add --no-cache \
-    postgresql18-client \
-    aws-cli \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    awscli \
     age \
     bash \
-    ca-certificates \
-    tzdata
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -15,4 +15,4 @@ COPY backup.sh /app/backup.sh
 
 RUN chmod +x /app/backup.sh
 
-CMD ["/bin/bash", "/app/backup.sh"]
+ENTRYPOINT ["/bin/bash", "/app/backup.sh"]
