@@ -2,7 +2,7 @@
 FROM alpine:3.22
 
 RUN apk add --no-cache \
-    postgresql17-client \
+    postgresql18-client \
     aws-cli \
     age \
     bash \
