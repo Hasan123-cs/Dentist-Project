@@ -12,8 +12,8 @@ using dentist_project.Data;
 namespace dentist_project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261017091245_xss")]
-    partial class xss
+    [Migration("20261018090544_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -243,6 +243,12 @@ namespace dentist_project.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ContactName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactPhone")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -259,7 +265,7 @@ namespace dentist_project.Migrations
                     b.Property<decimal>("PaidAmount")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("PatientId")
+                    b.Property<int?>("PatientId")
                         .HasColumnType("integer");
 
                     b.Property<int>("PaymentStatus")
@@ -683,8 +689,7 @@ namespace dentist_project.Migrations
                     b.HasOne("dentist_project.Models.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("CreatedBy");
 
