@@ -71,7 +71,7 @@ public class NotificationsController : ControllerBase
     &&
     x.ReminderDate.HasValue
     &&
-    x.ReminderDate.Value.Date == todayUtc.AddDays(1)
+    x.ReminderDate.Value.Date <= todayUtc.AddDays(1)
                     )
                 )
             )

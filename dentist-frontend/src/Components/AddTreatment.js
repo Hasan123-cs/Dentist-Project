@@ -14,12 +14,19 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 
+const getLocalDateInputValue = () => {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+};
+
 export default function AddTreatment() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     treatment: "Bridge",
+    treatmentDate: getLocalDateInputValue(),
     tooth: "",
     surface: [],
     status: "Pending",
@@ -34,19 +41,19 @@ export default function AddTreatment() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
- const handleChange = (e) => {
+  const handleChange = (e) => {
 
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  console.log("VALUE:", value);
+    console.log("VALUE:", value);
 
-  setForm((prev)=>({
-    ...prev,
-    [name]: value
-  }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value
+    }));
 
-  setError("");
-};
+    setError("");
+  };
   const treatmentsRequireTooth = [
     "filling",
     "root canal",
@@ -86,6 +93,7 @@ export default function AddTreatment() {
 
   const canSubmit =
     form.treatment.trim() !== "" &&
+    form.treatmentDate !== "" &&
     !isToothMissing &&
     (!showSurface || form.surface.length > 0) &&
     Number(form.paidAmount || 0) >= 0 &&
@@ -173,7 +181,7 @@ export default function AddTreatment() {
       return false;
     }
 
-  if (form.surface.length === 0) {
+    if (form.surface.length === 0) {
       setError("Please select a tooth surface.");
       return false;
     }
@@ -217,15 +225,15 @@ export default function AddTreatment() {
   };
 
   const handleRemoveSurface = () => {
-  setShowSurface(false);
+    setShowSurface(false);
 
-  setForm((prev) => ({
-    ...prev,
-    surface: [],
-  }));
+    setForm((prev) => ({
+      ...prev,
+      surface: [],
+    }));
 
-  setError("");
-};
+    setError("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -298,25 +306,27 @@ export default function AddTreatment() {
     /*
      * Final payload
      */
-const treatmentData = {
+    const treatmentData = {
 
-  patientId: Number(id),
+      patientId: Number(id),
 
-  treatment: form.treatment.trim(),
+      treatment: form.treatment.trim(),
 
-  toothNumbers: toothNumbers,
+      treatmentDate: form.treatmentDate,
 
-  surfaces: surface,
+      toothNumbers: toothNumbers,
 
-  status: form.status,
+      surfaces: surface,
 
-  price: form.price === "" ? null : Number(form.price),
+      status: form.status,
 
-  paidAmount: Number(form.paidAmount || 0),
+      price: form.price === "" ? null : Number(form.price),
 
-  notes: form.notes.trim() === "" ? null : form.notes.trim(),
+      paidAmount: Number(form.paidAmount || 0),
 
-};
+      notes: form.notes.trim() === "" ? null : form.notes.trim(),
+
+    };
     console.log("Sending treatment:", treatmentData);
 
     try {
@@ -441,9 +451,9 @@ const treatmentData = {
               outline: "none",
               cursor: "pointer",
             }} >
-              <option value="Veneers">Veneers</option>
+            <option value="Veneers">Veneers</option>
 
-            <option   value="Bridge">Bridge </option>
+            <option value="Bridge">Bridge </option>
 
             <option value="Filling">Filling </option>
             <option value="Gouttiere">Gouttiere</option>
@@ -453,12 +463,23 @@ const treatmentData = {
             <option value="Extraction">Extraction</option>
             <option value="Crown">Crown</option>
             <option value="Implant">Implant</option>
-            
+
             <option value="Pulpotomie">Pulpotomie</option>
             <option value="Pulpectomie">Pulpectomie</option>
             <option value="Cpp">Cpp</option>
-            <option value="Scaling">Scaling</option>
+            <option value="cleaning">Scaling</option>
           </select>
+
+          <TextField
+            label="Treatment Date"
+            name="treatmentDate"
+            type="date"
+            value={form.treatmentDate}
+            onChange={handleChange}
+            fullWidth
+            required
+            InputLabelProps={{ shrink: true }}
+          />
 
           {/* =========================
               TOOTH NUMBER
@@ -531,43 +552,43 @@ const treatmentData = {
                 </Button>
               ) : (
                 <Box display="flex" alignItems="center" gap={1} mt={2}>
-                <TextField
-  select
-  label="Surface"
-  name="surface"
-  value={form.surface}
-  onChange={handleChange}
-  fullWidth
-  required
-  helperText="Select the affected tooth surface."
-  slotProps={{
-    select: {
-      multiple: true,
-      renderValue: (selected) => selected.join(", "),
-    },
-  }}
->
-  <MenuItem value="M">
-    M - Mesial
-  </MenuItem>
+                  <TextField
+                    select
+                    label="Surface"
+                    name="surface"
+                    value={form.surface}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    helperText="Select the affected tooth surface."
+                    slotProps={{
+                      select: {
+                        multiple: true,
+                        renderValue: (selected) => selected.join(", "),
+                      },
+                    }}
+                  >
+                    <MenuItem value="M">
+                      M - Mesial
+                    </MenuItem>
 
-  <MenuItem value="O">
-    O - Occlusal
-  </MenuItem>
+                    <MenuItem value="O">
+                      O - Occlusal
+                    </MenuItem>
 
-  <MenuItem value="D">
-    D - Distal
-  </MenuItem>
+                    <MenuItem value="D">
+                      D - Distal
+                    </MenuItem>
 
-  <MenuItem value="B">
-    B - Buccal
-  </MenuItem>
+                    <MenuItem value="B">
+                      B - Buccal
+                    </MenuItem>
 
-  <MenuItem value="L">
-    L - Lingual
-  </MenuItem>
+                    <MenuItem value="L">
+                      L - Lingual
+                    </MenuItem>
 
-</TextField>
+                  </TextField>
 
                   <IconButton
                     type="button"

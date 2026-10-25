@@ -307,7 +307,7 @@ namespace dentist_project.Controllers;
          notes = m.ClinicalNotes,
 
 
-         date = m.CreatedAt,
+         date = m.TreatmentDate,
 
 
          // PAYMENT FROM LAST APPOINTMENT
@@ -562,7 +562,7 @@ namespace dentist_project.Controllers;
 
 
 
-                date = m.CreatedAt,
+                date = m.TreatmentDate,
 
 
 

@@ -15,6 +15,7 @@ public class MedicalRecord
     public string CreatedById { get; set; } = null!;
     public string? Prescription { get; set; }
     public string? ClinicalNotes { get; set; }
+    public DateOnly TreatmentDate { get; set; }
 
     public ApplicationUser CreatedBy { get; set; } = null!;
     public DateTime CreatedAt { get; set; }

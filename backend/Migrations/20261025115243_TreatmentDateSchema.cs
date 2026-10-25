@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace dentist_project.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class TreatmentDateSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -321,6 +321,7 @@ namespace dentist_project.Migrations
                     CreatedById = table.Column<string>(type: "text", nullable: false),
                     Prescription = table.Column<string>(type: "text", nullable: true),
                     ClinicalNotes = table.Column<string>(type: "text", nullable: true),
+                    TreatmentDate = table.Column<DateOnly>(type: "date", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>

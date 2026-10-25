@@ -12,8 +12,8 @@ using dentist_project.Data;
 namespace dentist_project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261018090544_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20261025115243_TreatmentDateSchema")]
+    partial class TreatmentDateSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -394,6 +394,9 @@ namespace dentist_project.Migrations
 
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("numeric");
+
+                    b.Property<DateOnly>("TreatmentDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("TreatmentPlan")
                         .HasColumnType("text");

@@ -392,6 +392,9 @@ namespace dentist_project.Migrations
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("numeric");
 
+                    b.Property<DateOnly>("TreatmentDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("TreatmentPlan")
                         .HasColumnType("text");
 

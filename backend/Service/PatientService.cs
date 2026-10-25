@@ -542,6 +542,7 @@ namespace dentist_project.Service
 
 
             var treatmentName = dto.Treatment.Trim();
+            var isCleaningTreatment = IsCleaningTreatment(treatmentName);
 
 
             var treatment = await _context.Treatments
@@ -566,16 +567,14 @@ namespace dentist_project.Service
                     DefaultPrice = planTotalCost,
                     EstimatedMinutes = 0,
                     IsActive = true,
-                    HasRecallReminder =
-                        treatmentName.Contains(
-                            "clean",
-                            StringComparison.OrdinalIgnoreCase)
+                    HasRecallReminder = isCleaningTreatment
                 };
 
                 _context.Treatments.Add(treatment);
             }
             else
             {
+                treatment.HasRecallReminder |= isCleaningTreatment;
                 planTotalCost = dto.Price ?? treatment.DefaultPrice;
                 if (planTotalCost < 0 || dto.PaidAmount > planTotalCost)
                 {
@@ -787,6 +786,9 @@ namespace dentist_project.Service
 
                 CreatedAt = DateTime.UtcNow,
 
+                TreatmentDate = dto.TreatmentDate
+                    ?? DateOnly.FromDateTime(DateTime.UtcNow),
+
                 CreatedBy = createdByUser,
 
                 CreatedById = createdID
@@ -894,6 +896,33 @@ namespace dentist_project.Service
 
             _context.ToothTreatments.AddRange(toothTreatments);
 
+            if (isCleaningTreatment)
+            {
+                var existingCleaningReminders = await _context.Notifications
+                    .Where(notification =>
+                        notification.PatientId == patientId &&
+                        notification.Type == NotificationType.CleaningReminder)
+                    .ToListAsync();
+
+                _context.Notifications.RemoveRange(existingCleaningReminders);
+
+                var cleaningDate = DateTime.SpecifyKind(
+                    medicalRecord.TreatmentDate
+                        .AddMonths(6)
+                        .ToDateTime(TimeOnly.MinValue),
+                    DateTimeKind.Utc);
+
+                _context.Notifications.Add(new Notification
+                {
+                    PatientId = patientId,
+                    Type = NotificationType.CleaningReminder,
+                    Message =
+                        $"Cleaning appointment reminder after 6 months: {cleaningDate:yyyy-MM-dd}",
+                    IsSent = false,
+                    ReminderDate = cleaningDate,
+                    IsApproved = false
+                });
+            }
 
             await _context.SaveChangesAsync();
 
@@ -927,10 +956,22 @@ namespace dentist_project.Service
 
                     notes = dto.Notes,
 
+                    treatmentDate = medicalRecord.TreatmentDate,
+
                     medicalRecordId = medicalRecord.Id
                 }
             );
         }
+        private static bool IsCleaningTreatment(string? treatmentName)
+        {
+            return treatmentName?.Contains(
+                       "clean",
+                       StringComparison.OrdinalIgnoreCase) == true
+                || treatmentName?.Contains(
+                       "scal",
+                       StringComparison.OrdinalIgnoreCase) == true;
+        }
+
         private static (bool Success, string Message) ValidateBridge(
             List<int> toothNumbers)
         {
@@ -1463,6 +1504,7 @@ namespace dentist_project.Service
     string status)
         {
             var toothTreatments = await _context.ToothTreatments
+                .Include(t => t.Treatment)
                 .Where(t => t.MedicalRecordId == id)
                 .ToListAsync();
 
@@ -1503,6 +1545,9 @@ namespace dentist_project.Service
             var medicalRecord = await _context.MedicalRecords
                 .FirstOrDefaultAsync(m => m.Id == id);
 
+            var isCleaningTreatment = toothTreatments.Any(t =>
+                IsCleaningTreatment(t.Treatment?.Name));
+
 
             if (medicalRecord == null)
             {
@@ -1519,7 +1564,7 @@ namespace dentist_project.Service
             // if treatment is not completed anymore
             // ==========================================
 
-            if (newStatus != ToothStatus.Completed)
+            if (newStatus != ToothStatus.Completed && !isCleaningTreatment)
             {
 
                 var cleaningReminders = await _context.Notifications
@@ -1559,8 +1604,11 @@ namespace dentist_project.Service
                 if (!hasReminder)
                 {
 
-                    var cleaningDate =
-                        DateTime.UtcNow.AddMonths(6);
+                    var cleaningDate = DateTime.SpecifyKind(
+                        medicalRecord.TreatmentDate
+                            .AddMonths(6)
+                            .ToDateTime(TimeOnly.MinValue),
+                        DateTimeKind.Utc);
 
 
 
@@ -1711,7 +1759,7 @@ namespace dentist_project.Service
 
 
                     date =
-                        g.First().MedicalRecord.CreatedAt
+                        g.First().MedicalRecord.TreatmentDate
 
                 })
 
@@ -1896,7 +1944,7 @@ namespace dentist_project.Service
 
 
                     date =
-                        g.First().MedicalRecord.CreatedAt
+                        g.First().MedicalRecord.TreatmentDate
 
                 })
 

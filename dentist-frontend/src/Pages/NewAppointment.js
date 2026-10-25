@@ -621,7 +621,7 @@ export default function NewAppointment() {
               <MenuItem value="Pulpotomie">Pulpotomie</MenuItem>
               <MenuItem value="Pulpectomie">Pulpectomie</MenuItem>
               <MenuItem value="Cpp">Cpp</MenuItem>
-              <MenuItem value="Scaling">Scaling</MenuItem>
+              <MenuItem value="cleaning">Scaling</MenuItem>
             </TextField>
 
             <TextField

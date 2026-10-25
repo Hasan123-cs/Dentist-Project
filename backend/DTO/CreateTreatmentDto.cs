@@ -5,6 +5,8 @@
 
         public string Treatment { get; set; } = null!;
 
+        public DateOnly? TreatmentDate { get; set; }
+
         public List<int> ToothNumbers { get; set; } = new();
 
         public List<string> Surfaces { get; set; } = new();
