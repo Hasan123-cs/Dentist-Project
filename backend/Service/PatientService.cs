@@ -972,6 +972,7 @@ namespace dentist_project.Service
                        StringComparison.OrdinalIgnoreCase) == true;
         }
 
+
         private static (bool Success, string Message) ValidateBridge(
             List<int> toothNumbers)
         {
@@ -980,8 +981,6 @@ namespace dentist_project.Service
                 .OrderBy(x => x)
                 .ToList();
 
-
-           
             if (teeth.Count < 3)
             {
                 return (
@@ -990,9 +989,55 @@ namespace dentist_project.Service
                 );
             }
 
+            // NEW: Support bridges crossing upper or lower midline.
+            // Keep original validation for all other bridges.
+
+            bool crossesUpperMidline =
+                teeth.Contains(11) &&
+                teeth.Contains(21) &&
+                teeth.All(t => t / 10 == 1 || t / 10 == 2);
+
+            bool crossesLowerMidline =
+                teeth.Contains(41) &&
+                teeth.Contains(31) &&
+                teeth.All(t => t / 10 == 3 || t / 10 == 4);
+
+            if (crossesUpperMidline || crossesLowerMidline)
+            {
+                int[] sequence = crossesUpperMidline
+                    ? new[]
+                    {
+                18, 17, 16, 15, 14, 13, 12, 11,
+                21, 22, 23, 24, 25, 26, 27, 28
+                    }
+                    : new[]
+                    {
+                48, 47, 46, 45, 44, 43, 42, 41,
+                31, 32, 33, 34, 35, 36, 37, 38
+                    };
+
+                var positions = teeth
+                    .Select(t => Array.IndexOf(sequence, t))
+                    .OrderBy(p => p)
+                    .ToList();
+
+                for (int i = 1; i < positions.Count; i++)
+                {
+                    if (positions[i] != positions[i - 1] + 1)
+                    {
+                        return (
+                            false,
+                            "Bridge teeth must be adjacent."
+                        );
+                    }
+                }
+
+                return (true, "Valid bridge.");
+            }
+
+            // ORIGINAL VALIDATION - UNCHANGED
 
             var firstDigit = teeth[0] / 10;
-
 
             if (teeth.Any(t => t / 10 != firstDigit))
             {
@@ -1021,12 +1066,9 @@ namespace dentist_project.Service
                 }
             }
 
-
-            return (
-                true,
-                "Valid bridge."
-            );
+            return (true, "Valid bridge.");
         }
+
 
         private static ToothCondition? GetCondition(
             string treatmentName)
