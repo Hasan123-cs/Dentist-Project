@@ -12,8 +12,8 @@ using dentist_project.Data;
 namespace dentist_project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261025115243_TreatmentDateSchema")]
-    partial class TreatmentDateSchema
+    [Migration("20261027133159_initialschema")]
+    partial class initialschema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace dentist_project.Migrations
 {
     /// <inheritdoc />
-    public partial class TreatmentDateSchema : Migration
+    public partial class initialschema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
