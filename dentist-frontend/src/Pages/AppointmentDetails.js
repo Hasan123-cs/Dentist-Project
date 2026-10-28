@@ -288,12 +288,6 @@ export default function AppointmentDetails() {
         return;
       }
 
-      if (amount > remaining) {
-        setError(
-          `Paid amount cannot be greater than the remaining amount of $${remaining.toFixed(2)}.`,
-        );
-        return;
-      }
     }
 
     if (paymentStatus === "Unpaid") {
@@ -958,7 +952,6 @@ export default function AppointmentDetails() {
                       onChange={(e) => setPaidAmount(e.target.value)}
                       inputProps={{
                         min: 0,
-                        max: remaining,
                         step: "0.01",
                       }}
                       sx={{ mt: 2 }}

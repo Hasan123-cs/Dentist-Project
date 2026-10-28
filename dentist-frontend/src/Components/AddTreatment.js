@@ -97,8 +97,6 @@ export default function AddTreatment() {
     !isToothMissing &&
     (!showSurface || form.surface.length > 0) &&
     Number(form.paidAmount || 0) >= 0 &&
-    (form.price === "" ||
-      Number(form.paidAmount || 0) <= Number(form.price)) &&
     !loading;
   const isBridge = treatmentName.includes("bridge");
 
@@ -239,12 +237,8 @@ export default function AddTreatment() {
     e.preventDefault();
 
     setError("");
-    if (
-      Number(form.paidAmount || 0) < 0 ||
-      (form.price !== "" &&
-        Number(form.paidAmount || 0) > Number(form.price))
-    ) {
-      setError("Paid amount cannot exceed the treatment price.");
+    if (Number(form.paidAmount || 0) < 0) {
+      setError("Paid amount cannot be negative.");
       return;
     }
 
@@ -468,6 +462,7 @@ export default function AddTreatment() {
             <option value="Pulpectomie">Pulpectomie</option>
             <option value="Cpp">Cpp</option>
             <option value="cleaning">Scaling</option>
+            <option value="Sealent">Sealent</option>
           </select>
 
           <TextField
@@ -680,7 +675,6 @@ export default function AddTreatment() {
             value={form.paidAmount}
             onChange={handleChange}
             inputProps={{ min: 0, step: "0.01" }}
-            helperText="Must not be greater than the treatment price."
             fullWidth
           />
 

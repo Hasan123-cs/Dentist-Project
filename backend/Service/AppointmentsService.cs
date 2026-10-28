@@ -702,16 +702,9 @@ namespace dentist_project.Service
                 return (false, "Paid amount cannot be negative.", null);
             }
 
-            if (dto.PaidAmount > appointment.RemainingAmount)
-            {
-                return (
-                    false,
-                    $"Paid amount cannot exceed the remaining balance of {appointment.RemainingAmount:0.00}.",
-                    null);
-            }
-
             var remainingPayment = dto.PaidAmount;
-            foreach (var plan in treatmentPlans.OrderBy(record => record.Id))
+            var orderedPlans = treatmentPlans.OrderBy(record => record.Id).ToList();
+            foreach (var plan in orderedPlans)
             {
                 if (remainingPayment <= 0)
                 {
@@ -722,6 +715,11 @@ namespace dentist_project.Service
                 var paymentForPlan = Math.Min(planBalance, remainingPayment);
                 plan.PaidAmount += paymentForPlan;
                 remainingPayment -= paymentForPlan;
+            }
+
+            if (remainingPayment > 0 && orderedPlans.Count > 0)
+            {
+                orderedPlans[^1].PaidAmount += remainingPayment;
             }
 
             appointment.PaidAmount += dto.PaidAmount;

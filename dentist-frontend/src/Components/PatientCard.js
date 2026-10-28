@@ -78,15 +78,18 @@ export default function PatientCard({ patient, onDelete }) {
 
   // EDIT FIELDS
   const [editPhone, setEditPhone] = useState("");
+  const [editDateOfBirth, setEditDateOfBirth] = useState("");
   const [selectedNotes, setSelectedNotes] = useState([]);
   const [additionalNotes, setAdditionalNotes] = useState("");
 
   // ORIGINAL VALUES
   const [originalPhone, setOriginalPhone] = useState("");
+  const [originalDateOfBirth, setOriginalDateOfBirth] = useState("");
   const [originalNotes, setOriginalNotes] = useState("");
 
   // TRACK CHANGES
   const [phoneChanged, setPhoneChanged] = useState(false);
+  const [dateOfBirthChanged, setDateOfBirthChanged] = useState(false);
   const [notesChanged, setNotesChanged] = useState(false);
 
   // MEDICAL NOTES DROPDOWN
@@ -114,6 +117,7 @@ export default function PatientCard({ patient, onDelete }) {
     setNotesAnchor(null);
 
     setPhoneChanged(false);
+    setDateOfBirthChanged(false);
     setNotesChanged(false);
 
     try {
@@ -139,10 +143,13 @@ export default function PatientCard({ patient, onDelete }) {
       const data = await response.json();
 
       const phone = data.phone || "";
+      const dateOfBirth = data.dateOfBirth || "";
       const medicalHistory = data.medicalHistory || "";
 
       setEditPhone(phone);
+      setEditDateOfBirth(dateOfBirth);
       setOriginalPhone(phone);
+      setOriginalDateOfBirth(dateOfBirth);
       setOriginalNotes(medicalHistory);
 
       // CONVERT SAVED NOTES TO SELECTED CONDITIONS
@@ -214,6 +221,12 @@ export default function PatientCard({ patient, onDelete }) {
     setEditError("");
   };
 
+  const handleDateOfBirthChange = (event) => {
+    setEditDateOfBirth(event.target.value);
+    setDateOfBirthChanged(true);
+    setEditError("");
+  };
+
   // OPEN MEDICAL NOTES DROPDOWN
   const handleNotesOpen = (event) => {
     setNotesAnchor(event.currentTarget);
@@ -263,6 +276,18 @@ export default function PatientCard({ patient, onDelete }) {
     // Keep old phone if user didn't edit it
     if (phoneChanged && editPhone.trim() !== originalPhone.trim()) {
       body.phone = editPhone.trim();
+    }
+
+    if (
+      dateOfBirthChanged &&
+      editDateOfBirth !== originalDateOfBirth
+    ) {
+      if (!editDateOfBirth) {
+        setEditError("Date of birth is required.");
+        return;
+      }
+
+      body.dateOfBirth = editDateOfBirth;
     }
 
     // MEDICAL NOTES ARE OPTIONAL
@@ -679,6 +704,15 @@ export default function PatientCard({ patient, onDelete }) {
                 value={editPhone}
                 onChange={handlePhoneChange}
                 helperText="Optional: change only if needed"
+              />
+
+              <TextField
+                label="Date of Birth"
+                type="date"
+                fullWidth
+                value={editDateOfBirth}
+                onChange={handleDateOfBirthChange}
+                InputLabelProps={{ shrink: true }}
               />
 
               {/* MULTIPLE MEDICAL NOTES */}

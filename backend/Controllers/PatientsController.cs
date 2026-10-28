@@ -711,6 +711,11 @@ namespace dentist_project.Controllers;
             patient.Phone = dto.Phone.Trim();
         }
 
+        if (dto.DateOfBirth != null)
+        {
+            patient.DateOfBirth = dto.DateOfBirth;
+        }
+
         // Medical Notes are optional
         // null = do not change
         // "" = clear notes

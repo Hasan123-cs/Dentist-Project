@@ -535,12 +535,6 @@ namespace dentist_project.Service
                 return (false, "Price and paid amount cannot be negative.", null);
             }
 
-            if (dto.Price.HasValue && dto.PaidAmount > dto.Price.Value)
-            {
-                return (false, "Paid amount cannot exceed the treatment price.", null);
-            }
-
-
             var treatmentName = dto.Treatment.Trim();
             var isCleaningTreatment = IsCleaningTreatment(treatmentName);
 
@@ -555,10 +549,6 @@ namespace dentist_project.Service
             if (treatment == null)
             {
                 planTotalCost = dto.Price ?? 0;
-                if (dto.PaidAmount > planTotalCost)
-                {
-                    return (false, "Paid amount cannot exceed the treatment price.", null);
-                }
 
                 treatment = new Treatment
                 {
@@ -576,9 +566,9 @@ namespace dentist_project.Service
             {
                 treatment.HasRecallReminder |= isCleaningTreatment;
                 planTotalCost = dto.Price ?? treatment.DefaultPrice;
-                if (planTotalCost < 0 || dto.PaidAmount > planTotalCost)
+                if (planTotalCost < 0)
                 {
-                    return (false, "Paid amount cannot exceed the treatment price.", null);
+                    return (false, "Price cannot be negative.", null);
                 }
             }
 
@@ -1828,8 +1818,7 @@ namespace dentist_project.Service
             var updatedRows = await _context.MedicalRecords
                 .Where(record =>
                     record.Id == medicalRecordId
-                    && record.PatientId == patientId
-                    && record.PaidAmount + amount <= record.TotalCost)
+                    && record.PatientId == patientId)
                 .ExecuteUpdateAsync(updates =>
                     updates.SetProperty(
                         record => record.PaidAmount,
@@ -1848,10 +1837,7 @@ namespace dentist_project.Service
                     return (false, "Treatment plan not found.", null);
                 }
 
-                return (
-                    false,
-                    $"Payment amount cannot exceed the remaining balance of {Math.Max(existingRecord.TotalCost - existingRecord.PaidAmount, 0):0.00}.",
-                    null);
+                return (false, "Unable to update this treatment payment.", null);
             }
 
             var updatedRecord = await _context.MedicalRecords

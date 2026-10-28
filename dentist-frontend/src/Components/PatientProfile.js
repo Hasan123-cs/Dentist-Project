@@ -1292,7 +1292,6 @@ export default function PatientProfile() {
             onChange={(event) => setPaymentAmount(event.target.value)}
             inputProps={{
               min: 0,
-              max: paymentDialog?.remaining,
               step: "0.01",
               inputMode: "decimal",
             }}
