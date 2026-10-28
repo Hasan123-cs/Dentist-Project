@@ -463,6 +463,13 @@ export default function AddTreatment() {
             <option value="Cpp">Cpp</option>
             <option value="cleaning">Scaling</option>
             <option value="Sealent">Sealent</option>
+
+            <option value="Acryle totale superieure">Acryle totale superieure</option>
+            <option value="Acryle totale inferieure">Acryle totale inferieure</option>
+            <option value="Acryle partielle superieur">Acryle partielle superieur</option>
+            <option value="Acryle partielle inferieure">Acryle partielle inferieure</option>
+            <option value="Flexible superieure">Flexible superieure</option>
+            <option value="Flexible inferieure">Flexible inferieure</option>
           </select>
 
           <TextField

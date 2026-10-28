@@ -624,6 +624,12 @@ export default function NewAppointment() {
               <MenuItem value="cleaning">Scaling</MenuItem>
               <MenuItem value="Sealent">Sealent</MenuItem>
 
+              <MenuItem value="Acryle totale superieure">Acryle totale superieure</MenuItem>
+              <MenuItem value="Acryle totale inferieure">Acryle totale inferieure</MenuItem>
+              <MenuItem value="Acryle partielle superieur">Acryle partielle superieur</MenuItem>
+              <MenuItem value="Acryle partielle inferieure">Acryle partielle inferieure</MenuItem>
+              <MenuItem value="Flexible superieure">Flexible superieure</MenuItem>
+              <MenuItem value="Flexible inferieure">Flexible inferieure</MenuItem>
             </TextField>
 
             <TextField
