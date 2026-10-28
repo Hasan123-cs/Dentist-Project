@@ -630,6 +630,7 @@ export default function NewAppointment() {
               <MenuItem value="Acryle partielle inferieure">Acryle partielle inferieure</MenuItem>
               <MenuItem value="Flexible superieure">Flexible superieure</MenuItem>
               <MenuItem value="Flexible inferieure">Flexible inferieure</MenuItem>
+              <MenuItem value="Bone graft">Bone graft</MenuItem>
             </TextField>
 
             <TextField
