@@ -703,6 +703,23 @@ namespace dentist_project.Controllers;
             });
         }
 
+        if (dto.Name != null)
+        {
+            var nameParts = dto.Name
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (nameParts.Length == 0)
+            {
+                return BadRequest(new
+                {
+                    message = "Patient name is required."
+                });
+            }
+
+            patient.FirstName = nameParts[0];
+            patient.LastName = string.Join(" ", nameParts.Skip(1));
+        }
+
         // Phone is optional
         // null = do not change
         // "" = clear phone

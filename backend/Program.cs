@@ -17,7 +17,7 @@ if (File.Exists(".env"))
 }
 
 var builder = WebApplication.CreateBuilder(args);
-//builder.WebHost.UseUrls("http://0.0.0.0:8080");
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
 // Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -77,17 +77,20 @@ export default function PatientCard({ patient, onDelete }) {
   const [loadFailed, setLoadFailed] = useState(false);
 
   // EDIT FIELDS
+  const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editDateOfBirth, setEditDateOfBirth] = useState("");
   const [selectedNotes, setSelectedNotes] = useState([]);
   const [additionalNotes, setAdditionalNotes] = useState("");
 
   // ORIGINAL VALUES
+  const [originalName, setOriginalName] = useState("");
   const [originalPhone, setOriginalPhone] = useState("");
   const [originalDateOfBirth, setOriginalDateOfBirth] = useState("");
   const [originalNotes, setOriginalNotes] = useState("");
 
   // TRACK CHANGES
+  const [nameChanged, setNameChanged] = useState(false);
   const [phoneChanged, setPhoneChanged] = useState(false);
   const [dateOfBirthChanged, setDateOfBirthChanged] = useState(false);
   const [notesChanged, setNotesChanged] = useState(false);
@@ -116,6 +119,7 @@ export default function PatientCard({ patient, onDelete }) {
     setLoadingEdit(true);
     setNotesAnchor(null);
 
+    setNameChanged(false);
     setPhoneChanged(false);
     setDateOfBirthChanged(false);
     setNotesChanged(false);
@@ -142,12 +146,15 @@ export default function PatientCard({ patient, onDelete }) {
 
       const data = await response.json();
 
+      const name = `${data.firstName || ""} ${data.lastName || ""}`.trim();
       const phone = data.phone || "";
       const dateOfBirth = data.dateOfBirth || "";
       const medicalHistory = data.medicalHistory || "";
 
+      setEditName(name);
       setEditPhone(phone);
       setEditDateOfBirth(dateOfBirth);
+      setOriginalName(name);
       setOriginalPhone(phone);
       setOriginalDateOfBirth(dateOfBirth);
       setOriginalNotes(medicalHistory);
@@ -214,6 +221,12 @@ export default function PatientCard({ patient, onDelete }) {
     setEditError("");
   };
 
+  const handleNameChange = (event) => {
+    setEditName(event.target.value);
+    setNameChanged(true);
+    setEditError("");
+  };
+
   // UPDATE PHONE INPUT
   const handlePhoneChange = (event) => {
     setEditPhone(event.target.value);
@@ -270,6 +283,15 @@ export default function PatientCard({ patient, onDelete }) {
     }
 
     const body = {};
+
+    if (nameChanged && editName.trim() !== originalName.trim()) {
+      if (!editName.trim()) {
+        setEditError("Patient name is required.");
+        return;
+      }
+
+      body.name = editName.trim();
+    }
 
     // PHONE NUMBER IS OPTIONAL
     // Only send phone if it was changed
@@ -696,6 +718,14 @@ export default function PatientCard({ patient, onDelete }) {
                 mt: 1,
               }}
             >
+              <TextField
+                label="Full Name"
+                fullWidth
+                required
+                value={editName}
+                onChange={handleNameChange}
+              />
+
               {/* PHONE NUMBER */}
               <TextField
                 label="Phone Number"
