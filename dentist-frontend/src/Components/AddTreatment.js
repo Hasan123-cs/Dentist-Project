@@ -470,6 +470,7 @@ export default function AddTreatment() {
             <option value="Acryle partielle inferieure">Acryle partielle inferieure</option>
             <option value="Flexible superieure">Flexible superieure</option>
             <option value="Flexible inferieure">Flexible inferieure</option>
+            <option value="Flipper">Flipper</option>
             <option value="Bone graft">Bone graft</option>
           </select>
 
