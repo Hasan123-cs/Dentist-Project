@@ -10,6 +10,7 @@ import {
 
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import treatmentOptions from "./treatmentOptions";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
@@ -427,8 +428,8 @@ export default function AddTreatment() {
             required
             placeholder="Example: Cleaning / Filling / Root Canal"
           /> */}
-          <select name="treatment"
-            id="n"
+          <select
+            name="treatment"
             value={form.treatment}
             onChange={handleChange}
             style={{
@@ -436,7 +437,6 @@ export default function AddTreatment() {
               maxWidth: "100%",
               minHeight: "48px",
               padding: "8px 12px",
-              mt: 3,
               fontSize: "15px",
               color: "#333",
               background: "white",
@@ -444,34 +444,13 @@ export default function AddTreatment() {
               borderRadius: "6px",
               outline: "none",
               cursor: "pointer",
-            }} >
-            <option value="Veneers">Veneers</option>
-
-            <option value="Bridge">Bridge </option>
-
-            <option value="Filling">Filling </option>
-            <option value="Gouttiere">Gouttiere</option>
-            <option value="Laser">Laser</option>
-            <option value="Root canal">Root canal
-            </option>
-            <option value="Extraction">Extraction</option>
-            <option value="Crown">Crown</option>
-            <option value="Implant">Implant</option>
-
-            <option value="Pulpotomie">Pulpotomie</option>
-            <option value="Pulpectomie">Pulpectomie</option>
-            <option value="Cpp">Cpp</option>
-            <option value="cleaning">Scaling</option>
-            <option value="Sealent">Sealent</option>
-
-            <option value="Acryle totale superieure">Acryle totale superieure</option>
-            <option value="Acryle totale inferieure">Acryle totale inferieure</option>
-            <option value="Acryle partielle superieur">Acryle partielle superieur</option>
-            <option value="Acryle partielle inferieure">Acryle partielle inferieure</option>
-            <option value="Flexible superieure">Flexible superieure</option>
-            <option value="Flexible inferieure">Flexible inferieure</option>
-            <option value="Flipper">Flipper</option>
-            <option value="Bone graft">Bone graft</option>
+            }}
+          >
+            {treatmentOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           <TextField

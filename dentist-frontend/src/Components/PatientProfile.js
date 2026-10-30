@@ -14,15 +14,18 @@ import {
   DialogActions,
   TextField,
   Alert,
+  MenuItem,
+  IconButton,
 } from "@mui/material";
 
 import ClinicalSummary from "../Components/ClinicalSummary";
 
 import { useNavigate, useParams } from "react-router-dom";
 
-import { Phone, Person, Payments, CalendarMonth } from "@mui/icons-material";
+import { Phone, Person, Payments, CalendarMonth, Edit, Add, Close } from "@mui/icons-material";
 
 import { useState, useEffect } from "react";
+import treatmentOptions from "./treatmentOptions";
 
 import DentalChart from "../Components/DentalChart";
 import ConditionLegend from "../Components/ConditionLegend";
@@ -47,6 +50,12 @@ export default function PatientProfile() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [paymentSaving, setPaymentSaving] = useState(false);
+  const [treatmentDialog, setTreatmentDialog] = useState(null);
+  const [treatmentForm, setTreatmentForm] = useState({});
+  const [treatmentError, setTreatmentError] = useState("");
+  const [treatmentSaving, setTreatmentSaving] = useState(false);
+  const [editHasTooth, setEditHasTooth] = useState(false);
+  const [editHasSurface, setEditHasSurface] = useState(false);
 
   const handleAddPayment = async () => {
     const amount = Number(paymentAmount);
@@ -120,6 +129,135 @@ export default function PatientProfile() {
       setPaymentError(err.message || "Unable to save this payment.");
     } finally {
       setPaymentSaving(false);
+    }
+  };
+
+  const openTreatmentEditor = (treatment) => {
+    setTreatmentDialog(treatment);
+    setTreatmentError("");
+    setEditHasTooth(Boolean(treatment.teeth?.length));
+    setEditHasSurface(Boolean(treatment.surfaces?.length));
+    setTreatmentForm({
+      treatment: treatment.treatment || "",
+      treatmentDate: treatment.date || "",
+      toothNumbers: (treatment.teeth || []).join(", "),
+      surfaces: treatment.surfaces || [],
+      status: treatment.status || "NeedsTreatment",
+      price: treatment.cost ?? "",
+      paidAmount: treatment.paid ?? 0,
+      notes: treatment.notes || "",
+    });
+  };
+
+  const handleUpdateTreatment = async (event) => {
+    event.preventDefault();
+    setTreatmentError("");
+
+    const rawToothNumbers = treatmentForm.toothNumbers
+      .split(",")
+      .map((tooth) => tooth.trim())
+      .filter(Boolean);
+    if (rawToothNumbers.some((tooth) => !/^\d+$/.test(tooth))) {
+      setTreatmentError("Enter tooth numbers as comma-separated whole numbers.");
+      return;
+    }
+    if (editHasSurface && rawToothNumbers.length === 0) {
+      setTreatmentError("Add a tooth number before selecting a surface.");
+      return;
+    }
+
+    const toothNumbers = editHasTooth ? rawToothNumbers.map(Number) : [];
+    if (
+      treatmentForm.treatment === "Bridge" &&
+      toothNumbers.length > 0 &&
+      toothNumbers.length < 3
+    ) {
+      setTreatmentError("Bridge requires at least 3 teeth.");
+      return;
+    }
+    const price = treatmentForm.price === "" ? null : Number(treatmentForm.price);
+    const paidAmount = Number(treatmentForm.paidAmount);
+    if (price !== null && (!Number.isFinite(price) || price < 0)) {
+      setTreatmentError("Price cannot be negative.");
+      return;
+    }
+    if (!Number.isFinite(paidAmount) || paidAmount < 0) {
+      setTreatmentError("Paid amount cannot be negative.");
+      return;
+    }
+
+    setTreatmentSaving(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const payload = {
+        treatment: treatmentForm.treatment.trim(),
+        treatmentDate: treatmentForm.treatmentDate,
+        toothNumbers,
+        surfaces: editHasSurface ? treatmentForm.surfaces : [],
+        status: treatmentForm.status,
+        price,
+        paidAmount,
+        notes: treatmentForm.notes.trim() || null,
+      };
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/patients/${id}/treatments/${treatmentDialog.medicalRecordId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Unable to update this treatment.");
+      }
+
+      const updated = result.data;
+      setTreatments((current) =>
+        current.map((item) => {
+          if (item.medicalRecordId !== treatmentDialog.medicalRecordId) {
+            return item;
+          }
+
+          const cost = Number(updated.price);
+          const paid = Number(updated.paidAmount);
+          const remaining = Math.max(cost - paid, 0);
+          return {
+            ...item,
+            treatment: updated.treatment,
+            date: updated.treatmentDate,
+            teeth: updated.toothNumbers,
+            surfaces: updated.surfaces,
+            status: updated.status,
+            condition: updated.condition,
+            cost,
+            paid,
+            remaining,
+            paymentStatus:
+              paid <= 0
+                ? "Unpaid"
+                : paid >= cost
+                  ? "Paid"
+                  : "Partially Paid",
+            notes: updated.notes,
+          };
+        }),
+      );
+      setTreatmentDialog(null);
+    } catch (err) {
+      setTreatmentError(err.message || "Unable to update this treatment.");
+    } finally {
+      setTreatmentSaving(false);
     }
   };
 
@@ -690,6 +828,16 @@ export default function PatientProfile() {
                       }
                       variant="outlined"
                     />
+                    {treatment.canEdit && (
+                      <Button
+                        size="small"
+                        startIcon={<Edit />}
+                        onClick={() => openTreatmentEditor(treatment)}
+                        sx={{ color: "#092c57", fontWeight: 700 }}
+                      >
+                        Edit
+                      </Button>
+                    )}
                   </Box>
 
                 </Box>
@@ -1259,6 +1407,245 @@ export default function PatientProfile() {
           </Typography>
         </Box>
       </Dialog> */}
+      <Dialog
+        open={Boolean(treatmentDialog)}
+        onClose={() => {
+          if (!treatmentSaving) {
+            setTreatmentDialog(null);
+            setTreatmentError("");
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box component="form" onSubmit={handleUpdateTreatment}>
+          <DialogTitle>Edit Treatment</DialogTitle>
+          <DialogContent dividers>
+            {treatmentError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {treatmentError}
+              </Alert>
+            )}
+            <Box sx={{ display: "grid", gap: 2, pt: 1 }}>
+              <TextField
+                select
+                label="Treatment"
+                value={treatmentForm.treatment || ""}
+                onChange={(event) =>
+                  setTreatmentForm((current) => ({
+                    ...current,
+                    treatment: event.target.value,
+                  }))
+                }
+                required
+                fullWidth
+              >
+                {treatmentOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+                {!treatmentOptions.some(
+                  (option) => option.value === treatmentForm.treatment
+                ) && (
+                  <MenuItem value={treatmentForm.treatment}>
+                    {treatmentForm.treatment}
+                  </MenuItem>
+                )}
+              </TextField>
+              <TextField
+                label="Treatment Date"
+                type="date"
+                value={treatmentForm.treatmentDate || ""}
+                onChange={(event) =>
+                  setTreatmentForm((current) => ({
+                    ...current,
+                    treatmentDate: event.target.value,
+                  }))
+                }
+                InputLabelProps={{ shrink: true }}
+                required
+                fullWidth
+              />
+              <TextField
+                select
+                label="Status"
+                value={treatmentForm.status || "NeedsTreatment"}
+                onChange={(event) =>
+                  setTreatmentForm((current) => ({
+                    ...current,
+                    status: event.target.value,
+                  }))
+                }
+                fullWidth
+              >
+                <MenuItem value="NeedsTreatment">Needs Treatment</MenuItem>
+                <MenuItem value="InProgress">In Progress</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+              </TextField>
+              {!editHasTooth ? (
+                <Button
+                  type="button"
+                  variant="outlined"
+                  startIcon={<Add />}
+                  onClick={() => setEditHasTooth(true)}
+                  sx={{ justifySelf: "start", borderColor: "#C9A227", color: "#C9A227" }}
+                >
+                  Add Tooth Number
+                </Button>
+              ) : (
+                <Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <TextField
+                      label={
+                        treatmentForm.treatment?.toLowerCase() === "bridge"
+                          ? "Tooth Numbers"
+                          : "Tooth Number"
+                      }
+                      value={treatmentForm.toothNumbers || ""}
+                      onChange={(event) =>
+                        setTreatmentForm((current) => ({
+                          ...current,
+                          toothNumbers: event.target.value,
+                        }))
+                      }
+                      helperText="Separate multiple tooth numbers with commas."
+                      fullWidth
+                    />
+                    <IconButton
+                      type="button"
+                      aria-label="Remove tooth numbers"
+                      onClick={() => {
+                        setEditHasTooth(false);
+                        setEditHasSurface(false);
+                        setTreatmentForm((current) => ({
+                          ...current,
+                          toothNumbers: "",
+                          surfaces: [],
+                        }));
+                      }}
+                      sx={{ color: "#d32f2f" }}
+                    >
+                      <Close />
+                    </IconButton>
+                  </Box>
+                  {!editHasSurface ? (
+                    <Button
+                      type="button"
+                      variant="outlined"
+                      startIcon={<Add />}
+                      onClick={() => setEditHasSurface(true)}
+                      sx={{ mt: 1.5, borderColor: "#C9A227", color: "#C9A227" }}
+                    >
+                      Add Surface
+                    </Button>
+                  ) : (
+                    <Box display="flex" alignItems="center" gap={1} mt={2}>
+                      <TextField
+                        select
+                        label="Surface"
+                        value={treatmentForm.surfaces || []}
+                        onChange={(event) =>
+                          setTreatmentForm((current) => ({
+                            ...current,
+                            surfaces: event.target.value,
+                          }))
+                        }
+                        SelectProps={{
+                          multiple: true,
+                          renderValue: (selected) => selected.join(", "),
+                        }}
+                        helperText="Select the affected tooth surface."
+                        fullWidth
+                      >
+                        <MenuItem value="M">M - Mesial</MenuItem>
+                        <MenuItem value="O">O - Occlusal</MenuItem>
+                        <MenuItem value="D">D - Distal</MenuItem>
+                        <MenuItem value="B">B - Buccal</MenuItem>
+                        <MenuItem value="L">L - Lingual</MenuItem>
+                      </TextField>
+                      <IconButton
+                        type="button"
+                        aria-label="Remove tooth surfaces"
+                        onClick={() => {
+                          setEditHasSurface(false);
+                          setTreatmentForm((current) => ({
+                            ...current,
+                            surfaces: [],
+                          }));
+                        }}
+                        sx={{ color: "#d32f2f" }}
+                      >
+                        <Close />
+                      </IconButton>
+                    </Box>
+                  )}
+                </Box>
+              )}
+              {!editHasTooth && (
+                <Typography color="text.secondary" fontSize={14}>
+                  Tooth number is optional. Add it only for a tooth-specific treatment.
+                </Typography>
+              )}
+              <TextField
+                label="Price"
+                type="number"
+                value={treatmentForm.price ?? ""}
+                onChange={(event) =>
+                  setTreatmentForm((current) => ({
+                    ...current,
+                    price: event.target.value,
+                  }))
+                }
+                inputProps={{ min: 0, step: "0.01" }}
+                fullWidth
+              />
+              <TextField
+                label="Paid Amount"
+                type="number"
+                value={treatmentForm.paidAmount ?? ""}
+                onChange={(event) =>
+                  setTreatmentForm((current) => ({
+                    ...current,
+                    paidAmount: event.target.value,
+                  }))
+                }
+                inputProps={{ min: 0, step: "0.01" }}
+                fullWidth
+              />
+              <TextField
+                label="Notes"
+                value={treatmentForm.notes || ""}
+                onChange={(event) =>
+                  setTreatmentForm((current) => ({
+                    ...current,
+                    notes: event.target.value,
+                  }))
+                }
+                multiline
+                minRows={2}
+                fullWidth
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              onClick={() => setTreatmentDialog(null)}
+              disabled={treatmentSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={treatmentSaving}
+              sx={{ background: "#C9A227" }}
+            >
+              {treatmentSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
       <Dialog
         open={Boolean(paymentDialog)}
         onClose={() => {

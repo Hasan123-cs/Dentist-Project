@@ -4,6 +4,11 @@ import {
   Typography,
   Button,
   Chip,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 
 import {
@@ -17,6 +22,7 @@ import {
 
 import {
   WhatsApp,
+  Search,
 } from "@mui/icons-material";
 
 import {
@@ -37,6 +43,9 @@ export default function WhatsAppReminders() {
 
   // selected message language
   const [language, setLanguage] = useState("ar");
+  const [reminderFilter, setReminderFilter] = useState("all");
+  const [patientSearch, setPatientSearch] = useState("");
+  const [savingReminderId, setSavingReminderId] = useState(null);
 
 
 
@@ -207,6 +216,72 @@ export default function WhatsAppReminders() {
 
   };
 
+  const markReminderAsSubmitted = async (item) => {
+    if (item.isSent) {
+      return;
+    }
+
+    setSavingReminderId(item.id);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/notifications/reminders/${item.id}/sent`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || "Failed to update reminder status.");
+      }
+
+      setReminders((current) =>
+        current.map((reminder) =>
+          reminder.id === item.id ? { ...reminder, isSent: true } : reminder
+        )
+      );
+    } catch (requestError) {
+      console.error(requestError);
+      setError(requestError.message || "Failed to update reminder status.");
+    } finally {
+      setSavingReminderId(null);
+    }
+  };
+
+  const normalizedSearch = patientSearch.trim().toLocaleLowerCase();
+  const searchDigits = patientSearch.replace(/\D/g, "");
+  const filteredReminders = reminders.filter((reminder) => {
+    const matchesStatus =
+      reminderFilter === "all" ||
+      (reminderFilter === "submitted" && reminder.isSent) ||
+      (reminderFilter === "notSubmitted" && !reminder.isSent);
+    const matchesName = reminder.patientName
+      ?.toLocaleLowerCase()
+      .includes(normalizedSearch);
+    const matchesPhone =
+      searchDigits.length > 0 &&
+      reminder.phone?.replace(/\D/g, "").includes(searchDigits);
+
+    return matchesStatus && (!normalizedSearch || matchesName || matchesPhone);
+  });
+
+  const submittedCount = reminders.filter((reminder) => reminder.isSent).length;
+  const statusOptions = [
+    { value: "all", label: "All reminders", count: reminders.length },
+    { value: "submitted", label: "Submitted", count: submittedCount },
+    {
+      value: "notSubmitted",
+      label: "Not submitted",
+      count: reminders.length - submittedCount,
+    },
+  ];
+
 
 
 
@@ -288,6 +363,90 @@ export default function WhatsAppReminders() {
         Choose message language then send WhatsApp notification
 
       </Typography>
+
+      <Paper
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          mb: 3,
+          borderRadius: 3,
+          border: "1px solid #eee3c5",
+          background: "#fff",
+        }}
+      >
+        <TextField
+          fullWidth
+          size="small"
+          value={patientSearch}
+          onChange={(event) => setPatientSearch(event.target.value)}
+          placeholder="Search patient by name or phone number"
+          aria-label="Search reminders by patient name or phone number"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ color: "#8a7a55" }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 2 }}
+        />
+        <RadioGroup
+          row
+          aria-label="Filter reminders by submission status"
+          value={reminderFilter}
+          onChange={(event) => setReminderFilter(event.target.value)}
+          sx={{ gap: 1, flexWrap: "wrap" }}
+        >
+          {statusOptions.map((option) => (
+            <FormControlLabel
+              key={option.value}
+              value={option.value}
+              control={
+                <Radio
+                  size="small"
+                  sx={{
+                    color: "#a89a78",
+                    "&.Mui-checked": { color: "#092c57" },
+                  }}
+                />
+              }
+              label={
+                <Box
+                  component="span"
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                >
+                  {option.label}
+                  <Chip
+                    size="small"
+                    label={option.count}
+                    sx={{
+                      height: 22,
+                      fontWeight: 700,
+                      background:
+                        reminderFilter === option.value ? "#e8eef5" : "#f3f1eb",
+                      color: "#092c57",
+                    }}
+                  />
+                </Box>
+              }
+              sx={{
+                m: 0,
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor:
+                  reminderFilter === option.value ? "#092c57" : "#eee3c5",
+                background:
+                  reminderFilter === option.value ? "#f1f5f9" : "#fff",
+                color: reminderFilter === option.value ? "#092c57" : "#5f6470",
+                fontWeight: reminderFilter === option.value ? 700 : 500,
+                transition: "all 150ms ease",
+                "&:hover": { background: "#f7f8fa" },
+              }}
+            />
+          ))}
+        </RadioGroup>
+      </Paper>
 
 
 
@@ -434,7 +593,7 @@ export default function WhatsAppReminders() {
 
       {
 
-        reminders.length === 0
+        filteredReminders.length === 0
 
           ?
 
@@ -454,7 +613,9 @@ export default function WhatsAppReminders() {
 
               <Typography>
 
-                No reminders available
+                {reminders.length === 0
+                  ? "No reminders available"
+                  : "No reminders match your search and selected filter"}
 
               </Typography>
 
@@ -464,7 +625,7 @@ export default function WhatsAppReminders() {
 
           :
 
-          reminders.map((item) => (
+          filteredReminders.map((item) => (
 
 
 
@@ -544,11 +705,8 @@ export default function WhatsAppReminders() {
 
 
                 <Chip
-
-                  label="Ready"
-
-                  color="success"
-
+                  label={item.isSent ? "Submitted" : "Not submitted"}
+                  color={item.isSent ? "success" : "default"}
                 />
 
 
@@ -595,6 +753,23 @@ export default function WhatsAppReminders() {
 
               </Button>
 
+              <FormControlLabel
+                sx={{ mt: 2, ml: 0 }}
+                control={
+                  <Radio
+                    checked={Boolean(item.isSent)}
+                    disabled={Boolean(item.isSent) || savingReminderId === item.id}
+                    onChange={() => markReminderAsSubmitted(item)}
+                  />
+                }
+                label={
+                  savingReminderId === item.id
+                    ? "Saving..."
+                    : item.isSent
+                      ? "Submitted"
+                      : "Mark as submitted"
+                }
+              />
 
 
 

@@ -1,0 +1,26 @@
+const treatmentOptions = [
+  { value: "Veneers", label: "Veneers" },
+  { value: "Bridge", label: "Bridge" },
+  { value: "Filling", label: "Filling" },
+  { value: "Gouttiere", label: "Gouttiere" },
+  { value: "Laser", label: "Laser" },
+  { value: "Root canal", label: "Root canal" },
+  { value: "Extraction", label: "Extraction" },
+  { value: "Crown", label: "Crown" },
+  { value: "Implant", label: "Implant" },
+  { value: "Pulpotomie", label: "Pulpotomie" },
+  { value: "Pulpectomie", label: "Pulpectomie" },
+  { value: "Cpp", label: "Cpp" },
+  { value: "cleaning", label: "Scaling" },
+  { value: "Sealent", label: "Sealent" },
+  { value: "Acryle totale superieure", label: "Acryle totale superieure" },
+  { value: "Acryle totale inferieure", label: "Acryle totale inferieure" },
+  { value: "Acryle partielle superieur", label: "Acryle partielle superieur" },
+  { value: "Acryle partielle inferieure", label: "Acryle partielle inferieure" },
+  { value: "Flexible superieure", label: "Flexible superieure" },
+  { value: "Flexible inferieure", label: "Flexible inferieure" },
+  { value: "Flipper", label: "Flipper" },
+  { value: "Bone graft", label: "Bone graft" },
+];
+
+export default treatmentOptions;
