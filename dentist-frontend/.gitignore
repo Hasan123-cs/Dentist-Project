@@ -4,10 +4,10 @@
 /node_modules
 /.pnp
 .pnp.js
-
 # testing
 /coverage
-
+.env
+docker-compose.override.yml
 # production
 /build
 

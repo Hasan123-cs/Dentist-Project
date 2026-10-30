@@ -44,9 +44,8 @@ public class NotificationsController : ControllerBase
             .Include(x => x.Appointment)
 
             .Where(x =>
-                !x.IsSent
-                &&
-                (
+                x.IsSent
+                || (
                     // Appointment reminders
                     (
                         x.Type == NotificationType.AppointmentReminder
@@ -102,15 +101,16 @@ public class NotificationsController : ControllerBase
             Type =
                 x.Type.ToString(),
 
+            IsSent = x.IsSent,
 
             Date =
     x.Type == NotificationType.CleaningReminder
     ?
     x.Message
     :
-    x.Appointment.StartDateTime
+    x.Appointment?.StartDateTime
         .ToLocalTime()
-        .ToString("yyyy-MM-dd"),
+        .ToString("yyyy-MM-dd") ?? "",
 
 
             Time =
@@ -118,9 +118,9 @@ public class NotificationsController : ControllerBase
     ?
     ""
     :
-    x.Appointment.StartDateTime
+    x.Appointment?.StartDateTime
         .ToLocalTime()
-        .ToString("HH:mm")
+        .ToString("HH:mm") ?? ""
 
         })
         .ToList();
@@ -129,5 +129,26 @@ public class NotificationsController : ControllerBase
 
         return Ok(result);
 
+    }
+
+    [HttpPut("reminders/{id:int}/sent")]
+    public async Task<IActionResult> MarkReminderAsSent(int id)
+    {
+        var reminder = await _context.Notifications
+            .FirstOrDefaultAsync(notification => notification.Id == id);
+
+        if (reminder == null)
+        {
+            return NotFound(new { message = "Reminder not found." });
+        }
+
+        if (!reminder.IsSent)
+        {
+            reminder.IsSent = true;
+            reminder.SentAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new { message = "Reminder marked as submitted." });
     }
 }

@@ -962,6 +962,235 @@ namespace dentist_project.Service
                        StringComparison.OrdinalIgnoreCase) == true;
         }
 
+        public async Task<(bool Success, string Message, object? Data)> UpdateTreatmentAsync(
+            int patientId,
+            int medicalRecordId,
+            UpdateTreatmentDto dto)
+        {
+            var medicalRecord = await _context.MedicalRecords
+                .Include(record => record.ToothTreatments)
+                    .ThenInclude(toothTreatment => toothTreatment.Treatment)
+                .FirstOrDefaultAsync(record =>
+                    record.Id == medicalRecordId
+                    && record.PatientId == patientId);
+
+            if (medicalRecord == null || medicalRecord.AppointmentId != null)
+            {
+                return (false, "Patient treatment record not found.", null);
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Treatment))
+            {
+                return (false, "Treatment name is required.", null);
+            }
+
+            if (dto.Price < 0 || dto.PaidAmount < 0)
+            {
+                return (false, "Price and paid amount cannot be negative.", null);
+            }
+
+            if (!TryParseTreatmentStatus(dto.Status, out var status))
+            {
+                return (false, "Invalid treatment status.", null);
+            }
+
+            var treatmentName = dto.Treatment.Trim();
+            var toothNumbers = (dto.ToothNumbers ?? new List<int>())
+                .Distinct()
+                .ToList();
+            var isBridge = treatmentName.Contains(
+                "bridge",
+                StringComparison.OrdinalIgnoreCase);
+
+            if (!isBridge && toothNumbers.Count > 1)
+            {
+                return (false, "Only one tooth can be selected for this treatment.", null);
+            }
+
+            if (isBridge && toothNumbers.Count > 0)
+            {
+                var bridgeValidation = ValidateBridge(toothNumbers);
+                if (!bridgeValidation.Success)
+                {
+                    return (false, bridgeValidation.Message, null);
+                }
+            }
+
+            var validTeeth = new HashSet<int>
+            {
+                11, 12, 13, 14, 15, 16, 17, 18,
+                21, 22, 23, 24, 25, 26, 27, 28,
+                31, 32, 33, 34, 35, 36, 37, 38,
+                41, 42, 43, 44, 45, 46, 47, 48
+            };
+            var invalidTeeth = toothNumbers
+                .Where(number => !validTeeth.Contains(number))
+                .ToList();
+
+            if (invalidTeeth.Count > 0)
+            {
+                return (
+                    false,
+                    $"Invalid tooth number(s): {string.Join(", ", invalidTeeth)}",
+                    null);
+            }
+
+            var surfaces = new List<ToothSurface>();
+            foreach (var surfaceName in dto.Surfaces ?? new List<string>())
+            {
+                if (!Enum.TryParse<ToothSurface>(
+                    surfaceName.Trim(),
+                    true,
+                    out var surface))
+                {
+                    return (false, $"Invalid tooth surface: {surfaceName}", null);
+                }
+
+                if (!surfaces.Contains(surface))
+                {
+                    surfaces.Add(surface);
+                }
+            }
+
+            if (surfaces.Count > 0 && toothNumbers.Count == 0)
+            {
+                return (false, "A surface cannot be specified without a tooth.", null);
+            }
+
+            var teeth = await _context.Teeth
+                .Where(tooth => toothNumbers.Contains(tooth.Number))
+                .ToListAsync();
+            if (teeth.Count != toothNumbers.Count)
+            {
+                var foundNumbers = teeth.Select(tooth => tooth.Number).ToHashSet();
+                var missingTeeth = toothNumbers
+                    .Where(number => !foundNumbers.Contains(number));
+                return (
+                    false,
+                    $"Tooth number(s) not found: {string.Join(", ", missingTeeth)}",
+                    null);
+            }
+
+            var treatment = await _context.Treatments
+                .FirstOrDefaultAsync(item =>
+                    item.Name.ToLower() == treatmentName.ToLower()
+                    && item.IsActive);
+            if (treatment == null)
+            {
+                treatment = new Treatment
+                {
+                    Name = treatmentName,
+                    DefaultPrice = dto.Price ?? medicalRecord.TotalCost,
+                    EstimatedMinutes = 0,
+                    IsActive = true,
+                    HasRecallReminder = IsCleaningTreatment(treatmentName)
+                };
+                _context.Treatments.Add(treatment);
+            }
+            treatment.HasRecallReminder |= IsCleaningTreatment(treatmentName);
+
+            var wasCleaningTreatment = medicalRecord.ToothTreatments
+                .Any(item => IsCleaningTreatment(item.Treatment?.Name));
+            var isCleaningTreatment = IsCleaningTreatment(treatmentName);
+            var condition = GetCondition(treatmentName) ?? ToothCondition.Healthy;
+
+            medicalRecord.TreatmentPlan = treatmentName;
+            medicalRecord.TotalCost = dto.Price ?? medicalRecord.TotalCost;
+            medicalRecord.PaidAmount = dto.PaidAmount ?? medicalRecord.PaidAmount;
+            medicalRecord.ClinicalNotes = dto.Notes;
+            medicalRecord.TreatmentDate = dto.TreatmentDate
+                ?? medicalRecord.TreatmentDate;
+
+            _context.ToothTreatments.RemoveRange(medicalRecord.ToothTreatments);
+
+            var updatedToothTreatments = new List<ToothTreatment>();
+            if (toothNumbers.Count == 0)
+            {
+                updatedToothTreatments.Add(new ToothTreatment
+                {
+                    MedicalRecord = medicalRecord,
+                    Treatment = treatment,
+                    Status = status,
+                    Condition = condition,
+                    Notes = dto.Notes
+                });
+            }
+            else
+            {
+                foreach (var toothNumber in toothNumbers)
+                {
+                    var tooth = teeth.First(item => item.Number == toothNumber);
+                    var toothSurfaces = surfaces.Count == 0
+                        ? new ToothSurface?[] { null }
+                        : surfaces.Select(surface => (ToothSurface?)surface);
+
+                    foreach (var surface in toothSurfaces)
+                    {
+                        updatedToothTreatments.Add(new ToothTreatment
+                        {
+                            MedicalRecord = medicalRecord,
+                            Tooth = tooth,
+                            Treatment = treatment,
+                            Status = status,
+                            Surface = surface,
+                            Condition = condition,
+                            Notes = dto.Notes
+                        });
+                    }
+                }
+            }
+
+            _context.ToothTreatments.AddRange(updatedToothTreatments);
+
+            if (wasCleaningTreatment || isCleaningTreatment)
+            {
+                var pendingReminders = await _context.Notifications
+                    .Where(notification =>
+                        notification.PatientId == patientId
+                        && notification.Type == NotificationType.CleaningReminder
+                        && !notification.IsSent)
+                    .ToListAsync();
+                _context.Notifications.RemoveRange(pendingReminders);
+
+                if (isCleaningTreatment)
+                {
+                    var cleaningDate = DateTime.SpecifyKind(
+                        medicalRecord.TreatmentDate
+                            .AddMonths(6)
+                            .ToDateTime(TimeOnly.MinValue),
+                        DateTimeKind.Utc);
+
+                    _context.Notifications.Add(new Notification
+                    {
+                        PatientId = patientId,
+                        Type = NotificationType.CleaningReminder,
+                        Message = $"Cleaning appointment reminder after 6 months: {cleaningDate:yyyy-MM-dd}",
+                        IsSent = false,
+                        ReminderDate = cleaningDate,
+                        IsApproved = false
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return (
+                true,
+                "Treatment updated successfully.",
+                new
+                {
+                    treatment = treatment.Name,
+                    toothNumbers,
+                    surfaces = surfaces.Select(surface => surface.ToString()).ToList(),
+                    status = status.ToString(),
+                    condition = condition.ToString(),
+                    price = medicalRecord.TotalCost,
+                    paidAmount = medicalRecord.PaidAmount,
+                    notes = medicalRecord.ClinicalNotes,
+                    treatmentDate = medicalRecord.TreatmentDate
+                });
+        }
+
 
         private static (bool Success, string Message) ValidateBridge(
             List<int> toothNumbers)
@@ -1718,7 +1947,6 @@ namespace dentist_project.Service
 
                     medicalRecordId = g.First().MedicalRecordId,
 
-
                     treatment =
                         g.First().Treatment != null
                         ?
@@ -1898,6 +2126,7 @@ namespace dentist_project.Service
 
                     medicalRecordId = g.First().MedicalRecordId,
 
+                    canEdit = g.First().MedicalRecord.AppointmentId == null,
 
                     treatment =
                         g.First().Treatment != null

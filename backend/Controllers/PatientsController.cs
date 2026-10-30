@@ -213,6 +213,45 @@ namespace dentist_project.Controllers;
             });
         }
     }
+
+    [HttpPut("{id:int}/treatments/{medicalRecordId:int}")]
+    public async Task<IActionResult> UpdateTreatment(
+        int id,
+        int medicalRecordId,
+        [FromBody] UpdateTreatmentDto dto)
+    {
+        try
+        {
+            var result = await _service.UpdateTreatmentAsync(
+                id,
+                medicalRecordId,
+                dto);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+
+            return Ok(new
+            {
+                message = result.Message,
+                data = result.Data
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("========== UPDATE TREATMENT ERROR ==========");
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("=============================================");
+
+            return StatusCode(500, new
+            {
+                message = "Error updating treatment.",
+                error = ex.Message
+            });
+        }
+    }
+
     [Authorize]
     [HttpPost("{id:int}/treatments/{medicalRecordId:int}/payments")]
     public async Task<IActionResult> AddTreatmentPayment(
