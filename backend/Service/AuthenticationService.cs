@@ -74,7 +74,7 @@ namespace dentist_project.Service
                 claims: claims,
 
                 expires:
-                remember ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(60),
+                remember ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddHours(6),
 
                 signingCredentials:
                 credentials

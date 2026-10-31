@@ -886,7 +886,7 @@ namespace dentist_project.Service
 
             _context.ToothTreatments.AddRange(toothTreatments);
 
-            if (isCleaningTreatment)
+            if (isCleaningTreatment && status == ToothStatus.Completed)
             {
                 var existingCleaningReminders = await _context.Notifications
                     .Where(notification =>
@@ -1148,11 +1148,15 @@ namespace dentist_project.Service
                     .Where(notification =>
                         notification.PatientId == patientId
                         && notification.Type == NotificationType.CleaningReminder
-                        && !notification.IsSent)
+                        && (
+                            isCleaningTreatment &&
+                            status == ToothStatus.Completed
+                            || !notification.IsSent
+                        ))
                     .ToListAsync();
                 _context.Notifications.RemoveRange(pendingReminders);
 
-                if (isCleaningTreatment)
+                if (isCleaningTreatment && status == ToothStatus.Completed)
                 {
                     var cleaningDate = DateTime.SpecifyKind(
                         medicalRecord.TreatmentDate
@@ -1820,50 +1824,17 @@ namespace dentist_project.Service
 
 
 
-            // ==========================================
-            // REMOVE CLEANING REMINDER
-            // if treatment is not completed anymore
-            // ==========================================
-
-            if (newStatus != ToothStatus.Completed && !isCleaningTreatment)
+            if (isCleaningTreatment)
             {
-
-                var cleaningReminders = await _context.Notifications
-                    .Where(n =>
-                        n.PatientId == medicalRecord.PatientId &&
-                        n.Type == NotificationType.CleaningReminder
-                    )
+                var existingReminders = await _context.Notifications
+                    .Where(notification =>
+                        notification.PatientId == medicalRecord.PatientId &&
+                        notification.Type == NotificationType.CleaningReminder)
                     .ToListAsync();
 
-
-                if (cleaningReminders.Any())
+                if (newStatus == ToothStatus.Completed)
                 {
-                    _context.Notifications.RemoveRange(cleaningReminders);
-                }
-
-            }
-
-
-
-
-
-            // ==========================================
-            // CREATE 6 MONTH CLEANING REMINDER
-            // when treatment becomes completed
-            // ==========================================
-
-            if (newStatus == ToothStatus.Completed)
-            {
-
-                var hasReminder = await _context.Notifications
-                    .AnyAsync(n =>
-                        n.PatientId == medicalRecord.PatientId &&
-                        n.Type == NotificationType.CleaningReminder
-                    );
-
-
-                if (!hasReminder)
-                {
+                    _context.Notifications.RemoveRange(existingReminders);
 
                     var cleaningDate = DateTime.SpecifyKind(
                         medicalRecord.TreatmentDate
@@ -1871,39 +1842,24 @@ namespace dentist_project.Service
                             .ToDateTime(TimeOnly.MinValue),
                         DateTimeKind.Utc);
 
-
-
-                    var notification = new Notification
+                    _context.Notifications.Add(new Notification
                     {
-
                         PatientId = medicalRecord.PatientId,
-
-
                         AppointmentId = medicalRecord.AppointmentId,
-
-
                         Type = NotificationType.CleaningReminder,
-
-
                         Message =
                             $"Cleaning appointment reminder after 6 months: {cleaningDate:yyyy-MM-dd}",
-
-
                         IsSent = false,
                         ReminderDate = cleaningDate,
-
                         IsApproved = false
-
-                    };
-
-
-                    _context.Notifications.Add(notification);
-
+                    });
                 }
-
-            
-
-        }
+                else
+                {
+                    _context.Notifications.RemoveRange(
+                        existingReminders.Where(notification => !notification.IsSent));
+                }
+            }
 
             await _context.SaveChangesAsync();
 

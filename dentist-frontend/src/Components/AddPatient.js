@@ -9,7 +9,7 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -18,19 +18,25 @@ export default function AddPatient() {
     phone: "",
     gender: "",
     birthDate: "",
-    notes: "",
   });
-  const [notesss, setNotesss] = useState("");
+  const [selectedMedicalNotes, setSelectedMedicalNotes] = useState([]);
+  const [additionalNotes, setAdditionalNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+
   const handleChange = (e) => {
     setForm({
       ...form,
-
       [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+
+    submittingRef.current = true;
+    setSubmitting(true);
 
     try {
       const token = localStorage.getItem("token");
@@ -39,10 +45,6 @@ export default function AddPatient() {
         alert("You are not authenticated.");
         return;
       }
-      console.log(form.notes)
-      console.log(form.notesss)
-      form.notes = form.notes + " " + notesss;
-      console.log(form.notes)
 
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/Patients`, {
         method: "POST",
@@ -50,7 +52,13 @@ export default function AddPatient() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          notes: [
+            ...selectedMedicalNotes,
+            additionalNotes.trim(),
+          ].filter(Boolean).join("; "),
+        }),
       });
 
       const data = await response.json();
@@ -65,6 +73,9 @@ export default function AddPatient() {
     } catch (error) {
       console.error("Error creating patient:", error);
       alert(error.message);
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
   };
 
@@ -171,49 +182,50 @@ export default function AddPatient() {
 
           <TextField
             label="Medical Notes"
-            name="notesss"
-            value={notesss}
-            onChange={(e) => { setNotesss(e.target.value) }}
+            value={additionalNotes}
+            onChange={(e) => setAdditionalNotes(e.target.value)}
             multiline
             rows={4}
             fullWidth
           />
 
-          <select name="notes"
-            value={form.notes}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              maxWidth: "300px",
-              padding: "8px 12px",
-              fontSize: "15px",
-              color: "#333",
-              background: "white",
-              border: "1px solid #ccc",
-              borderRadius: "6px",
-              outline: "none",
-              cursor: "pointer",
-            }} >
-
-            <option value="" disabled>Select Medical Note</option>
-            <option value="Hypertension">Hypertension </option>
-            <option value="Diabetes">Diabetes </option>
-            <option value="Allergie a penicillin">Allergie a penicillin</option>
-            <option value="Allergie">Allergie</option>
-            <option value="Heart disease">Heart disease
-            </option>
-            <option value="Bleeding discorders">Bleeding discorders</option>
-            <option value="Asthma">Asthma</option>
-            <option value="Kidney disease">Kidney disease</option>
-            <option value="Liver disease">Liver disease</option>
-            <option value="Thyroid disease">Thyroid disease</option>
-            <option value="Epilepsy">Epilepsy</option>
-            <option value="Pregnant">Pregnant</option>
-            <option value="Anticoagulants medicament">Anticoagulants medicament</option>
-            <option value="Previous endocarditis / prosthetic">Previous endocarditis / prosthetic</option>
-            <option value="heart valve">heart valve</option>
-            <option value="Cholesterol">Cholesterol</option>
-          </select>
+          <TextField
+            select
+            label="Medical Conditions"
+            value={selectedMedicalNotes}
+            onChange={(e) => setSelectedMedicalNotes(e.target.value)}
+            helperText="Select all that apply."
+            fullWidth
+            slotProps={{
+              select: {
+                multiple: true,
+                renderValue: (selected) => selected.join(", "),
+              },
+            }}
+          >
+            {[
+              "Hypertension",
+              "Diabetes",
+              "Allergie a penicillin",
+              "Allergie",
+              "Heart disease",
+              "Bleeding discorders",
+              "Asthma",
+              "Kidney disease",
+              "Liver disease",
+              "Thyroid disease",
+              "Epilepsy",
+              "Pregnant",
+              "Anticoagulants medicament",
+              "Previous endocarditis / prosthetic",
+              "heart valve",
+              "Cholesterol",
+            ].map((condition) => (
+              <MenuItem key={condition} value={condition}>
+                {condition}
+              </MenuItem>
+            ))}
+          </TextField>
 
           <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
             <Button
@@ -237,6 +249,7 @@ export default function AddPatient() {
             <Button
               type="submit"
               variant="contained"
+              disabled={submitting}
               sx={{
                 background: "#C9A227",
 
@@ -253,7 +266,7 @@ export default function AddPatient() {
                 },
               }}
             >
-              SAVE PATIENT
+              {submitting ? "SAVING..." : "SAVE PATIENT"}
             </Button>
           </Box>
         </Box>

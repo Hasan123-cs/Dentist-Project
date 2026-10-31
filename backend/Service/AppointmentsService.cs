@@ -664,6 +664,9 @@ namespace dentist_project.Service
                 await _db.Appointments
 
                 .Include(a => a.AppointmentTreatments)
+                    .ThenInclude(treatment => treatment.Treatment)
+
+                .Include(a => a.AppointmentTreatments)
                     .ThenInclude(treatment => treatment.ToothTreatmentLinks)
                         .ThenInclude(link => link.ToothTreatment)
                             .ThenInclude(toothTreatment => toothTreatment.MedicalRecord)
@@ -763,7 +766,34 @@ namespace dentist_project.Service
             appointment.Status =
                 AppointmentStatus.Completed;
 
+            if (appointment.PatientId.HasValue &&
+                appointment.AppointmentTreatments.Any(treatment =>
+                    IsCleaningTreatment(treatment.Treatment?.Name)))
+            {
+                var existingReminders = await _db.Notifications
+                    .Where(notification =>
+                        notification.PatientId == appointment.PatientId.Value &&
+                        notification.Type == NotificationType.CleaningReminder)
+                    .ToListAsync();
 
+                _db.Notifications.RemoveRange(existingReminders);
+
+                var reminderDate = DateTime.SpecifyKind(
+                    DateTime.UtcNow.Date.AddMonths(6),
+                    DateTimeKind.Utc);
+
+                _db.Notifications.Add(new Notification
+                {
+                    PatientId = appointment.PatientId.Value,
+                    AppointmentId = appointment.Id,
+                    Type = NotificationType.CleaningReminder,
+                    Message =
+                        $"Cleaning appointment reminder after 6 months: {reminderDate:yyyy-MM-dd}",
+                    IsSent = false,
+                    ReminderDate = reminderDate,
+                    IsApproved = false
+                });
+            }
 
             await _db.SaveChangesAsync();
 
@@ -791,6 +821,15 @@ namespace dentist_project.Service
             );
         }
 
+        private static bool IsCleaningTreatment(string? treatmentName)
+        {
+            return treatmentName?.Contains(
+                       "clean",
+                       StringComparison.OrdinalIgnoreCase) == true
+                || treatmentName?.Contains(
+                       "scal",
+                       StringComparison.OrdinalIgnoreCase) == true;
+        }
 
 
 

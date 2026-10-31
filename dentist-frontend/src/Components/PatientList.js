@@ -2,7 +2,11 @@ import { Box, Typography, Grid } from "@mui/material";
 
 import PatientCard from "./PatientCard";
 
-export default function PatientList({ patients, setPatients }) {
+export default function PatientList({
+  patients,
+  setPatients,
+  title = "All Patients",
+}) {
   return (
     <Box
       sx={{
@@ -16,7 +20,7 @@ export default function PatientList({ patients, setPatients }) {
         mb={3}
         textAlign="center"
       >
-        All Patients ({patients.length})
+        {title} ({patients.length})
       </Typography>
 
       <Grid

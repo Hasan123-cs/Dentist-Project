@@ -18,6 +18,7 @@ export default function Patients() {
     searchParams.get("search") || ""
   );
 
+  const [balanceFilter, setBalanceFilter] = useState("all");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -52,11 +53,14 @@ export default function Patients() {
     const result = patients.filter((p) => {
       const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
       const id = p.id?.toString() || "";
-      return fullName.includes(value) || id.includes(value);
+      const matchesSearch = fullName.includes(value) || id.includes(value);
+      const matchesBalance =
+        balanceFilter === "all" || Number(p.balance || 0) > 0;
+      return matchesSearch && matchesBalance;
     });
 
     setFilteredPatients(result);
-  }, [search, patients]);
+  }, [search, patients, balanceFilter]);
 
   return (
     <Box
@@ -68,9 +72,18 @@ export default function Patients() {
 
       <PatientHeader />
 
-      <PatientSearch search={search} setSearch={setSearch} />
+      <PatientSearch
+        search={search}
+        setSearch={setSearch}
+        balanceFilter={balanceFilter}
+        setBalanceFilter={setBalanceFilter}
+      />
 
-      <PatientList patients={filteredPatients} setPatients={setPatients} />
+      <PatientList
+        patients={filteredPatients}
+        setPatients={setPatients}
+        title={balanceFilter === "unpaid" ? "Patients with outstanding balance" : "All Patients"}
+      />
     </Box>
   );
 }

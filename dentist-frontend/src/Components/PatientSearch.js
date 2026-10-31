@@ -1,11 +1,12 @@
-import { Paper, TextField } from "@mui/material";
+import { Box, MenuItem, Paper, TextField } from "@mui/material";
 
 import { Search } from "@mui/icons-material";
 
 export default function PatientSearch({
   search,
-
   setSearch,
+  balanceFilter,
+  setBalanceFilter,
 }) {
   return (
     <Paper
@@ -19,30 +20,39 @@ export default function PatientSearch({
         mb: 3,
       }}
     >
-      <TextField
-        fullWidth
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-        }}
-        placeholder="Search patients..."
-        InputProps={{
-          startAdornment: (
-            <Search
-              sx={{
-                mr: 1,
-
-                color: "#999",
-              }}
-            />
-          ),
-        }}
-        sx={{
-          "& fieldset": {
-            borderColor: "#eee3c5",
-          },
-        }}
-      />
+      <Box display="flex" gap={2} flexWrap="wrap">
+        <TextField
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search patients..."
+          sx={{
+            flex: "1 1 260px",
+            "& fieldset": {
+              borderColor: "#eee3c5",
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <Search
+                sx={{
+                  mr: 1,
+                  color: "#999",
+                }}
+              />
+            ),
+          }}
+        />
+        <TextField
+          select
+          label="Payment balance"
+          value={balanceFilter}
+          onChange={(e) => setBalanceFilter(e.target.value)}
+          sx={{ minWidth: 220 }}
+        >
+          <MenuItem value="all">All patients</MenuItem>
+          <MenuItem value="unpaid">Has remaining balance</MenuItem>
+        </TextField>
+      </Box>
     </Paper>
   );
 }
