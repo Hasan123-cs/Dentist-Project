@@ -16,6 +16,7 @@ import {
   Alert,
   MenuItem,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 
 import ClinicalSummary from "../Components/ClinicalSummary";
@@ -43,6 +44,8 @@ export default function PatientProfile() {
   const [conditions, setConditions] = useState({});
 
   const [patient, setPatient] = useState(null);
+  const [patientLoading, setPatientLoading] = useState(true);
+  const [patientLoadError, setPatientLoadError] = useState("");
   const [treatments, setTreatments] = useState([]);
   const [completedTreatments, setCompletedTreatments] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -56,6 +59,16 @@ export default function PatientProfile() {
   const [treatmentSaving, setTreatmentSaving] = useState(false);
   const [editHasTooth, setEditHasTooth] = useState(false);
   const [editHasSurface, setEditHasSurface] = useState(false);
+
+  const updatePatientBalance = (previousRemaining, nextRemaining) => {
+    const balanceChange =
+      Number(nextRemaining || 0) - Number(previousRemaining || 0);
+
+    setSummary((current) => ({
+      ...current,
+      balance: Math.max(Number(current.balance || 0) + balanceChange, 0),
+    }));
+  };
 
   const handleAddPayment = async () => {
     const amount = Number(paymentAmount);
@@ -86,10 +99,32 @@ export default function PatientProfile() {
         },
       );
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Unable to save this payment.");
+      const responseText = await response.text();
+      let result = null;
+      if (responseText.trim()) {
+        try {
+          result = JSON.parse(responseText);
+        } catch (parseError) {
+          if (!response.ok) {
+            throw new Error(responseText);
+          }
+          console.error("Payment succeeded with an invalid response body.", parseError);
+        }
       }
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message || responseText || "Unable to save this payment.",
+        );
+      }
+
+      const previousRemaining = Number(paymentDialog.remaining || 0);
+      const paidAmount = Number(paymentDialog.paid || 0) + amount;
+      const nextRemaining = Math.max(
+        Number(paymentDialog.cost || 0) - paidAmount,
+        0,
+      );
+      updatePatientBalance(previousRemaining, nextRemaining);
 
       setTreatments((current) =>
         current.map((treatment) => {
@@ -223,15 +258,17 @@ export default function PatientProfile() {
       }
 
       const updated = result.data;
+      const updatedCost = Number(updated.price);
+      const updatedPaid = Number(updated.paidAmount);
+      const updatedRemaining = Math.max(updatedCost - updatedPaid, 0);
+      updatePatientBalance(treatmentDialog.remaining, updatedRemaining);
+
       setTreatments((current) =>
         current.map((item) => {
           if (item.medicalRecordId !== treatmentDialog.medicalRecordId) {
             return item;
           }
 
-          const cost = Number(updated.price);
-          const paid = Number(updated.paidAmount);
-          const remaining = Math.max(cost - paid, 0);
           return {
             ...item,
             treatment: updated.treatment,
@@ -240,13 +277,13 @@ export default function PatientProfile() {
             surfaces: updated.surfaces,
             status: updated.status,
             condition: updated.condition,
-            cost,
-            paid,
-            remaining,
+            cost: updatedCost,
+            paid: updatedPaid,
+            remaining: updatedRemaining,
             paymentStatus:
-              paid <= 0
+              updatedPaid <= 0
                 ? "Unpaid"
-                : paid >= cost
+                : updatedPaid >= updatedCost
                   ? "Paid"
                   : "Partially Paid",
             notes: updated.notes,
@@ -263,14 +300,17 @@ export default function PatientProfile() {
 
   useEffect(() => {
     const getPatient = async () => {
+      setPatientLoading(true);
+      setPatientLoadError("");
+
       try {
         const res = await fetch(`${process.env.REACT_APP_API_URL}/api/patients/${id}`);
 
-        if (res.ok) {
-          const data = await res.json();
-
-          setPatient(data);
+        if (!res.ok) {
+          throw new Error("Failed to load patient details.");
         }
+        const data = await res.json();
+        setPatient(data);
 
         const treatmentRes = await fetch(
           `${process.env.REACT_APP_API_URL}/api/patients/${id}/treatments`
@@ -308,6 +348,9 @@ export default function PatientProfile() {
 
       } catch (err) {
         console.log(err);
+        setPatientLoadError("Failed to load patient details.");
+      } finally {
+        setPatientLoading(false);
       }
     };
     // load treatment 
@@ -316,10 +359,28 @@ export default function PatientProfile() {
     getPatient();
   }, [id]);
 
+  if (patientLoading) {
+    return (
+      <Box
+        p={4}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        gap={2}
+        role="status"
+      >
+        <CircularProgress size={24} aria-label="Loading patient" />
+        <Typography>Loading patient...</Typography>
+      </Box>
+    );
+  }
+
   if (!patient) {
     return (
       <Box p={4}>
-        <Typography>Loading...</Typography>
+        <Alert severity="error">
+          {patientLoadError || "Patient details are unavailable."}
+        </Alert>
       </Box>
     );
   }
