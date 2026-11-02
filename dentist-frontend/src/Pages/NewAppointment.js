@@ -6,11 +6,13 @@ import {
   Typography,
   Alert,
   MenuItem,
+  Autocomplete,
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { fetchJsonCached } from "../api/requestCache";
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -55,6 +57,8 @@ export default function NewAppointment() {
 
   const [error, setError] = useState("");
   const [timeError, setTimeError] = useState("");
+  const [patientSuggestionsError, setPatientSuggestionsError] = useState("");
+  const [patients, setPatients] = useState([]);
 
   const [appointmentsForDate, setAppointmentsForDate] = useState([]);
 
@@ -70,6 +74,35 @@ export default function NewAppointment() {
     startTime: "",
     endTime: "",
   });
+
+  useEffect(() => {
+    let active = true;
+
+    const loadPatients = async () => {
+      try {
+        const data = await fetchJsonCached(
+          `${process.env.REACT_APP_API_URL}/api/patients`,
+        );
+        if (active) {
+          setPatients(data);
+        }
+      } catch (loadError) {
+        console.error("Unable to load patient suggestions:", loadError);
+        if (active) {
+          setPatientSuggestionsError("Patient name suggestions are unavailable.");
+        }
+      }
+    };
+
+    loadPatients();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const getPatientName = (patient) =>
+    `${patient.firstName || ""} ${patient.lastName || ""}`.trim();
   // =========================
   // Convert HH:mm to minutes
   // =========================
@@ -547,22 +580,71 @@ export default function NewAppointment() {
             {error}
           </Alert>
         )}
+        {patientSuggestionsError && (
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            {patientSuggestionsError}
+          </Alert>
+        )}
 
         {/* =========================
             Patient Name
         ========================= */}
 
-        <TextField
+        <Autocomplete
           fullWidth
-          name="patientName"
-          label={
-            appointment.appointmentType === "Checkup"
-              ? "Patient / Contact Name"
-              : "Patient Name"
-          }
+          freeSolo
+          options={patients}
           value={appointment.patientName}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
+          inputValue={appointment.patientName}
+          getOptionLabel={(patient) =>
+            typeof patient === "string" ? patient : getPatientName(patient)
+          }
+          filterOptions={(options, { inputValue }) => {
+            const query = inputValue.trim().toLocaleLowerCase();
+            return options
+              .filter(
+                (patient) =>
+                  !query ||
+                  getPatientName(patient)
+                    .toLocaleLowerCase()
+                    .startsWith(query),
+              )
+              .slice(0, 7);
+          }}
+          onChange={(_, selectedPatient) => {
+            const patientName =
+              typeof selectedPatient === "string"
+                ? selectedPatient
+                : selectedPatient
+                  ? getPatientName(selectedPatient)
+                  : "";
+            setAppointment((current) => ({
+              ...current,
+              patientName,
+            }));
+            setError("");
+          }}
+          onInputChange={(_, value, reason) => {
+            if (reason === "input" || reason === "clear") {
+              setAppointment((current) => ({
+                ...current,
+                patientName: value,
+              }));
+            }
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              fullWidth
+              name="patientName"
+              label={
+                appointment.appointmentType === "Checkup"
+                  ? "Patient / Contact Name"
+                  : "Patient Name"
+              }
+              sx={{ mb: 2 }}
+            />
+          )}
         />
 
         {appointment.appointmentType === "Checkup" && (

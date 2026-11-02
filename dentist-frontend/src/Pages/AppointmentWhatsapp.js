@@ -3,6 +3,7 @@ import {
   Paper,
   Typography,
   Button,
+  Alert,
 } from "@mui/material";
  
  
@@ -22,8 +23,9 @@ import {
 } from "react";
  
  
-import dayjs from "dayjs";
 import { PageLoading } from "../Components/PageState";
+import { formatLebanonDateTime } from "../utils/dateTime";
+import { createWhatsAppUrl } from "../utils/whatsapp";
  
  
  
@@ -40,6 +42,7 @@ export default function AppointmentWhatsapp(){
  
  
   const [loading,setLoading] = useState(true);
+  const [error,setError] = useState("");
  
  
  
@@ -184,27 +187,17 @@ export default function AppointmentWhatsapp(){
  
  
  
-  const date =
- 
-    dayjs(
-      appointment.startDateTime
-    )
- 
-    .format(
-      "DD MMMM YYYY"
-    );
+  const date = formatLebanonDateTime(
+    appointment.startDateTime,
+    "DD MMMM YYYY"
+  );
  
  
  
-  const time =
- 
-    dayjs(
-      appointment.startDateTime
-    )
- 
-    .format(
-      "hh:mm A"
-    );
+  const time = formatLebanonDateTime(
+    appointment.startDateTime,
+    "hh:mm A"
+  );
  
  
  
@@ -240,30 +233,14 @@ Thank you.`;
 const openWhatsApp = ()=>{
  
  
-  let phone = appointment.patient.phone;
- 
- 
- 
-  // remove spaces and symbols
- 
-  phone = phone
-    .replace(/\s+/g,"")
-    .replace("+","");
- 
- 
- 
- 
-  const encodedMessage =
- 
-    encodeURIComponent(message);
- 
- 
- 
- 
- 
-  const whatsappUrl =
- 
-    `https://wa.me/${phone}?text=${encodedMessage}`;
+  const whatsappUrl = createWhatsAppUrl(
+    appointment.patient.phone,
+    message
+  );
+  if (!whatsappUrl) {
+    setError("Patient phone number not found.");
+    return;
+  }
  
  
  
@@ -325,6 +302,12 @@ border:"1px solid #eee3c5"
 }}
  
 >
+
+{error && (
+  <Alert severity="error" sx={{ mb: 2 }}>
+    {error}
+  </Alert>
+)}
  
  
  

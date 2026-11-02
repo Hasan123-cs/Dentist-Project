@@ -31,6 +31,7 @@ import {
 } from "react";
 import { PageLoading } from "../Components/PageState";
 import InboxOutlined from "@mui/icons-material/InboxOutlined";
+import { createWhatsAppUrl } from "../utils/whatsapp";
 
 
 
@@ -79,17 +80,30 @@ export default function WhatsAppReminders() {
       );
 
 
-      if (!response.ok) {
-
-        throw new Error(
-          "Failed to load reminders"
-        );
-
+      const responseBody = await response.text();
+      let data;
+      try {
+        data = responseBody ? JSON.parse(responseBody) : [];
+      } catch {
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load reminders (HTTP ${response.status}): ${responseBody}`,
+          );
+        }
+        throw new Error("The reminders response was not valid JSON.");
       }
 
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.title ||
+            `Failed to load reminders (HTTP ${response.status}).`,
+        );
+      }
 
-
-      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error("The reminders response did not contain a reminder list.");
+      }
 
 
       console.log("REMINDERS:", data);
@@ -116,9 +130,6 @@ export default function WhatsAppReminders() {
 
 
   const sendWhatsAppNotification = (item) => {
-
-
-    const patientPhone = item.phone;
 
 
     let message = "";
@@ -208,9 +219,12 @@ export default function WhatsAppReminders() {
       message
     );
 
-    const whatsappUrl =
+    const whatsappUrl = createWhatsAppUrl(item.phone, message);
+    if (!whatsappUrl) {
+      setError("Patient phone number not found.");
+      return;
+    }
 
-      `https://api.whatsapp.com/send?phone=${patientPhone}&text=${encodeURIComponent(message)}`;
     window.open(
       whatsappUrl,
       "_blank"

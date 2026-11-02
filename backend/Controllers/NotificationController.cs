@@ -28,12 +28,24 @@ public class NotificationsController : ControllerBase
     [HttpGet("reminders")]
     public async Task<IActionResult> GetReminders()
     {
+        var lebanonTimeZone = GetLebanonTimeZone();
+        var todayInLebanon = TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.UtcNow,
+            lebanonTimeZone).Date;
 
-        var todayUtc = DateTime.UtcNow.Date;
+        var tomorrowStartInLebanon = DateTime.SpecifyKind(
+            todayInLebanon.AddDays(1),
+            DateTimeKind.Unspecified);
+        var tomorrowEndInLebanon = DateTime.SpecifyKind(
+            todayInLebanon.AddDays(2),
+            DateTimeKind.Unspecified);
 
-        var tomorrowStart = todayUtc.AddDays(1);
-
-        var tomorrowEnd = todayUtc.AddDays(2);
+        var tomorrowStartUtc = TimeZoneInfo.ConvertTimeToUtc(
+            tomorrowStartInLebanon,
+            lebanonTimeZone);
+        var tomorrowEndUtc = TimeZoneInfo.ConvertTimeToUtc(
+            tomorrowEndInLebanon,
+            lebanonTimeZone);
 
 
 
@@ -56,9 +68,9 @@ public class NotificationsController : ControllerBase
                         &&
                         x.Appointment.Status != AppointmentStatus.Completed
                         &&
-                        x.Appointment.StartDateTime >= tomorrowStart
+                        x.Appointment.StartDateTime >= tomorrowStartUtc
                         &&
-                        x.Appointment.StartDateTime < tomorrowEnd
+                        x.Appointment.StartDateTime < tomorrowEndUtc
                     )
 
 
@@ -66,11 +78,11 @@ public class NotificationsController : ControllerBase
 
                     // Cleaning reminders
                     (
-                           x.Type == NotificationType.CleaningReminder
-    &&
-    x.ReminderDate.HasValue
-    &&
-    x.ReminderDate.Value.Date <= todayUtc.AddDays(1)
+                        x.Type == NotificationType.CleaningReminder
+                        &&
+                        x.ReminderDate.HasValue
+                        &&
+                        x.ReminderDate.Value <= tomorrowStartUtc
                     )
                 )
             )
@@ -104,23 +116,23 @@ public class NotificationsController : ControllerBase
             IsSent = x.IsSent,
 
             Date =
-    x.Type == NotificationType.CleaningReminder
-    ?
-    x.Message
-    :
-    x.Appointment?.StartDateTime
-        .ToLocalTime()
-        .ToString("yyyy-MM-dd") ?? "",
+                x.Type == NotificationType.CleaningReminder
+                    ? x.Message
+                    : x.Appointment == null
+                        ? ""
+                        : ConvertToLebanonTime(
+                            x.Appointment.StartDateTime,
+                            lebanonTimeZone).ToString("yyyy-MM-dd"),
 
 
             Time =
-    x.Type == NotificationType.CleaningReminder
-    ?
-    ""
-    :
-    x.Appointment?.StartDateTime
-        .ToLocalTime()
-        .ToString("HH:mm") ?? ""
+                x.Type == NotificationType.CleaningReminder
+                    ? ""
+                    : x.Appointment == null
+                        ? ""
+                        : ConvertToLebanonTime(
+                            x.Appointment.StartDateTime,
+                            lebanonTimeZone).ToString("HH:mm")
 
         })
         .ToList();
@@ -129,6 +141,24 @@ public class NotificationsController : ControllerBase
 
         return Ok(result);
 
+    }
+
+    private static TimeZoneInfo GetLebanonTimeZone()
+    {
+        var timeZoneId = OperatingSystem.IsWindows()
+            ? "Middle East Standard Time"
+            : "Asia/Beirut";
+
+        return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+    }
+
+    private static DateTime ConvertToLebanonTime(
+        DateTime utcDateTime,
+        TimeZoneInfo timeZone)
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.SpecifyKind(utcDateTime, DateTimeKind.Utc),
+            timeZone);
     }
 
     [HttpPut("reminders/{id:int}/sent")]

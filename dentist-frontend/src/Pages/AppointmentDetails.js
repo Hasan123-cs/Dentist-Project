@@ -29,9 +29,10 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import dayjs from "dayjs";
 import { PageLoading } from "../Components/PageState";
 import { invalidateRequestCache } from "../api/requestCache";
+import { formatLebanonDateTime } from "../utils/dateTime";
+import { createWhatsAppUrl } from "../utils/whatsapp";
 
 export default function AppointmentDetails() {
   const { id } = useParams();
@@ -68,12 +69,7 @@ export default function AppointmentDetails() {
     );
 
 
-    const patientPhone = String(phoneResponse.data.phone || "").replace(
-      /\D/g,
-      "",
-    );
-
-
+    const patientPhone = phoneResponse.data.phone;
     if (!patientPhone) {
 
       setError("Patient phone not found");
@@ -102,8 +98,11 @@ export default function AppointmentDetails() {
 
 
 
-    const whatsappUrl =
-      `https://wa.me/${patientPhone}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = createWhatsAppUrl(patientPhone, message);
+    if (!whatsappUrl) {
+      setError("Patient phone not found");
+      return;
+    }
 
 
 
@@ -166,13 +165,13 @@ export default function AppointmentDetails() {
   const formatDate = (date) => {
     if (!date) return "-";
 
-    return dayjs(date).format("DD/MM/YYYY");
+    return formatLebanonDateTime(date, "DD/MM/YYYY");
   };
 
   const formatTime = (date) => {
     if (!date) return "-";
 
-    return dayjs(date).format("HH:mm");
+    return formatLebanonDateTime(date, "HH:mm");
   };
 
   // --------------------------------------------------

@@ -3,6 +3,7 @@ import {
   Paper,
   Typography,
   Button,
+  Alert,
 } from "@mui/material";
  
  
@@ -24,6 +25,7 @@ import {
  
 import dayjs from "dayjs";
 import { PageLoading } from "../Components/PageState";
+import { createWhatsAppUrl } from "../utils/whatsapp";
  
  
  
@@ -40,6 +42,7 @@ export default function CleaningWhatsapp(){
  
  
   const [loading,setLoading] = useState(true);
+  const [error,setError] = useState("");
  
  
  
@@ -218,21 +221,11 @@ Thank you.`;
 const openWhatsApp = ()=>{
  
  
-  let phone =
-    reminder.patient.phone;
- 
- 
- 
-  phone = phone
-    .replace(/\s+/g,"")
-    .replace("+","");
- 
- 
- 
- 
-  const url =
- 
-  `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  const url = createWhatsAppUrl(reminder.patient.phone, message);
+  if (!url) {
+    setError("Patient phone number not found.");
+    return;
+  }
  
  
  
@@ -293,6 +286,12 @@ border:"1px solid #eee3c5"
 }}
  
 >
+
+{error && (
+  <Alert severity="error" sx={{ mb: 2 }}>
+    {error}
+  </Alert>
+)}
  
  
  
