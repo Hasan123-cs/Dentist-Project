@@ -23,6 +23,7 @@ import {
  
  
 import dayjs from "dayjs";
+import { PageLoading } from "../Components/PageState";
  
  
  
@@ -146,19 +147,7 @@ export default function AppointmentWhatsapp(){
  
  
   if(loading){
- 
- 
-    return (
- 
-      <Box p={4}>
- 
-        Loading appointment...
- 
-      </Box>
- 
-    );
- 
- 
+    return <PageLoading label="Loading appointment..." />;
   }
  
  

@@ -5,6 +5,7 @@ import StatCard from "../Components/StatsCard";
 import QuickActions from "../Components/QuickActions";
 import Schedule from "../Components/Schedule";
 import Analytics from "../Components/Analytics";
+import { PageLoading } from "../Components/PageState";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -78,11 +79,7 @@ export default function DentistDashboard() {
   const isDoctor =
     dashboardData?.userName === "Amany";
   if (loading) {
-    return (
-      <Box p={4} color="#092c57">
-        Loading Dashboard...
-      </Box>
-    );
+    return <PageLoading label="Loading dashboard..." />;
   }
 
   if (loadError) {
@@ -166,7 +163,7 @@ export default function DentistDashboard() {
             icon={<Warning />}
             title="Outstanding Balance"
             value={dashboardData?.outstandingBalance || 0}
-            description="9 outstanding invoices"
+            description="Across all patients"
           />
         </Grid>
       </Grid>

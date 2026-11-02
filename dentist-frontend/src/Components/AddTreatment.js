@@ -11,6 +11,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import treatmentOptions from "./treatmentOptions";
+import { invalidateRequestCache } from "../api/requestCache";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
@@ -31,7 +32,7 @@ export default function AddTreatment() {
     tooth: "",
     surface: [],
     status: "Pending",
-    price: "",
+    price: 0,
     paidAmount: "0",
     notes: "",
   });
@@ -315,7 +316,7 @@ export default function AddTreatment() {
 
       status: form.status,
 
-      price: form.price === "" ? null : Number(form.price),
+      price: Number(form.price || 0),
 
       paidAmount: Number(form.paidAmount || 0),
 
@@ -354,6 +355,7 @@ export default function AddTreatment() {
       }
 
       console.log("Treatment saved successfully:", data);
+      invalidateRequestCache("/api/patients");
 
       navigate(`/patients/${id}?tab=treatment`);
     } catch (err) {

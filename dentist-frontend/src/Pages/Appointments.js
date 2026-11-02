@@ -1,34 +1,47 @@
-import { Box } from "@mui/material";
+import { Box, useMediaQuery } from "@mui/material";
 import axios from "axios";
 import dayjs from "dayjs";
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Alert } from "@mui/material";
 import { Snackbar } from "@mui/material";
 import AppointmentStats from "../Components/Appointmentstats";
 import CalendarToolbar from "../Components/CalendarToolbar";
 import WeeklyCalendar from "../Components/WeeklyCalendar";
 import AppointmentHeader from "../Components/AppointmentHeader";
+import { EmptyState, PageLoading } from "../Components/PageState";
+import EventBusy from "@mui/icons-material/EventBusy";
 
 export default function Appointments() {
+  const isMobile = useMediaQuery("(max-width:599px)");
   const [currentDate, setCurrentDate] = useState(dayjs());
 
   const [appointments, setAppointments] = useState([]);
 
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState({
+    totalToday: 0,
+    completed: 0,
+    inProgress: 0,
+    scheduled: 0,
+  });
 
-  const [view, setView] = useState("week");
+  const [view, setView] = useState(isMobile ? "day" : "week");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [notification, setNotification] = useState({
     open: false,
     message: "",
     severity: "success",
   });
   useEffect(() => {
-    loadAppointments();
-  }, [currentDate]);
+    setView(isMobile ? "day" : "week");
+  }, [isMobile]);
 
   // LOAD APPOINTMENTS
 
-  const loadAppointments = async () => {
+  const loadAppointments = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
+
     const start = currentDate
       .startOf("week")
       .add(1, "day")
@@ -70,8 +83,15 @@ export default function Appointments() {
         "Load appointments error:",
         error.response?.data || error.message,
       );
+      setLoadError("Unable to load appointments. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [currentDate]);
+
+  useEffect(() => {
+    loadAppointments();
+  }, [loadAppointments]);
 
   // CANCEL APPOINTMENT
 
@@ -122,6 +142,21 @@ export default function Appointments() {
     }
   };
 
+  const visibleAppointments = appointments.filter((appointment) => {
+    const appointmentDate = dayjs(appointment.startDateTime);
+    if (view === "day") {
+      return appointmentDate.isSame(currentDate, "day");
+    }
+    if (view === "3days") {
+      return (
+        appointmentDate.isSame(currentDate, "day") ||
+        appointmentDate.isSame(currentDate.add(1, "day"), "day") ||
+        appointmentDate.isSame(currentDate.add(2, "day"), "day")
+      );
+    }
+    return true;
+  });
+
   return (
     <Box
       sx={{
@@ -132,6 +167,11 @@ export default function Appointments() {
         background: "#faf8f2",
       }}
     >
+      {loading ? (
+        <PageLoading label="Loading appointments..." />
+      ) : (
+        <>
+      {loadError && <Alert severity="error" sx={{ mb: 2 }}>{loadError}</Alert>}
       <AppointmentHeader />
 
       <AppointmentStats stats={stats} />
@@ -142,6 +182,15 @@ export default function Appointments() {
         view={view}
         setView={setView}
       />
+
+      {visibleAppointments.length === 0 && !loadError && (
+        <EmptyState
+          title="No appointments in this period"
+          description="Try another date or add a new appointment."
+          icon={EventBusy}
+          sx={{ my: 3 }}
+        />
+      )}
 
       <WeeklyCalendar
         currentDate={currentDate}
@@ -178,6 +227,8 @@ export default function Appointments() {
           {notification.message}
         </Alert>
       </Snackbar>
+        </>
+      )}
     </Box>
   );
 }

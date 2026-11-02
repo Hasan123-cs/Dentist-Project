@@ -16,7 +16,6 @@ import {
   Alert,
   MenuItem,
   IconButton,
-  CircularProgress,
 } from "@mui/material";
 
 import ClinicalSummary from "../Components/ClinicalSummary";
@@ -30,6 +29,8 @@ import treatmentOptions from "./treatmentOptions";
 
 import DentalChart from "../Components/DentalChart";
 import ConditionLegend from "../Components/ConditionLegend";
+import { invalidateRequestCache } from "../api/requestCache";
+import { PageLoading } from "../Components/PageState";
 
 export default function PatientProfile() {
   const { id } = useParams();
@@ -59,10 +60,22 @@ export default function PatientProfile() {
   const [treatmentSaving, setTreatmentSaving] = useState(false);
   const [editHasTooth, setEditHasTooth] = useState(false);
   const [editHasSurface, setEditHasSurface] = useState(false);
+  const planRecords = [
+    ...new Map(
+      treatments.map((treatment) => [treatment.medicalRecordId, treatment]),
+    ).values(),
+  ];
 
-  const updatePatientBalance = (previousRemaining, nextRemaining) => {
+  const updatePatientBalance = (
+    previousCost,
+    previousPaid,
+    nextCost,
+    nextPaid,
+  ) => {
     const balanceChange =
-      Number(nextRemaining || 0) - Number(previousRemaining || 0);
+      Number(nextCost || 0) -
+      Number(previousCost || 0) -
+      (Number(nextPaid || 0) - Number(previousPaid || 0));
 
     setSummary((current) => ({
       ...current,
@@ -118,13 +131,23 @@ export default function PatientProfile() {
         );
       }
 
-      const previousRemaining = Number(paymentDialog.remaining || 0);
-      const paidAmount = Number(paymentDialog.paid || 0) + amount;
-      const nextRemaining = Math.max(
-        Number(paymentDialog.cost || 0) - paidAmount,
-        0,
+      const savedPayment = result?.data || {};
+      const previousCost = Number(paymentDialog.cost || 0);
+      const previousPaid = Number(paymentDialog.paid || 0);
+      const paidAmount = Number(
+        savedPayment.paidAmount ?? previousPaid + amount,
       );
-      updatePatientBalance(previousRemaining, nextRemaining);
+      const nextRemaining = Number(
+        savedPayment.remaining ??
+          Math.max(Number(paymentDialog.cost || 0) - paidAmount, 0),
+      );
+      updatePatientBalance(
+        previousCost,
+        previousPaid,
+        Number(savedPayment.totalCost ?? paymentDialog.cost ?? 0),
+        paidAmount,
+      );
+      invalidateRequestCache("/api/patients");
 
       setTreatments((current) =>
         current.map((treatment) => {
@@ -132,8 +155,8 @@ export default function PatientProfile() {
             return treatment;
           }
 
-          const paid = Number(treatment.paid || 0) + amount;
-          const remaining = Math.max(Number(treatment.cost || 0) - paid, 0);
+          const paid = paidAmount;
+          const remaining = nextRemaining;
           return {
             ...treatment,
             paid,
@@ -258,10 +281,16 @@ export default function PatientProfile() {
       }
 
       const updated = result.data;
+      invalidateRequestCache("/api/patients");
       const updatedCost = Number(updated.price);
       const updatedPaid = Number(updated.paidAmount);
       const updatedRemaining = Math.max(updatedCost - updatedPaid, 0);
-      updatePatientBalance(treatmentDialog.remaining, updatedRemaining);
+      updatePatientBalance(
+        treatmentDialog.cost,
+        treatmentDialog.paid,
+        updatedCost,
+        updatedPaid,
+      );
 
       setTreatments((current) =>
         current.map((item) => {
@@ -360,19 +389,7 @@ export default function PatientProfile() {
   }, [id]);
 
   if (patientLoading) {
-    return (
-      <Box
-        p={4}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        gap={2}
-        role="status"
-      >
-        <CircularProgress size={24} aria-label="Loading patient" />
-        <Typography>Loading patient...</Typography>
-      </Box>
-    );
+    return <PageLoading label="Loading patient..." />;
   }
 
   if (!patient) {
@@ -767,9 +784,19 @@ export default function PatientProfile() {
               </Typography>
               <Grid container spacing={1}>
                 {[
-                  ["Total", treatments.reduce((sum, item) => sum + Number(item.cost || 0), 0)],
-                  ["Paid", treatments.reduce((sum, item) => sum + Number(item.paid || 0), 0)],
-                  ["Outstanding", treatments.reduce((sum, item) => sum + Number(item.remaining || 0), 0)],
+                  ["Total", planRecords.reduce((sum, item) => sum + Number(item.cost || 0), 0)],
+                  ["Paid", planRecords.reduce((sum, item) => sum + Number(item.paid || 0), 0)],
+                  [
+                    "Outstanding",
+                    Math.max(
+                      planRecords.reduce(
+                        (sum, item) =>
+                          sum + Number(item.cost || 0) - Number(item.paid || 0),
+                        0,
+                      ),
+                      0,
+                    ),
+                  ],
                 ].map(([label, amount]) => (
                   <Grid item xs={12} sm={4} key={label}>
                     <Typography color="text.secondary">{label}</Typography>

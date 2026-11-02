@@ -21,6 +21,7 @@ namespace dentist_project.Service
         public async Task<List<PatientDto>> GetPatients()
         {
             var patients = await _context.Patients
+                .AsNoTracking()
                 .Select(p => new PatientDto
                 {
                     Id = p.Id,
@@ -43,10 +44,11 @@ namespace dentist_project.Service
                     CreatedAt = p.CreatedAt,
 
                     Balance = p.MedicalRecords
-                        .Sum(record =>
-                            record.TotalCost > record.PaidAmount
-                                ? record.TotalCost - record.PaidAmount
-                                : 0m)
+                        .Sum(record => record.TotalCost)
+                        - p.MedicalRecords.Sum(record => record.PaidAmount) > 0m
+                            ? p.MedicalRecords.Sum(record => record.TotalCost)
+                                - p.MedicalRecords.Sum(record => record.PaidAmount)
+                            : 0m
                 })
                 .ToListAsync();
 
@@ -2384,12 +2386,9 @@ namespace dentist_project.Service
 
             return new
             {
-                balance = await _context.MedicalRecords
+                balance = Math.Max(await _context.MedicalRecords
                     .Where(record => record.PatientId == patientId)
-                    .SumAsync(record =>
-                        record.TotalCost > record.PaidAmount
-                            ? record.TotalCost - record.PaidAmount
-                            : 0m),
+                    .SumAsync(record => record.TotalCost - record.PaidAmount), 0m),
 
                 upcomingAppointments = upcomingAppointments,
 

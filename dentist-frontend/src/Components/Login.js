@@ -19,6 +19,7 @@ import {
   VisibilityOff,
   HealthAndSafety,
 } from "@mui/icons-material";
+import { clearRequestCache } from "../api/requestCache";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ export default function Login() {
       }
 
       localStorage.setItem("token", token);
+      clearRequestCache();
       localStorage.setItem("user", JSON.stringify(data.user || {
         id: data.userId || data.UserId,
         email: data.email || data.Email,

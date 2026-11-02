@@ -28,6 +28,7 @@ import {
 
 
 import amanyImage from "../images/Amany.jpeg";
+import { clearRequestCache } from "../api/requestCache";
 
 
 
@@ -78,6 +79,7 @@ export default function Sidebar({ open, onClose }) {
     const isMobile = useMediaQuery("(max-width:899px)");
 
     const handleLogout = () => {
+        clearRequestCache();
         localStorage.removeItem("token");
         onClose?.();
         navigate("/login", { replace: true });

@@ -64,13 +64,17 @@ namespace dentist_project.Service
                     .SumAsync(x => x.PaidAmount);
 
                 // outstanding balance
-                dashboard.OutstandingBalance =
-                await _db.MedicalRecords
-                .SumAsync(record =>
-                    record.TotalCost > record.PaidAmount
-                        ? record.TotalCost - record.PaidAmount
-                        : 0m
-                );
+                var patientBalances = await _db.MedicalRecords
+                    .GroupBy(record => record.PatientId)
+                    .Select(records => new
+                    {
+                        TotalCost = records.Sum(record => record.TotalCost),
+                        PaidAmount = records.Sum(record => record.PaidAmount)
+                    })
+                    .ToListAsync();
+
+                dashboard.OutstandingBalance = patientBalances.Sum(balance =>
+                    Math.Max(balance.TotalCost - balance.PaidAmount, 0m));
 
             }
             // schedule for both 

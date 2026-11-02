@@ -1,6 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { invalidateRequestCache } from "../api/requestCache";
 import Tooth from "./Tooth";
 import ToothPanel from "./ToothPanel";
 
@@ -486,6 +487,7 @@ Proceed?
       );
 
       console.log("Bridge updated successfully:", response.data);
+      invalidateRequestCache("/api/patients");
 
       alert(`✓ Bridge saved successfully for teeth ${sorted.join(", ")}`);
 
@@ -755,6 +757,7 @@ Proceed?
       });
 
       console.log("✅ DELETE SUCCESS");
+      invalidateRequestCache("/api/patients");
       console.log("Status:", response.status);
       console.log("Response:", response.data);
 
@@ -873,6 +876,7 @@ Proceed?
       );
 
       console.log("Tooth updated successfully:", response.data);
+      invalidateRequestCache("/api/patients");
 
       // =====================================================
       // REFETCH UPDATED DATA FROM BACKEND

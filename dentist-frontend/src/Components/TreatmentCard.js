@@ -11,6 +11,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 
 import { useNavigate } from "react-router-dom";
+import { invalidateRequestCache } from "../api/requestCache";
 
 export default function TreatmentCard({ treatment, onDelete }) {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ export default function TreatmentCard({ treatment, onDelete }) {
         throw new Error("Status update failed");
       }
 
+      invalidateRequestCache("/api/patients");
       window.location.reload();
     } catch (error) {
       console.log(error);
@@ -89,6 +91,7 @@ export default function TreatmentCard({ treatment, onDelete }) {
         throw new Error("Delete failed");
       }
 
+      invalidateRequestCache("/api/patients");
       onDelete(treatment.id);
     } catch (error) {
       console.error("Delete error:", error);

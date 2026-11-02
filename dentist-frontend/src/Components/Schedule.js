@@ -1,4 +1,6 @@
 import { Paper, Typography, Box, Chip } from "@mui/material";
+import EventBusy from "@mui/icons-material/EventBusy";
+import { EmptyState } from "./PageState";
 
 // const appointments = [
 //   {
@@ -27,7 +29,7 @@ import { Paper, Typography, Box, Chip } from "@mui/material";
 //   },
 // ];
 
-export default function Schedule({ ScheduleList }) {
+export default function Schedule({ ScheduleList = [] }) {
   return (
     <Paper
       sx={{
@@ -41,7 +43,14 @@ export default function Schedule({ ScheduleList }) {
         Today's Schedule
       </Typography>
 
-      {ScheduleList.map((item) => (
+      {ScheduleList.length === 0 ? (
+        <EmptyState
+          title="No appointments today"
+          description="Your schedule is clear for today."
+          icon={EventBusy}
+          sx={{ minHeight: 150 }}
+        />
+      ) : ScheduleList.map((item) => (
         <Box
           key={item.time}
           sx={{

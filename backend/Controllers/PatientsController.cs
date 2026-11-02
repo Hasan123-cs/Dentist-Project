@@ -296,15 +296,7 @@ namespace dentist_project.Controllers;
     public async Task<IActionResult> GetAllTreatments()
     {
         var treatments = await _context.MedicalRecords
-
-     .Include(m => m.Patient)
-
-     .Include(m => m.ToothTreatments)
-         .ThenInclude(t => t.Tooth)
-
-     .Include(m => m.ToothTreatments)
-         .ThenInclude(t => t.Treatment)
-
+     .AsNoTracking()
      .OrderByDescending(m => m.CreatedAt)
 
 

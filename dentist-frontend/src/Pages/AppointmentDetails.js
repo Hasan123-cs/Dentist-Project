@@ -30,6 +30,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
+import { PageLoading } from "../Components/PageState";
+import { invalidateRequestCache } from "../api/requestCache";
 
 export default function AppointmentDetails() {
   const { id } = useParams();
@@ -315,6 +317,7 @@ export default function AppointmentDetails() {
       setSuccess(
         response.data?.message || "Appointment completed successfully.",
       );
+      invalidateRequestCache("/api/patients");
 
       // Reload saved data from backend
       await loadAppointment();
@@ -390,19 +393,7 @@ export default function AppointmentDetails() {
   // --------------------------------------------------
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          background: "#faf8f2",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <PageLoading label="Loading appointment..." />;
   }
 
   // --------------------------------------------------

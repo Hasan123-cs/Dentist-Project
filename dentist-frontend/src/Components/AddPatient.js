@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import { useRef, useState } from "react";
+import { invalidateRequestCache } from "../api/requestCache";
 
 export default function AddPatient() {
   const navigate = useNavigate();
@@ -68,6 +69,7 @@ export default function AddPatient() {
       }
 
       console.log("Patient created:", data);
+      invalidateRequestCache("/api/patients");
 
       navigate("/patients");
     } catch (error) {

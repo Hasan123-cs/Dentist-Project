@@ -39,6 +39,7 @@ import {
   Payments,
   ArrowForward,
 } from "@mui/icons-material";
+import { invalidateRequestCache } from "../api/requestCache";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/Patients`;
 
@@ -61,7 +62,7 @@ const medicalOptions = [
   "Cholesterol",
 ];
 
-export default function PatientCard({ patient, onDelete }) {
+export default function PatientCard({ patient, onUpdate, onDelete }) {
   const navigate = useNavigate();
 
   // THREE DOTS MENU
@@ -380,8 +381,13 @@ export default function PatientCard({ patient, onDelete }) {
       setNotesAnchor(null);
       setEditOpen(false);
 
-      // REFRESH PATIENT DATA
-      window.location.reload();
+      const [firstName, ...lastNameParts] = editName.trim().split(/\s+/);
+      invalidateRequestCache("/api/patients");
+      onUpdate?.(patient.id, {
+        firstName: firstName || "",
+        lastName: lastNameParts.join(" "),
+        phone: phoneChanged ? editPhone.trim() : originalPhone,
+      });
     } catch (error) {
       console.error("Update patient error:", error);
 
@@ -440,6 +446,7 @@ export default function PatientCard({ patient, onDelete }) {
         );
       }
 
+      invalidateRequestCache("/api/patients");
       onDelete(patient.id);
     } catch (error) {
       console.error(
@@ -458,9 +465,10 @@ export default function PatientCard({ patient, onDelete }) {
       <Paper
         sx={{
           width: "100%",
-          height: 520,
+          minHeight: { xs: 470, sm: 500 },
+          height: "100%",
           boxSizing: "border-box",
-          p: 3,
+          p: { xs: 2, sm: 3 },
           borderRadius: 4,
           border: "1px solid #eee3c5",
           background: "#fff",

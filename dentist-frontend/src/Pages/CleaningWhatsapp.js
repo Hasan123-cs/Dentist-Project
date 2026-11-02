@@ -23,6 +23,7 @@ import {
  
  
 import dayjs from "dayjs";
+import { PageLoading } from "../Components/PageState";
  
  
  
@@ -141,17 +142,7 @@ export default function CleaningWhatsapp(){
  
  
   if(loading){
- 
-    return (
- 
-      <Box p={4}>
- 
-        Loading reminder...
- 
-      </Box>
- 
-    );
- 
+    return <PageLoading label="Loading reminder..." />;
   }
  
  

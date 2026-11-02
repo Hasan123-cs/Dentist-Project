@@ -29,6 +29,8 @@ import {
   useEffect,
   useState
 } from "react";
+import { PageLoading } from "../Components/PageState";
+import InboxOutlined from "@mui/icons-material/InboxOutlined";
 
 
 
@@ -42,8 +44,8 @@ export default function WhatsAppReminders() {
   const [error, setError] = useState("");
 
   // selected message language
-  const [language, setLanguage] = useState("ar");
-  const [reminderFilter, setReminderFilter] = useState("all");
+  const [language, setLanguage] = useState("both");
+  const [reminderFilter, setReminderFilter] = useState("notSubmitted");
   const [patientSearch, setPatientSearch] = useState("");
   const [savingReminderId, setSavingReminderId] = useState(null);
 
@@ -296,15 +298,7 @@ export default function WhatsAppReminders() {
 
 
   if (loading) {
-
-    return (
-
-      <Box p={4}>
-        Loading reminders...
-      </Box>
-
-    );
-
+    return <PageLoading label="Loading reminders..." />;
   }
 
 
@@ -605,12 +599,19 @@ export default function WhatsAppReminders() {
 
                 p: 4,
 
-                borderRadius: 4
+                borderRadius: 4,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1,
+                color: "#718096",
+                textAlign: "center"
 
               }}
 
             >
 
+              <InboxOutlined sx={{ fontSize: 40, color: "#9aa7b5" }} />
               <Typography>
 
                 {reminders.length === 0

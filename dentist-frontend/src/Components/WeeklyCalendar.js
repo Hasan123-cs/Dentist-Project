@@ -65,6 +65,10 @@ export default function WeeklyCalendar({
       (_, i) => startOfWeek.add(i, "day"),
     );
   }
+  const isSingleDay = days.length === 1;
+  const gridColumns = `${isSingleDay ? 58 : 80}px repeat(${days.length}, ${
+    isSingleDay ? "minmax(0, 1fr)" : "minmax(110px, 1fr)"
+  })`;
 
   const getAppointmentDuration = (appointment) => {
     const start = dayjs(appointment.startDateTime);
@@ -150,7 +154,8 @@ export default function WeeklyCalendar({
     <Box sx={{ mt: 3, width: "100%", overflowX: "auto" }}>
       <Paper
         sx={{
-          minWidth: days.length === 1 ? 480 : days.length === 3 ? 600 : 850,
+          width: "100%",
+          minWidth: isSingleDay ? { xs: "100%", sm: 480 } : days.length === 3 ? 600 : 850,
           borderRadius: 4,
           overflow: "visible",
           border: "1px solid #eee3c5",
@@ -163,7 +168,7 @@ export default function WeeklyCalendar({
         sx={{
           display: "grid",
 
-          gridTemplateColumns: `80px repeat(${days.length}, minmax(110px, 1fr))`,
+          gridTemplateColumns: gridColumns,
         }}
       >
         <Box />
@@ -198,7 +203,7 @@ export default function WeeklyCalendar({
           sx={{
             display: "grid",
 
-            gridTemplateColumns: `80px repeat(${days.length}, minmax(110px, 1fr))`,
+            gridTemplateColumns: gridColumns,
 
             height: 60,
           }}
