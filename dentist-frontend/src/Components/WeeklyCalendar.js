@@ -227,12 +227,15 @@ export default function WeeklyCalendar({
           </Box>
 
           {days.map((day) => {
+            const slotStart = dayjs(`${day.format("YYYY-MM-DD")} ${time}`);
             const cellAppointments = appointments.filter((app) => {
               const date = dayjs(app.startDateTime);
+              const minutesFromSlotStart = date.diff(slotStart, "minute");
 
               return (
                 date.format("YYYY-MM-DD") === day.format("YYYY-MM-DD") &&
-                date.format("HH:mm") === time
+                minutesFromSlotStart >= 0 &&
+                minutesFromSlotStart < 30
               );
             });
 
@@ -262,7 +265,7 @@ export default function WeeklyCalendar({
                       sx={{
                         position: "absolute",
 
-                        top: 0,
+                        top: `${dayjs(app.startDateTime).diff(slotStart, "minute") * 2}px`,
 
                         left: `${(index * 100) / cellAppointments.length}%`,
 

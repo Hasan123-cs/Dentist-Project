@@ -783,9 +783,9 @@ export default function NewAppointment() {
                 : null
             }
             onChange={handleStartTimeChange}
-            minutesStep={30}
+            minutesStep={15}
             timeSteps={{
-              minutes: 30,
+              minutes: 15,
             }}
             slotProps={{
               textField: {
@@ -817,9 +817,9 @@ export default function NewAppointment() {
                 : null
             }
             onChange={handleEndTimeChange}
-            minutesStep={30}
+            minutesStep={15}
             timeSteps={{
-              minutes: 30,
+              minutes: 15,
             }}
             slotProps={{
               textField: {
