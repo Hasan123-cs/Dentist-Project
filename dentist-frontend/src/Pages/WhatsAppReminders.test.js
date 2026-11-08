@@ -20,6 +20,7 @@ describe("WhatsApp reminder filters", () => {
             type: "AppointmentReminder",
             date: tomorrow,
             time: "10:00",
+            endTime: "10:30",
             isSent: false,
           },
           {
@@ -72,10 +73,12 @@ describe("WhatsApp reminder filters", () => {
   });
 
   test("shows all-time statuses and filters tomorrow by status and reminder type", async () => {
+    const tomorrow = getTomorrowLebanonDate();
     render(<WhatsAppReminders />);
 
     expect(await screen.findByText("Tomorrow Waiting")).toBeInTheDocument();
-    expect(screen.getByText("Future Cleaning")).toBeInTheDocument();
+    expect(screen.getByText(`${tomorrow} · 10:00 - 10:30`)).toBeInTheDocument();
+    expect(screen.queryByText("Future Cleaning")).not.toBeInTheDocument();
     expect(screen.queryByText("Past Submitted")).not.toBeInTheDocument();
 
     fireEvent.click(

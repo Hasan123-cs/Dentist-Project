@@ -795,7 +795,10 @@ export default function WhatsAppReminders() {
 
                   {item.date && (
                     <Typography color="text.secondary" fontSize={13} mt={0.5}>
-                      {item.date}{item.time ? ` · ${item.time}` : ""}
+                      {item.date}
+                      {item.time
+                        ? ` · ${item.time}${item.endTime ? ` - ${item.endTime}` : ""}`
+                        : ""}
                     </Typography>
                   )}
 
