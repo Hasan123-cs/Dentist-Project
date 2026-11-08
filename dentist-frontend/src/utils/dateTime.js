@@ -14,3 +14,7 @@ export function formatLebanonDateTime(value, format) {
 export function getTomorrowLebanonDate() {
   return dayjs().tz(LEBANON_TIME_ZONE).add(1, "day").format("YYYY-MM-DD");
 }
+
+export function getTodayLebanonDate() {
+  return dayjs().tz(LEBANON_TIME_ZONE).format("YYYY-MM-DD");
+}

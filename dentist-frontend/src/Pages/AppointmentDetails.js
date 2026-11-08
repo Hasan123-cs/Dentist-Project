@@ -9,6 +9,11 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Checkbox,
 } from "@mui/material";
 import {
   appointmentReminderArabic,
@@ -31,8 +36,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { PageLoading } from "../Components/PageState";
 import { invalidateRequestCache } from "../api/requestCache";
-import { formatLebanonDateTime } from "../utils/dateTime";
+import {
+  formatLebanonDateTime,
+  getTodayLebanonDate,
+} from "../utils/dateTime";
 import { createWhatsAppUrl } from "../utils/whatsapp";
+import treatmentOptions from "../Components/treatmentOptions";
 
 export default function AppointmentDetails() {
   const { id } = useParams();
@@ -49,6 +58,12 @@ export default function AppointmentDetails() {
   const [showCompletionForm, setShowCompletionForm] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState("Unpaid");
   const [paidAmount, setPaidAmount] = useState("");
+  const [treatmentDialogMode, setTreatmentDialogMode] = useState(null);
+  const [patientTreatmentPlans, setPatientTreatmentPlans] = useState([]);
+  const [treatmentForm, setTreatmentForm] = useState({});
+  const [treatmentDialogError, setTreatmentDialogError] = useState("");
+  const [treatmentDialogLoading, setTreatmentDialogLoading] = useState(false);
+  const [treatmentDialogSaving, setTreatmentDialogSaving] = useState(false);
 
   // --------------------------------------------------
   // LOAD APPOINTMENT
@@ -231,6 +246,8 @@ export default function AppointmentDetails() {
   const totalCost = Number(appointment?.totalCost || 0);
   const amountPaid = Number(appointment?.paidAmount ?? 0);
   const remaining = Number(appointment?.remaining ?? 0);
+  const isCheckupAppointment =
+    appointment?.appointmentType?.toLowerCase() === "checkup";
 
   // --------------------------------------------------
   // START COMPLETION
@@ -250,6 +267,190 @@ export default function AppointmentDetails() {
     );
 
     setShowCompletionForm(true);
+  };
+
+  const openCheckupTreatmentDialog = async (mode) => {
+    if (!appointment.patientId) {
+      setError("A patient record is required to manage treatment plans.");
+      return;
+    }
+
+    setTreatmentDialogError("");
+    setTreatmentDialogMode(mode);
+
+    const appointmentDate = appointment.startDateTime
+      ? formatLebanonDateTime(appointment.startDateTime, "YYYY-MM-DD")
+      : getTodayLebanonDate();
+
+    if (mode === "add") {
+      setTreatmentForm({
+        treatment: treatmentOptions[0].value,
+        treatmentDate: appointmentDate,
+        status: "NeedsTreatment",
+        toothNumbers: "",
+        surfaces: [],
+        price: "",
+        paidAmount: "",
+      });
+      return;
+    }
+
+    setTreatmentDialogLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/patients/${appointment.patientId}/treatments`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const plans = await response.json();
+      if (!response.ok) {
+        throw new Error(plans.message || "Unable to load patient treatments.");
+      }
+
+      const editablePlans = plans.filter((plan) => plan.canEdit);
+      setPatientTreatmentPlans(editablePlans);
+      if (editablePlans.length === 0) {
+        setTreatmentDialogError("This patient has no editable treatment plans.");
+        return;
+      }
+
+      const plan = editablePlans[0];
+      setTreatmentForm({
+        medicalRecordId: plan.medicalRecordId,
+        treatment: plan.treatment || "",
+        treatmentDate: plan.date || appointmentDate,
+        status: plan.status || "NeedsTreatment",
+        toothNumbers: (plan.teeth || []).join(", "),
+        surfaces: plan.surfaces || [],
+        price: plan.cost ?? "",
+        paidAmount: plan.paid ?? "",
+      });
+    } catch (requestError) {
+      console.error("Unable to load patient treatment plans:", requestError);
+      setTreatmentDialogError(
+        requestError.message || "Unable to load patient treatments.",
+      );
+    } finally {
+      setTreatmentDialogLoading(false);
+    }
+  };
+
+  const handleCheckupTreatmentSave = async (event) => {
+    event.preventDefault();
+    setTreatmentDialogError("");
+
+    if (!treatmentForm.treatmentDate) {
+      setTreatmentDialogError("Select a treatment date.");
+      return;
+    }
+
+    const toothNumbers = treatmentForm.toothNumbers
+      .split(",")
+      .map((tooth) => tooth.trim())
+      .filter(Boolean);
+    if (toothNumbers.some((tooth) => !/^\d+$/.test(tooth))) {
+      setTreatmentDialogError("Enter tooth numbers separated by commas.");
+      return;
+    }
+    if (
+      treatmentForm.treatment.toLowerCase() === "bridge" &&
+      toothNumbers.length < 3
+    ) {
+      setTreatmentDialogError("Bridge requires at least 3 tooth numbers.");
+      return;
+    }
+    if (
+      treatmentForm.treatment.toLowerCase() !== "bridge" &&
+      toothNumbers.length > 1
+    ) {
+      setTreatmentDialogError("Enter only one tooth for this treatment.");
+      return;
+    }
+    if (treatmentForm.surfaces.length > 0 && toothNumbers.length === 0) {
+      setTreatmentDialogError("A surface requires a tooth number.");
+      return;
+    }
+
+    const price =
+      treatmentForm.price === "" ? null : Number(treatmentForm.price);
+    const paidAmount =
+      treatmentForm.paidAmount === ""
+        ? treatmentDialogMode === "edit"
+          ? null
+          : 0
+        : Number(treatmentForm.paidAmount);
+    if (price !== null && (!Number.isFinite(price) || price < 0)) {
+      setTreatmentDialogError("Price cannot be negative.");
+      return;
+    }
+    if (paidAmount !== null && (!Number.isFinite(paidAmount) || paidAmount < 0)) {
+      setTreatmentDialogError("Paid amount cannot be negative.");
+      return;
+    }
+
+    const payload = {
+      treatment: treatmentForm.treatment,
+      treatmentDate: treatmentForm.treatmentDate,
+      toothNumbers: toothNumbers.map(Number),
+      surfaces: treatmentForm.surfaces,
+      status: treatmentForm.status,
+      price,
+      paidAmount,
+    };
+
+    setTreatmentDialogSaving(true);
+    try {
+      const token = localStorage.getItem("token");
+      const isEditing = treatmentDialogMode === "edit";
+      const url = `${process.env.REACT_APP_API_URL}/api/patients/${appointment.patientId}/treatments${
+        isEditing ? `/${treatmentForm.medicalRecordId}` : ""
+      }`;
+      const response = await fetch(url, {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const responseText = await response.text();
+      let result = {};
+      if (responseText) {
+        try {
+          result = JSON.parse(responseText);
+        } catch (parseError) {
+          if (!response.ok) {
+            throw new Error(responseText);
+          }
+          throw new Error("The treatment save response was not valid JSON.");
+        }
+      }
+      if (!response.ok) {
+        throw new Error(
+          result.message ||
+            result.Message ||
+            result.error ||
+            result.title ||
+            result.detail ||
+            "Unable to save this treatment.",
+        );
+      }
+
+      invalidateRequestCache("/api/patients");
+      setTreatmentDialogMode(null);
+      setSuccess(
+        isEditing
+          ? "Treatment plan updated successfully."
+          : "Treatment added to the patient plan.",
+      );
+    } catch (requestError) {
+      console.error("Unable to save checkup treatment:", requestError);
+      setTreatmentDialogError(
+        requestError.message || "Unable to save this treatment.",
+      );
+    } finally {
+      setTreatmentDialogSaving(false);
+    }
   };
 
   // --------------------------------------------------
@@ -276,7 +477,7 @@ export default function AppointmentDetails() {
 
     let amount = 0;
 
-    if (paymentStatus !== "Unpaid") {
+    if (!isCheckupAppointment && paymentStatus !== "Unpaid") {
       amount = Number(paidAmount);
 
       if (paidAmount === "" || Number.isNaN(amount)) {
@@ -291,7 +492,7 @@ export default function AppointmentDetails() {
 
     }
 
-    if (paymentStatus === "Unpaid") {
+    if (isCheckupAppointment || paymentStatus === "Unpaid") {
       amount = 0;
     }
 
@@ -907,7 +1108,9 @@ export default function AppointmentDetails() {
                     mb: 3,
                   }}
                 >
-                  Select whether the patient paid for the appointment.
+                  {isCheckupAppointment
+                    ? "Update the patient's treatment plan if needed, then complete the checkup."
+                    : "Select whether the patient paid for the appointment."}
                 </Typography>
 
                 <Box
@@ -915,44 +1118,66 @@ export default function AppointmentDetails() {
                     maxWidth: "450px",
                   }}
                 >
-                  {/* PAYMENT STATUS */}
-
-                  <TextField
-                    select
-                    fullWidth
-                    label="Payment Status"
-                    value={paymentStatus}
-                    onChange={handlePaymentStatusChange}
-                  >
-                    <MenuItem value="Unpaid">Unpaid</MenuItem>
-
-                    <MenuItem value="PartiallyPaid">Partially Paid</MenuItem>
-
-                    <MenuItem value="Paid">Paid</MenuItem>
-                  </TextField>
-
-                  {/* PAID AMOUNT */}
-
-                  {paymentStatus !== "Unpaid" && (
-                    <TextField
-                      fullWidth
-                      label="Amount Paid"
-                      type="number"
-                      value={paidAmount}
-                      onChange={(e) => setPaidAmount(e.target.value)}
-                      inputProps={{
-                        min: 0,
-                        step: "0.01",
+                  {isCheckupAppointment ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1.5,
+                        mb: 3,
                       }}
-                      sx={{ mt: 2 }}
-                    />
-                  )}
+                    >
+                      <Button
+                        variant="outlined"
+                        onClick={() => openCheckupTreatmentDialog("edit")}
+                        disabled={!appointment.patientId || treatmentDialogLoading}
+                        sx={{ borderColor: "#C9A227", color: "#8a6d1d" }}
+                      >
+                        Edit Treatment
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => openCheckupTreatmentDialog("add")}
+                        disabled={!appointment.patientId}
+                        sx={{ borderColor: "#C9A227", color: "#8a6d1d" }}
+                      >
+                        Add New Treatment
+                      </Button>
+                      {!appointment.patientId && (
+                        <Typography color="text.secondary" sx={{ width: "100%" }}>
+                          A saved patient record is required to manage a treatment plan.
+                        </Typography>
+                      )}
+                    </Box>
+                  ) : (
+                    <>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Payment Status"
+                        value={paymentStatus}
+                        onChange={handlePaymentStatusChange}
+                      >
+                        <MenuItem value="Unpaid">Unpaid</MenuItem>
+                        <MenuItem value="PartiallyPaid">Partially Paid</MenuItem>
+                        <MenuItem value="Paid">Paid</MenuItem>
+                      </TextField>
 
-                  {/* LIVE REMAINING */}
+                      {paymentStatus !== "Unpaid" && (
+                        <TextField
+                          fullWidth
+                          label="Amount Paid"
+                          type="number"
+                          value={paidAmount}
+                          onChange={(e) => setPaidAmount(e.target.value)}
+                          inputProps={{ min: 0, step: "0.01" }}
+                          sx={{ mt: 2 }}
+                        />
+                      )}
 
-                  {paymentStatus !== "Unpaid" &&
-                    paidAmount !== "" &&
-                    !Number.isNaN(Number(paidAmount)) && (
+                      {paymentStatus !== "Unpaid" &&
+                        paidAmount !== "" &&
+                        !Number.isNaN(Number(paidAmount)) && (
                       <Box
                         sx={{
                           mt: 2,
@@ -984,7 +1209,9 @@ export default function AppointmentDetails() {
                           )}
                         </Typography>
                       </Box>
-                    )}
+                        )}
+                    </>
+                  )}
 
                   {/* ACTION BUTTONS */}
 
@@ -1110,6 +1337,232 @@ export default function AppointmentDetails() {
             )}
           </Box>
         </Paper>
+        <Dialog
+          open={Boolean(treatmentDialogMode)}
+          onClose={() => {
+            if (!treatmentDialogSaving) {
+              setTreatmentDialogMode(null);
+              setTreatmentDialogError("");
+            }
+          }}
+          fullWidth
+          maxWidth="sm"
+        >
+          <Box component="form" onSubmit={handleCheckupTreatmentSave}>
+            <DialogTitle>
+              {treatmentDialogMode === "edit"
+                ? "Edit Patient Treatment"
+                : "Add New Treatment"}
+            </DialogTitle>
+            <DialogContent dividers>
+              {treatmentDialogError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {treatmentDialogError}
+                </Alert>
+              )}
+              {treatmentDialogLoading ? (
+                <Box display="flex" justifyContent="center" p={3}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <Box sx={{ display: "grid", gap: 2, pt: 1 }}>
+                  {treatmentDialogMode === "edit" && (
+                    <TextField
+                      select
+                      label="Patient Treatment Plan"
+                      value={treatmentForm.medicalRecordId || ""}
+                      onChange={(event) => {
+                        const plan = patientTreatmentPlans.find(
+                          (item) =>
+                            String(item.medicalRecordId) ===
+                            String(event.target.value),
+                        );
+                        if (!plan) return;
+                        setTreatmentForm({
+                          medicalRecordId: plan.medicalRecordId,
+                          treatment: plan.treatment || "",
+                          treatmentDate: plan.date || "",
+                          status: plan.status || "NeedsTreatment",
+                          toothNumbers: (plan.teeth || []).join(", "),
+                          surfaces: plan.surfaces || [],
+                          price: plan.cost ?? "",
+                          paidAmount: plan.paid ?? "",
+                        });
+                      }}
+                      fullWidth
+                    >
+                      {patientTreatmentPlans.map((plan) => (
+                        <MenuItem
+                          key={plan.medicalRecordId}
+                          value={plan.medicalRecordId}
+                        >
+                          {plan.treatment} · {plan.date}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                  {treatmentDialogMode === "add" && (
+                  <TextField
+                    select
+                    label="Treatment"
+                    value={treatmentForm.treatment || ""}
+                    onChange={(event) =>
+                      setTreatmentForm((current) => ({
+                        ...current,
+                        treatment: event.target.value,
+                      }))
+                    }
+                    required
+                    fullWidth
+                  >
+                    {treatmentOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  )}
+                  <TextField
+                    label="Treatment Date"
+                    type="date"
+                    value={treatmentForm.treatmentDate || ""}
+                    onChange={(event) =>
+                      setTreatmentForm((current) => ({
+                        ...current,
+                        treatmentDate: event.target.value,
+                      }))
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    required
+                    fullWidth
+                  />
+                  <TextField
+                    select
+                    label="Status"
+                    value={treatmentForm.status || "NeedsTreatment"}
+                    onChange={(event) =>
+                      setTreatmentForm((current) => ({
+                        ...current,
+                        status: event.target.value,
+                      }))
+                    }
+                    fullWidth
+                  >
+                    <MenuItem value="NeedsTreatment">Needs Treatment</MenuItem>
+                    <MenuItem value="InProgress">In Progress</MenuItem>
+                    <MenuItem value="Completed">Completed</MenuItem>
+                  </TextField>
+                  <TextField
+                    label={
+                      treatmentForm.treatment?.toLowerCase() === "bridge"
+                        ? "Tooth Numbers (optional)"
+                        : "Tooth Number (optional)"
+                    }
+                    value={treatmentForm.toothNumbers || ""}
+                    onChange={(event) =>
+                      setTreatmentForm((current) => ({
+                        ...current,
+                        toothNumbers: event.target.value,
+                        surfaces: event.target.value.trim()
+                          ? current.surfaces
+                          : [],
+                      }))
+                    }
+                    helperText="Separate multiple tooth numbers with commas."
+                    fullWidth
+                  />
+                  <TextField
+                    select
+                    label="Surfaces (optional)"
+                    value={treatmentForm.surfaces || []}
+                    onChange={(event) =>
+                      setTreatmentForm((current) => ({
+                        ...current,
+                        surfaces: Array.from(
+                          new Set(
+                            Array.isArray(event.target.value)
+                              ? event.target.value
+                              : event.target.value.split(","),
+                          ),
+                        ),
+                      }))
+                    }
+                    slotProps={{
+                      select: {
+                        multiple: true,
+                        renderValue: (selected) => selected.join(", "),
+                      },
+                    }}
+                    disabled={!treatmentForm.toothNumbers?.trim()}
+                    fullWidth
+                  >
+                    {[
+                      ["M", "Mesial"],
+                      ["O", "Occlusal"],
+                      ["D", "Distal"],
+                      ["B", "Buccal"],
+                      ["L", "Lingual"],
+                    ].map(([value, label]) => (
+                      <MenuItem key={value} value={value}>
+                        <Checkbox
+                          checked={(treatmentForm.surfaces || []).includes(value)}
+                        />
+                        {value} - {label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    label="Price (optional)"
+                    type="number"
+                    value={treatmentForm.price ?? ""}
+                    onChange={(event) =>
+                      setTreatmentForm((current) => ({
+                        ...current,
+                        price: event.target.value,
+                      }))
+                    }
+                    inputProps={{ min: 0, step: "0.01" }}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Paid Amount (optional)"
+                    type="number"
+                    value={treatmentForm.paidAmount ?? ""}
+                    onChange={(event) =>
+                      setTreatmentForm((current) => ({
+                        ...current,
+                        paidAmount: event.target.value,
+                      }))
+                    }
+                    inputProps={{ min: 0, step: "0.01" }}
+                    fullWidth
+                  />
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button
+                onClick={() => setTreatmentDialogMode(null)}
+                disabled={treatmentDialogSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={
+                  treatmentDialogLoading ||
+                  treatmentDialogSaving ||
+                  (treatmentDialogMode === "edit" &&
+                    !treatmentForm.medicalRecordId)
+                }
+                sx={{ background: "#C9A227" }}
+              >
+                {treatmentDialogSaving ? "Saving..." : "Save Treatment"}
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
       </Box>
     </Box>
   );

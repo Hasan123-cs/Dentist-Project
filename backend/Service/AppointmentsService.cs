@@ -869,6 +869,19 @@ namespace dentist_project.Service
                 );
             }
 
+            var patientId = appointment.PatientId;
+            if (!patientId.HasValue &&
+                !string.IsNullOrWhiteSpace(appointment.ContactName))
+            {
+                var contactName = appointment.ContactName.Trim().ToLower();
+                patientId = await _db.Patients
+                    .Where(patient =>
+                        (patient.FirstName + " " + patient.LastName).ToLower()
+                        == contactName)
+                    .Select(patient => (int?)patient.Id)
+                    .FirstOrDefaultAsync();
+            }
+
 
 
             var treatment =
@@ -909,6 +922,7 @@ namespace dentist_project.Service
                 {
                     id = appointment.Id,
 
+                    patientId,
 
                     patientName = !string.IsNullOrWhiteSpace(appointment.ContactName)
                         ? appointment.ContactName

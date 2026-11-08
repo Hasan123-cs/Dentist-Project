@@ -33,7 +33,10 @@ import {
 import { PageLoading } from "../Components/PageState";
 import InboxOutlined from "@mui/icons-material/InboxOutlined";
 import { createWhatsAppUrl } from "../utils/whatsapp";
-import { getTomorrowLebanonDate } from "../utils/dateTime";
+import {
+  getTodayLebanonDate,
+  getTomorrowLebanonDate,
+} from "../utils/dateTime";
 
 
 
@@ -275,12 +278,23 @@ export default function WhatsAppReminders() {
 
   const normalizedSearch = patientSearch.trim().toLocaleLowerCase();
   const searchDigits = patientSearch.replace(/\D/g, "");
+  const todayDate = getTodayLebanonDate();
   const tomorrowDate = getTomorrowLebanonDate();
+  const isFutureCleaningReminder = (reminder) =>
+    reminder.type === "CleaningReminder" &&
+    Boolean(reminder.date) &&
+    reminder.date > todayDate;
+  const allTimeReminders = reminders.filter(
+    (reminder) => reminder.isSent || !isFutureCleaningReminder(reminder),
+  );
   const filteredReminders = reminders.filter((reminder) => {
     const matchesStatus =
-      reminderFilter === "all" ||
+      (reminderFilter === "all" &&
+        (reminder.isSent || !isFutureCleaningReminder(reminder))) ||
       (reminderFilter === "submitted" && reminder.isSent) ||
-      (reminderFilter === "notSubmitted" && !reminder.isSent) ||
+      (reminderFilter === "notSubmitted" &&
+        !reminder.isSent &&
+        !isFutureCleaningReminder(reminder)) ||
       (reminderFilter === "tomorrowSubmitted" &&
         reminder.isSent &&
         reminder.date === tomorrowDate) ||
@@ -308,6 +322,9 @@ export default function WhatsAppReminders() {
   });
 
   const submittedCount = reminders.filter((reminder) => reminder.isSent).length;
+  const notSubmittedCount = allTimeReminders.filter(
+    (reminder) => !reminder.isSent,
+  ).length;
   const tomorrowSubmittedCount = reminders.filter(
     (reminder) => reminder.isSent && reminder.date === tomorrowDate,
   ).length;
@@ -315,12 +332,12 @@ export default function WhatsAppReminders() {
     (reminder) => !reminder.isSent && reminder.date === tomorrowDate,
   ).length;
   const statusOptions = [
-    { value: "all", label: "All reminders", count: reminders.length },
+    { value: "all", label: "All reminders", count: allTimeReminders.length },
     { value: "submitted", label: "Submitted (all time)", count: submittedCount },
     {
       value: "notSubmitted",
       label: "Not submitted (all time)",
-      count: reminders.length - submittedCount,
+      count: notSubmittedCount,
     },
     {
       value: "tomorrowNotSubmitted",

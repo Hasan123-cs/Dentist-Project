@@ -16,13 +16,23 @@ import {
   Alert,
   MenuItem,
   IconButton,
+  InputAdornment,
 } from "@mui/material";
 
 import ClinicalSummary from "../Components/ClinicalSummary";
 
 import { useNavigate, useParams } from "react-router-dom";
 
-import { Phone, Person, Payments, CalendarMonth, Edit, Add, Close } from "@mui/icons-material";
+import {
+  Phone,
+  Person,
+  Payments,
+  CalendarMonth,
+  Edit,
+  Add,
+  Close,
+  Search,
+} from "@mui/icons-material";
 
 import { useState, useEffect } from "react";
 import treatmentOptions from "./treatmentOptions";
@@ -48,6 +58,7 @@ export default function PatientProfile() {
   const [patientLoading, setPatientLoading] = useState(true);
   const [patientLoadError, setPatientLoadError] = useState("");
   const [treatments, setTreatments] = useState([]);
+  const [treatmentSearch, setTreatmentSearch] = useState("");
   const [completedTreatments, setCompletedTreatments] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [paymentDialog, setPaymentDialog] = useState(null);
@@ -65,6 +76,11 @@ export default function PatientProfile() {
       treatments.map((treatment) => [treatment.medicalRecordId, treatment]),
     ).values(),
   ];
+  const filteredTreatments = treatments.filter((treatment) =>
+    treatment.treatment
+      ?.toLocaleLowerCase()
+      .includes(treatmentSearch.trim().toLocaleLowerCase()),
+  );
 
   const updatePatientBalance = (
     previousCost,
@@ -769,6 +785,23 @@ export default function PatientProfile() {
             VIEW ALL TREATMENTS
           </Button>
 
+          <TextField
+            fullWidth
+            size="small"
+            value={treatmentSearch}
+            onChange={(event) => setTreatmentSearch(event.target.value)}
+            placeholder="Search treatment by name"
+            aria-label="Search treatment plan by name"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ color: "#8a7a55" }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 3 }}
+          />
+
           {treatments.length > 0 && (
             <Paper
               sx={{
@@ -818,9 +851,15 @@ export default function PatientProfile() {
               No treatments added yet.
             </Typography>
 
+          ) : filteredTreatments.length === 0 ? (
+
+            <Typography color="#718096">
+              No treatments match your search.
+            </Typography>
+
           ) : (
 
-            treatments.map((treatment, index) => (
+            filteredTreatments.map((treatment, index) => (
 
               <Paper
                 key={index}
