@@ -13,6 +13,7 @@
         public string Date { get; set; } = "";
 
         public string Time { get; set; } = "";
+        public string EndTime { get; set; } = "";
 
         public bool IsSent { get; set; }
     }

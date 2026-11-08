@@ -32,27 +32,24 @@ public class NotificationsController : ControllerBase
         var reminders = await _context.Notifications
             .Include(x => x.Patient)
             .Include(x => x.Appointment)
+            .Where(x =>
+                x.Appointment == null ||
+                x.Appointment.Status != AppointmentStatus.Cancelled)
             .ToListAsync();
-
-
 
         var result = reminders.Select(x => new ReminderDto
         {
-
             Id = x.Id,
-
-
-            PatientName =
-                x.Patient.FirstName + " " +
-                x.Patient.LastName,
-
-
-            Phone =
-                x.Patient.Phone,
-
+            PatientName = x.Patient.FirstName + " " + x.Patient.LastName,
+            Phone = x.Patient.Phone,
 
             Message =
-                x.Message,
+                x.Type == NotificationType.AppointmentReminder &&
+                x.Appointment != null
+                    ? $"Appointment : {ConvertToLebanonTime(
+                        x.Appointment.StartDateTime,
+                        lebanonTimeZone):yyyy-MM-dd HH:mm}"
+                    : x.Message,
 
 
             Type =
@@ -81,12 +78,50 @@ public class NotificationsController : ControllerBase
                         ? ""
                         : ConvertToLebanonTime(
                             x.Appointment.StartDateTime,
+                            lebanonTimeZone).ToString("HH:mm"),
+
+            EndTime =
+                x.Type == NotificationType.CleaningReminder
+                    ? ""
+                    : x.Appointment == null
+                        ? ""
+                        : ConvertToLebanonTime(
+                            x.Appointment.EndDateTime,
                             lebanonTimeZone).ToString("HH:mm")
 
         })
         .ToList();
 
+        var newPatientCheckups = await _context.Appointments
+            .Where(appointment =>
+                appointment.PatientId == null &&
+                appointment.Type == AppointmentType.Checkup &&
+                appointment.Status != AppointmentStatus.Cancelled)
+            .ToListAsync();
 
+        result.AddRange(newPatientCheckups.Select(appointment =>
+        {
+            var start = ConvertToLebanonTime(
+                appointment.StartDateTime,
+                lebanonTimeZone);
+
+            var end = ConvertToLebanonTime(
+                appointment.EndDateTime,
+                lebanonTimeZone);
+
+            return new ReminderDto
+            {
+                Id = -appointment.Id,
+                PatientName = appointment.ContactName ?? "",
+                Phone = appointment.ContactPhone ?? "",
+                Message = $"Appointment : {start:yyyy-MM-dd HH:mm}",
+                Type = NotificationType.AppointmentReminder.ToString(),
+                Date = start.ToString("yyyy-MM-dd"),
+                Time = start.ToString("HH:mm"),
+                EndTime = end.ToString("HH:mm"),
+                IsSent = appointment.ReminderSent
+            };
+        }));
 
         return Ok(result);
 
@@ -113,6 +148,28 @@ public class NotificationsController : ControllerBase
     [HttpPut("reminders/{id:int}/sent")]
     public async Task<IActionResult> MarkReminderAsSent(int id)
     {
+        if (id < 0)
+        {
+            var appointmentId = -(long)id;
+            if (appointmentId > int.MaxValue)
+            {
+                return NotFound(new { message = "Reminder not found." });
+            }
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(item => item.Id == (int)appointmentId);
+
+            if (appointment == null)
+            {
+                return NotFound(new { message = "Reminder not found." });
+            }
+
+            appointment.ReminderSent = true;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Reminder marked as submitted." });
+        }
+
         var reminder = await _context.Notifications
             .FirstOrDefaultAsync(notification => notification.Id == id);
 
