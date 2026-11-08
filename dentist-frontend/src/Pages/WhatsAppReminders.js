@@ -9,6 +9,7 @@ import {
   RadioGroup,
   TextField,
   InputAdornment,
+  Divider,
 } from "@mui/material";
 
 import {
@@ -32,6 +33,7 @@ import {
 import { PageLoading } from "../Components/PageState";
 import InboxOutlined from "@mui/icons-material/InboxOutlined";
 import { createWhatsAppUrl } from "../utils/whatsapp";
+import { getTomorrowLebanonDate } from "../utils/dateTime";
 
 
 
@@ -47,6 +49,7 @@ export default function WhatsAppReminders() {
   // selected message language
   const [language, setLanguage] = useState("both");
   const [reminderFilter, setReminderFilter] = useState("notSubmitted");
+  const [reminderTypeFilter, setReminderTypeFilter] = useState("all");
   const [patientSearch, setPatientSearch] = useState("");
   const [savingReminderId, setSavingReminderId] = useState(null);
 
@@ -272,11 +275,24 @@ export default function WhatsAppReminders() {
 
   const normalizedSearch = patientSearch.trim().toLocaleLowerCase();
   const searchDigits = patientSearch.replace(/\D/g, "");
+  const tomorrowDate = getTomorrowLebanonDate();
   const filteredReminders = reminders.filter((reminder) => {
     const matchesStatus =
       reminderFilter === "all" ||
       (reminderFilter === "submitted" && reminder.isSent) ||
-      (reminderFilter === "notSubmitted" && !reminder.isSent);
+      (reminderFilter === "notSubmitted" && !reminder.isSent) ||
+      (reminderFilter === "tomorrowSubmitted" &&
+        reminder.isSent &&
+        reminder.date === tomorrowDate) ||
+      (reminderFilter === "tomorrowNotSubmitted" &&
+        !reminder.isSent &&
+        reminder.date === tomorrowDate);
+    const matchesType =
+      reminderTypeFilter === "all" ||
+      (reminderTypeFilter === "appointments" &&
+        reminder.type === "AppointmentReminder") ||
+      (reminderTypeFilter === "cleaning" &&
+        reminder.type === "CleaningReminder");
     const matchesName = reminder.patientName
       ?.toLocaleLowerCase()
       .includes(normalizedSearch);
@@ -284,17 +300,37 @@ export default function WhatsAppReminders() {
       searchDigits.length > 0 &&
       reminder.phone?.replace(/\D/g, "").includes(searchDigits);
 
-    return matchesStatus && (!normalizedSearch || matchesName || matchesPhone);
+    return (
+      matchesStatus &&
+      matchesType &&
+      (!normalizedSearch || matchesName || matchesPhone)
+    );
   });
 
   const submittedCount = reminders.filter((reminder) => reminder.isSent).length;
+  const tomorrowSubmittedCount = reminders.filter(
+    (reminder) => reminder.isSent && reminder.date === tomorrowDate,
+  ).length;
+  const tomorrowNotSubmittedCount = reminders.filter(
+    (reminder) => !reminder.isSent && reminder.date === tomorrowDate,
+  ).length;
   const statusOptions = [
     { value: "all", label: "All reminders", count: reminders.length },
-    { value: "submitted", label: "Submitted", count: submittedCount },
+    { value: "submitted", label: "Submitted (all time)", count: submittedCount },
     {
       value: "notSubmitted",
-      label: "Not submitted",
+      label: "Not submitted (all time)",
       count: reminders.length - submittedCount,
+    },
+    {
+      value: "tomorrowNotSubmitted",
+      label: "Tomorrow not submitted",
+      count: tomorrowNotSubmittedCount,
+    },
+    {
+      value: "tomorrowSubmitted",
+      label: "Tomorrow submitted",
+      count: tomorrowSubmittedCount,
     },
   ];
 
@@ -399,7 +435,7 @@ export default function WhatsAppReminders() {
         />
         <RadioGroup
           row
-          aria-label="Filter reminders by submission status"
+          aria-label="Filter reminders by submission status and date"
           value={reminderFilter}
           onChange={(event) => setReminderFilter(event.target.value)}
           sx={{ gap: 1, flexWrap: "wrap" }}
@@ -451,6 +487,39 @@ export default function WhatsAppReminders() {
                 transition: "all 150ms ease",
                 "&:hover": { background: "#f7f8fa" },
               }}
+            />
+          ))}
+        </RadioGroup>
+        <Divider sx={{ my: 2 }} />
+        <Typography fontWeight={700} color="#092c57" mb={1}>
+          Reminder type
+        </Typography>
+        <RadioGroup
+          row
+          aria-label="Filter reminders by type"
+          value={reminderTypeFilter}
+          onChange={(event) => setReminderTypeFilter(event.target.value)}
+          sx={{ gap: 1, flexWrap: "wrap" }}
+        >
+          {[
+            { value: "all", label: "All types" },
+            { value: "appointments", label: "Appointments" },
+            { value: "cleaning", label: "Cleaning" },
+          ].map((option) => (
+            <FormControlLabel
+              key={option.value}
+              value={option.value}
+              control={
+                <Radio
+                  size="small"
+                  sx={{
+                    color: "#a89a78",
+                    "&.Mui-checked": { color: "#092c57" },
+                  }}
+                />
+              }
+              label={option.label}
+              sx={{ m: 0 }}
             />
           ))}
         </RadioGroup>
@@ -700,15 +769,18 @@ export default function WhatsAppReminders() {
 
 
                   <Typography
-
                     color="text.secondary"
-
                   >
 
                     {item.message}
 
                   </Typography>
 
+                  {item.date && (
+                    <Typography color="text.secondary" fontSize={13} mt={0.5}>
+                      {item.date}{item.time ? ` · ${item.time}` : ""}
+                    </Typography>
+                  )}
 
 
                 </Box>

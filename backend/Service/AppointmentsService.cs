@@ -319,6 +319,7 @@ namespace dentist_project.Service
             }
 
             if (appointmentType == AppointmentType.Checkup &&
+                patient == null &&
                 string.IsNullOrWhiteSpace(dto.PatientPhone))
             {
                 return (false, "Phone number is required for a checkup appointment.");

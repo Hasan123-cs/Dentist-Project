@@ -103,6 +103,11 @@ export default function NewAppointment() {
 
   const getPatientName = (patient) =>
     `${patient.firstName || ""} ${patient.lastName || ""}`.trim();
+  const matchingPatient = patients.find(
+    (patient) =>
+      getPatientName(patient).toLocaleLowerCase() ===
+      appointment.patientName.trim().toLocaleLowerCase(),
+  );
   // =========================
   // Convert HH:mm to minutes
   // =========================
@@ -371,7 +376,8 @@ export default function NewAppointment() {
 
       if (
         appointment.appointmentType === "Checkup" &&
-        !appointment.patientPhone.trim()
+        !appointment.patientPhone.trim() &&
+        !matchingPatient
       ) {
         setError("Please enter a phone number for the checkup.");
         return;
@@ -488,7 +494,7 @@ export default function NewAppointment() {
 
         patientPhone:
           appointment.appointmentType === "Checkup"
-            ? appointment.patientPhone.trim()
+            ? appointment.patientPhone.trim() || matchingPatient?.phone || null
             : null,
 
         appointmentType: appointment.appointmentType,
@@ -609,7 +615,7 @@ export default function NewAppointment() {
                     .toLocaleLowerCase()
                     .startsWith(query),
               )
-              .slice(0, 7);
+              .slice(0, 20);
           }}
           onChange={(_, selectedPatient) => {
             const patientName =
@@ -621,6 +627,10 @@ export default function NewAppointment() {
             setAppointment((current) => ({
               ...current,
               patientName,
+              patientPhone:
+                typeof selectedPatient === "string"
+                  ? ""
+                  : selectedPatient?.phone || "",
             }));
             setError("");
           }}
@@ -629,6 +639,7 @@ export default function NewAppointment() {
               setAppointment((current) => ({
                 ...current,
                 patientName: value,
+                patientPhone: "",
               }));
             }
           }}
@@ -653,8 +664,14 @@ export default function NewAppointment() {
             name="patientPhone"
             label="Phone Number"
             type="tel"
+            required={!matchingPatient}
             value={appointment.patientPhone}
             onChange={handleChange}
+            helperText={
+              matchingPatient
+                ? "Optional for an existing patient; their saved number will be used."
+                : ""
+            }
             sx={{ mb: 2 }}
           />
         )}

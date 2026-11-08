@@ -29,64 +29,9 @@ public class NotificationsController : ControllerBase
     public async Task<IActionResult> GetReminders()
     {
         var lebanonTimeZone = GetLebanonTimeZone();
-        var todayInLebanon = TimeZoneInfo.ConvertTimeFromUtc(
-            DateTime.UtcNow,
-            lebanonTimeZone).Date;
-
-        var tomorrowStartInLebanon = DateTime.SpecifyKind(
-            todayInLebanon.AddDays(1),
-            DateTimeKind.Unspecified);
-        var tomorrowEndInLebanon = DateTime.SpecifyKind(
-            todayInLebanon.AddDays(2),
-            DateTimeKind.Unspecified);
-
-        var tomorrowStartUtc = TimeZoneInfo.ConvertTimeToUtc(
-            tomorrowStartInLebanon,
-            lebanonTimeZone);
-        var tomorrowEndUtc = TimeZoneInfo.ConvertTimeToUtc(
-            tomorrowEndInLebanon,
-            lebanonTimeZone);
-
-
-
         var reminders = await _context.Notifications
-
             .Include(x => x.Patient)
-
             .Include(x => x.Appointment)
-
-            .Where(x =>
-                x.IsSent
-                || (
-                    // Appointment reminders
-                    (
-                        x.Type == NotificationType.AppointmentReminder
-                        &&
-                        x.Appointment != null
-                        &&
-                        x.Appointment.Status != AppointmentStatus.Cancelled
-                        &&
-                        x.Appointment.Status != AppointmentStatus.Completed
-                        &&
-                        x.Appointment.StartDateTime >= tomorrowStartUtc
-                        &&
-                        x.Appointment.StartDateTime < tomorrowEndUtc
-                    )
-
-
-                    ||
-
-                    // Cleaning reminders
-                    (
-                        x.Type == NotificationType.CleaningReminder
-                        &&
-                        x.ReminderDate.HasValue
-                        &&
-                        x.ReminderDate.Value <= tomorrowStartUtc
-                    )
-                )
-            )
-
             .ToListAsync();
 
 
@@ -117,7 +62,11 @@ public class NotificationsController : ControllerBase
 
             Date =
                 x.Type == NotificationType.CleaningReminder
-                    ? x.Message
+                    ? x.ReminderDate.HasValue
+                        ? ConvertToLebanonTime(
+                            x.ReminderDate.Value,
+                            lebanonTimeZone).ToString("yyyy-MM-dd")
+                        : ""
                     : x.Appointment == null
                         ? ""
                         : ConvertToLebanonTime(

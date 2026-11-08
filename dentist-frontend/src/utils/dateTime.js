@@ -10,3 +10,7 @@ const LEBANON_TIME_ZONE = "Asia/Beirut";
 export function formatLebanonDateTime(value, format) {
   return dayjs.utc(value).tz(LEBANON_TIME_ZONE).format(format);
 }
+
+export function getTomorrowLebanonDate() {
+  return dayjs().tz(LEBANON_TIME_ZONE).add(1, "day").format("YYYY-MM-DD");
+}
