@@ -1,8 +1,9 @@
 import { Box, Paper } from "@mui/material";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import AppointmentCard from "../Components/AppointmentCard";
+import EditAppointmentDialog from "./EditAppointmentDialog";
 
 const times = [
   "09:00",
@@ -46,9 +47,13 @@ export default function WeeklyCalendar({
   view,
   appointments,
   setAppointments,
-  cancelAppointment,
+  onAppointmentDragStateChange,
+  onAppointmentUpdated,
+  onAppointmentMoveError,
 }) {
   const [draggedAppointment, setDraggedAppointment] = useState(null);
+  const [editingAppointment, setEditingAppointment] = useState(null);
+  const dragWasDropped = useRef(false);
 
   const startOfWeek = currentDate.startOf("week").add(1, "day");
 
@@ -80,6 +85,7 @@ export default function WeeklyCalendar({
 
   const handleDrop = async (day, time) => {
     if (!draggedAppointment) return;
+    dragWasDropped.current = true;
 
     const appointment = draggedAppointment;
 
@@ -97,24 +103,29 @@ export default function WeeklyCalendar({
       "minute",
     );
 
-    setAppointments((prev) =>
-      prev.map((item) =>
-        item.id === appointment.id
-          ? {
-              ...item,
-
-              startDateTime: newStart.toISOString(),
-
-              endDateTime: newEnd.toISOString(),
-            }
-          : item,
-      ),
+    const wasInCurrentWeek = appointments.some(
+      (item) => item.id === appointment.id,
     );
+    const movedAppointment = {
+      ...appointment,
+      startDateTime: newStart.toISOString(),
+      endDateTime: newEnd.toISOString(),
+    };
 
-    setDraggedAppointment(null);
+    setAppointments((prev) =>
+      prev.some((item) => item.id === appointment.id)
+        ? prev.map((item) =>
+            item.id === appointment.id ? movedAppointment : item,
+          )
+        : [...prev, movedAppointment],
+    );
 
     try {
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Your session has expired. Please sign in again.");
+      }
 
       await axios.put(
         `${process.env.REACT_APP_API_URL}/api/appointments/${appointment.id}/time`,
@@ -132,21 +143,28 @@ export default function WeeklyCalendar({
         },
       );
     } catch (error) {
-      console.log(error);
-
       setAppointments((prev) =>
-        prev.map((item) =>
-          item.id === appointment.id
-            ? {
-                ...item,
-
-                startDateTime: oldStart,
-
-                endDateTime: oldEnd,
-              }
-            : item,
-        ),
+        wasInCurrentWeek
+          ? prev.map((item) =>
+              item.id === appointment.id
+                ? {
+                    ...item,
+                    startDateTime: oldStart,
+                    endDateTime: oldEnd,
+                  }
+                : item,
+            )
+          : prev.filter((item) => item.id !== appointment.id),
       );
+      onAppointmentMoveError?.(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to move the appointment.",
+      );
+    } finally {
+      setDraggedAppointment(null);
+      onAppointmentDragStateChange?.(false);
+      await onAppointmentUpdated?.();
     }
   };
 
@@ -279,8 +297,18 @@ export default function WeeklyCalendar({
                       <AppointmentCard
                         appointment={app}
                         onDragStart={(appointment) => {
+                          dragWasDropped.current = false;
                           setDraggedAppointment(appointment);
+                          onAppointmentDragStateChange?.(true);
                         }}
+                        onDragEnd={() => {
+                          if (!dragWasDropped.current) {
+                            setDraggedAppointment(null);
+                            onAppointmentDragStateChange?.(false);
+                          }
+                          dragWasDropped.current = false;
+                        }}
+                        onEdit={setEditingAppointment}
                       />
                     </Box>
                   );
@@ -291,6 +319,14 @@ export default function WeeklyCalendar({
         </Box>
       ))}
       </Paper>
+      <EditAppointmentDialog
+        appointment={editingAppointment}
+        onClose={() => setEditingAppointment(null)}
+        onSaved={async () => {
+          setEditingAppointment(null);
+          await onAppointmentUpdated?.();
+        }}
+      />
     </Box>
   );
 }

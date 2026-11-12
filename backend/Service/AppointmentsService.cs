@@ -220,14 +220,41 @@ namespace dentist_project.Service
                 );
             }
 
+            var startUtc = dto.StartDateTime.Kind == DateTimeKind.Local
+                ? dto.StartDateTime.ToUniversalTime()
+                : DateTime.SpecifyKind(dto.StartDateTime, DateTimeKind.Utc);
+            var endUtc = dto.EndDateTime.Kind == DateTimeKind.Local
+                ? dto.EndDateTime.ToUniversalTime()
+                : DateTime.SpecifyKind(dto.EndDateTime, DateTimeKind.Utc);
+            var timezone = OperatingSystem.IsWindows()
+                ? TimeZoneInfo.FindSystemTimeZoneById("Middle East Standard Time")
+                : TimeZoneInfo.FindSystemTimeZoneById("Asia/Beirut");
+            var localStart = TimeZoneInfo.ConvertTimeFromUtc(startUtc, timezone);
+            var localEnd = TimeZoneInfo.ConvertTimeFromUtc(endUtc, timezone);
 
+            if (localStart.TimeOfDay < new TimeSpan(9, 0, 0) ||
+                localEnd.TimeOfDay > new TimeSpan(20, 0, 0))
+            {
+                return (false, "Appointments must be scheduled between 09:00 and 20:00.");
+            }
+
+            var hasOverlap = await _db.Appointments.AnyAsync(a =>
+                a.Id != appointmentId
+                && a.Status != AppointmentStatus.Cancelled
+                && a.StartDateTime < endUtc
+                && a.EndDateTime > startUtc);
+
+            if (hasOverlap)
+            {
+                return (false, "The selected time overlaps with another appointment.");
+            }
 
             appointment.StartDateTime =
-                dto.StartDateTime;
+                startUtc;
 
 
             appointment.EndDateTime =
-                dto.EndDateTime;
+                endUtc;
 
 
 
@@ -238,6 +265,97 @@ namespace dentist_project.Service
                 true,
                 "Appointment updated successfully."
             );
+        }
+
+        public async Task<(bool success, string message)> UpdateAppointmentAsync(
+            int appointmentId,
+            UpdateAppointmentDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.PatientName))
+            {
+                return (false, "Patient name is required.");
+            }
+
+            if (dto.Date == default)
+            {
+                return (false, "Appointment date is required.");
+            }
+
+            if (dto.EndTime <= dto.StartTime)
+            {
+                return (false, "End time must be after start time.");
+            }
+
+            if (dto.StartTime < new TimeOnly(9, 0) ||
+                dto.EndTime > new TimeOnly(20, 0))
+            {
+                return (false, "Appointments must be scheduled between 09:00 and 20:00.");
+            }
+
+            var appointment = await _db.Appointments
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+            if (appointment == null)
+            {
+                return (false, "Appointment not found.");
+            }
+
+            var patientName = dto.PatientName.Trim();
+            var patient = await _db.Patients
+                .FirstOrDefaultAsync(p =>
+                    (p.FirstName + " " + p.LastName).ToLower()
+                    == patientName.ToLower());
+
+            if (appointment.Type == AppointmentType.Treatment &&
+                (patient == null || patient.Id != appointment.PatientId))
+            {
+                return (false, "The patient cannot be changed for a treatment appointment.");
+            }
+
+            if (appointment.Type == AppointmentType.Checkup &&
+                patient == null &&
+                string.IsNullOrWhiteSpace(dto.PatientPhone))
+            {
+                return (false, "Phone number is required for a checkup appointment.");
+            }
+
+            var startLocal = DateTime.SpecifyKind(
+                dto.Date.ToDateTime(dto.StartTime),
+                DateTimeKind.Unspecified);
+            var endLocal = DateTime.SpecifyKind(
+                dto.Date.ToDateTime(dto.EndTime),
+                DateTimeKind.Unspecified);
+            var timezone = OperatingSystem.IsWindows()
+                ? TimeZoneInfo.FindSystemTimeZoneById("Middle East Standard Time")
+                : TimeZoneInfo.FindSystemTimeZoneById("Asia/Beirut");
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, timezone);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(endLocal, timezone);
+
+            var hasOverlap = await _db.Appointments.AnyAsync(a =>
+                a.Id != appointmentId
+                && a.Status != AppointmentStatus.Cancelled
+                && a.StartDateTime < endUtc
+                && a.EndDateTime > startUtc);
+
+            if (hasOverlap)
+            {
+                return (false, "The selected time overlaps with another appointment.");
+            }
+
+            appointment.PatientId = patient?.Id;
+            appointment.ContactName = patientName;
+            appointment.ContactPhone = string.IsNullOrWhiteSpace(dto.PatientPhone)
+                ? patient?.Phone
+                : dto.PatientPhone.Trim();
+            appointment.StartDateTime = startUtc;
+            appointment.EndDateTime = endUtc;
+            appointment.Notes = string.IsNullOrWhiteSpace(dto.Notes)
+                ? null
+                : dto.Notes.Trim();
+
+            await _db.SaveChangesAsync();
+
+            return (true, "Appointment updated successfully.");
         }
 
 

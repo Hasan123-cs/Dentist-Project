@@ -29,6 +29,28 @@ namespace dentist_project.Controllers
             var appointments =await _appointmentService.GetAppointmentsAsync(start,end);
             return Ok(appointments);
         }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateAppointment(
+            int id,
+            [FromBody] UpdateAppointmentDto dto)
+        {
+            var result = await _appointmentService.UpdateAppointmentAsync(id, dto);
+
+            if (!result.success)
+            {
+                return BadRequest(new
+                {
+                    message = result.message
+                });
+            }
+
+            return Ok(new
+            {
+                message = result.message
+            });
+        }
+
         [HttpPut("{id}/time")]
         public async Task<IActionResult> UpdateAppointmentTime(
         int id,

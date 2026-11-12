@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import dayjs from "dayjs";
 import WeeklyCalendar from "./WeeklyCalendar";
 
@@ -26,4 +26,8 @@ test("shows appointments that start between half-hour calendar slots", () => {
   );
 
   expect(screen.getByText("Quarter-hour visit")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Edit Quarter-hour visit" }));
+
+  expect(screen.getByRole("dialog")).toHaveTextContent("Edit Appointment");
 });

@@ -1,7 +1,7 @@
 import { Box, useMediaQuery } from "@mui/material";
 import axios from "axios";
 import dayjs from "dayjs";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { Alert } from "@mui/material";
 import { Snackbar } from "@mui/material";
 import AppointmentStats from "../Components/Appointmentstats";
@@ -26,6 +26,8 @@ export default function Appointments() {
 
   const [view, setView] = useState(isMobile ? "day" : "week");
   const [loading, setLoading] = useState(true);
+  const hasLoadedAppointments = useRef(false);
+  const [isDraggingAppointment, setIsDraggingAppointment] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [notification, setNotification] = useState({
     open: false,
@@ -39,7 +41,7 @@ export default function Appointments() {
   // LOAD APPOINTMENTS
 
   const loadAppointments = useCallback(async () => {
-    setLoading(true);
+    if (!hasLoadedAppointments.current) setLoading(true);
     setLoadError("");
 
     const start = currentDate
@@ -68,6 +70,7 @@ export default function Appointments() {
       );
 
       setAppointments(response.data.appointments || []);
+      hasLoadedAppointments.current = true;
 
       setStats({
         totalToday: response.data.totalToday || 0,
@@ -88,6 +91,10 @@ export default function Appointments() {
       setLoading(false);
     }
   }, [currentDate]);
+
+  const handleAppointmentDragStateChange = (isDragging) => {
+    setIsDraggingAppointment(isDragging);
+  };
 
   useEffect(() => {
     loadAppointments();
@@ -181,6 +188,7 @@ export default function Appointments() {
         setCurrentDate={setCurrentDate}
         view={view}
         setView={setView}
+        isDraggingAppointment={isDraggingAppointment}
       />
 
       {visibleAppointments.length === 0 && !loadError && (
@@ -198,6 +206,15 @@ export default function Appointments() {
         appointments={appointments}
         setAppointments={setAppointments}
         cancelAppointment={cancelAppointment}
+        onAppointmentDragStateChange={handleAppointmentDragStateChange}
+        onAppointmentUpdated={loadAppointments}
+        onAppointmentMoveError={(message) =>
+          setNotification({
+            open: true,
+            message,
+            severity: "error",
+          })
+        }
       />
       <Snackbar
         open={notification.open}

@@ -1,4 +1,6 @@
 import { Box, Typography, Button } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +19,12 @@ const colors = {
   },
 };
 
-export default function AppointmentCard({ appointment, onDragStart }) {
+export default function AppointmentCard({
+  appointment,
+  onDragStart,
+  onDragEnd,
+  onEdit,
+}) {
   const navigate = useNavigate();
 
   const statusKey =
@@ -52,6 +59,7 @@ export default function AppointmentCard({ appointment, onDragStart }) {
     <Box
       draggable
       onDragStart={() => onDragStart(appointment)}
+      onDragEnd={onDragEnd}
       sx={{
         width: "100%",
         height: "100%",
@@ -105,35 +113,53 @@ export default function AppointmentCard({ appointment, onDragStart }) {
       )}
 
       {/* DETAILS BUTTON */}
-      <Button
-        variant="contained"
-        size="small"
-        onClick={(e) => {
-          // Prevent the button click from interfering
-          // with dragging the appointment card.
-          e.stopPropagation();
-          handleDetails();
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        sx={{
-          minHeight: isTiny ? "16px" : isShort ? "20px" : "24px",
-          height: isTiny ? "16px" : isShort ? "20px" : "24px",
-          minWidth: isTiny ? "38px" : 0,
-          px: isTiny ? 0.25 : isShort ? 0.5 : 1,
-          py: 0,
-          mt: isTiny ? 0 : 0.5,
-          fontSize: isTiny ? "8px" : isShort ? "9px" : isMedium ? "10px" : "11px",
-          fontWeight: 700,
-          textTransform: "none",
-          backgroundColor: "#6b5b3e",
-          color: "#fff",
-          "&:hover": {
-            backgroundColor: "#55472f",
-          },
-        }}
-      >
-        Details
-      </Button>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, mt: isTiny ? 0 : 0.5 }}>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDetails();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          sx={{
+            minHeight: isTiny ? "16px" : isShort ? "20px" : "24px",
+            height: isTiny ? "16px" : isShort ? "20px" : "24px",
+            minWidth: isTiny ? "38px" : 0,
+            px: isTiny ? 0.25 : isShort ? 0.5 : 1,
+            py: 0,
+            fontSize: isTiny ? "8px" : isShort ? "9px" : isMedium ? "10px" : "11px",
+            fontWeight: 700,
+            textTransform: "none",
+            backgroundColor: "#6b5b3e",
+            color: "#fff",
+            "&:hover": {
+              backgroundColor: "#55472f",
+            },
+          }}
+        >
+          Details
+        </Button>
+        <Tooltip title="Edit appointment">
+          <IconButton
+            aria-label={`Edit ${appointment.patientName || "appointment"}`}
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              onEdit(appointment);
+            }}
+            onMouseDown={(event) => event.stopPropagation()}
+            sx={{
+              width: isTiny ? 18 : 22,
+              height: isTiny ? 18 : 22,
+              color: "#55472f",
+              p: 0.25,
+            }}
+          >
+            <EditOutlined sx={{ fontSize: isTiny ? 14 : 17 }} />
+          </IconButton>
+        </Tooltip>
+      </Box>
     </Box>
   );
 }

@@ -1,16 +1,40 @@
 import { Paper, Box, Typography, Button, IconButton } from "@mui/material";
 
 import { ChevronLeft, ChevronRight, CalendarMonth } from "@mui/icons-material";
+import { useEffect, useRef } from "react";
 
 export default function CalendarToolbar({
   currentDate,
   setCurrentDate,
   view,
   setView,
+  isDraggingAppointment = false,
 }) {
   const startOfWeek = currentDate.startOf("week").add(1, "day");
 
   const endOfWeek = startOfWeek.add(6, "day");
+  const hoveredDragDirection = useRef(null);
+
+  useEffect(() => {
+    if (!isDraggingAppointment) {
+      hoveredDragDirection.current = null;
+    }
+  }, [isDraggingAppointment]);
+
+  const handleWeekArrowDragEnter = (event, direction) => {
+    if (!isDraggingAppointment) return;
+
+    event.preventDefault();
+    if (hoveredDragDirection.current === direction) return;
+
+    hoveredDragDirection.current = direction;
+    setCurrentDate((date) => date.add(direction, "week"));
+  };
+
+  const handleWeekArrowDragLeave = (event) => {
+    if (event.currentTarget.contains(event.relatedTarget)) return;
+    hoveredDragDirection.current = null;
+  };
 
   return (
     <Paper
@@ -60,18 +84,29 @@ export default function CalendarToolbar({
         </Box>
 
         <Box
-          display="flex"
-          alignItems="center"
-          justifyContent={{ xs: "center", sm: "flex-start" }}
-          width={{ xs: "100%", sm: "auto" }}
-          gap={{ xs: 0.5, sm: 2 }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: { xs: "center", sm: "flex-start" },
+            width: { xs: "100%", sm: "auto" },
+            gap: { xs: 0.5, sm: 2 },
+          }}
         >
           <IconButton
             onClick={() => {
               setCurrentDate(currentDate.subtract(1, "week"));
             }}
+            onDragEnter={(event) => handleWeekArrowDragEnter(event, -1)}
+            onDragOver={(event) => {
+              if (isDraggingAppointment) event.preventDefault();
+            }}
+            onDragLeave={handleWeekArrowDragLeave}
+            aria-label="Previous week"
             sx={{
               border: "1px solid #eee3c5",
+              ...(isDraggingAppointment && {
+                "&:hover": { backgroundColor: "#f5edda" },
+              }),
             }}
           >
             <ChevronLeft />
@@ -93,8 +128,17 @@ export default function CalendarToolbar({
             onClick={() => {
               setCurrentDate(currentDate.add(1, "week"));
             }}
+            onDragEnter={(event) => handleWeekArrowDragEnter(event, 1)}
+            onDragOver={(event) => {
+              if (isDraggingAppointment) event.preventDefault();
+            }}
+            onDragLeave={handleWeekArrowDragLeave}
+            aria-label="Next week"
             sx={{
               border: "1px solid #eee3c5",
+              ...(isDraggingAppointment && {
+                "&:hover": { backgroundColor: "#f5edda" },
+              }),
             }}
           >
             <ChevronRight />
